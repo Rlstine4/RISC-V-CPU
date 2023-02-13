@@ -1,14 +1,13 @@
-// Don't think you can use Z in verilog since it's a keyword for high impedance, therefore I'll use C for output
-
 module ALU_64(A, B, aluctrl, overflow, Z);
 
 input [63:0] A;
 input [63:0] B;
-input aluctrl [3:0]; //ALU CTRL signal can be a nibble, allowing up to 16 commands.. This can be changed later
-output reg Z[63:0];
+input [3:0] aluctrl; //ALU CTRL signal can be a nibble, allowing up to 16 commands.. This can be changed later
+output reg [63:0] Z;
 output reg overflow;
 
-parameter ADD          = 4'b0001,
+parameter IDLE         = 4'b0000,
+          ADD          = 4'b0001,
           SUB          = 4'b0010,
           bitwise_AND  = 4'b0011,
           bitwise_OR   = 4'b0100,
@@ -17,34 +16,38 @@ parameter ADD          = 4'b0001,
           log_shift    = 4'b0111;
 
 
+always @(*)
+    begin
+
     case (aluctrl)
 
+        IDLE:
+            Z = 64'bX;
+
         ADD:
-            C <= A + B;
+            Z = A + B;
 
         SUB:
-            C <= A - B;
+            Z = A - B;
         
         bitwise_AND:
-            C <= A & B;
+            Z = A & B;
         
         bitwise_OR:
-            C <= A | B;
+            Z = A | B;
         
         bitwise_XNOR:
-            C <= A ~^ B;
+            Z = A ~^ B;
 
         compare:
-            C <= A == B; // Review this
+            Z = A == B; // Review this
         
         log_shift:
-            C <= A << B; // Shift A according to B.. review this
+            Z = A << B; // Shift A according to B.. review this
 
     endcase
 
-
-
-
+    end
 
 
 endmodule
