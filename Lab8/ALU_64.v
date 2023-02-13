@@ -32,7 +32,7 @@ parameter log_shift    = 4'b0111;
             C <= A | B;
         
         bitwise_XNOR:
-            C <= A ~| B;
+            C <= A ~^ B;
 
         compare:
             C <= A == B; // Review this
