@@ -1,5 +1,6 @@
-module ALU_64(A, B, aluctrl, overflow, Z);
+module ALU_64(A, B, aluctrl, overflow, Z); // add clk here?
 
+// input wire clk; for synchronous?
 input [63:0] A;
 input [63:0] B;
 input [3:0] aluctrl; //ALU CTRL signal can be a nibble, allowing up to 16 commands.. This can be changed later
@@ -16,7 +17,7 @@ parameter IDLE         = 4'b0000,
           log_shift    = 4'b0111;
 
 
-always @(*)
+always @(*) // @(posedge clk) for synchronous?
     begin
 
     case (aluctrl)
@@ -41,10 +42,13 @@ always @(*)
 
         compare:
             Z = A == B; // Review this
+                        // Brendan: seems right, should we also add A <= B and A >= B or will == suffice?
         
         log_shift:
             Z = A << B; // Shift A according to B.. review this
+                        // Brendan: A << 1 for logical shift (left)? Should we also add logical shift (right) A >> 1?
 
+        //default: Z = A or something? Necessary?
     endcase
 
     end
