@@ -7,19 +7,21 @@ input [3:0] aluctrl; //ALU CTRL signal can be a nibble, allowing up to 16 comman
 output reg [63:0] Z;
 output reg overflow;
 
-parameter IDLE         = 4'b0000,
-          ADD          = 4'b0001,
-          SUB          = 4'b0010,
-          bitwise_AND  = 4'b0011,
-          bitwise_OR   = 4'b0100,
-          bitwise_XNOR = 4'b0101,
-          compare      = 4'b0110,
-          log_shift    = 4'b0111;
+parameter IDLE                    = 4'b0000,
+          ADD                     = 4'b0001,
+          SUB                     = 4'b0010,
+          bitwise_AND             = 4'b0011,
+          bitwise_OR              = 4'b0100,
+          bitwise_XNOR            = 4'b0101,
+          compare_equal           = 4'b0110,
+          compare_greater_than    = 4'b0111,
+          compare_less_than       = 4'b1000,
+          log_shift_left          = 4'b1001,
+          log_shift_right         = 4'b1010;
+          
 
+always @(*) 
 
-always @(*) // @(posedge clk) for synchronous?
-            // Daniel: Hmmm.. ALU will be synchronous due to the launching D-FF before it and capturing D-FF after.
-            // Sensitivity List should be A or B
     begin
 
     case (aluctrl)
@@ -28,11 +30,14 @@ always @(*) // @(posedge clk) for synchronous?
             Z = 64'bX;
 
         ADD:
-            Z = A + B;        //Mehul: Shouldn't we have a overflow detection?
-                          
-
+            {Z, overflow} = A + B;        // Concatenate bit 64 with bits 63-0. In unsigned +, carry_out = 1 means overflow
+                       
         SUB:
+            begin
             Z = A - B;
+            if (A < B)          // In unsigned subtraction we cannot have negative numbers.. A < B would result in negative
+                overflow = 1;
+            end
         
         bitwise_AND:
             Z = A & B;
@@ -43,17 +48,28 @@ always @(*) // @(posedge clk) for synchronous?
         bitwise_XNOR:
             Z = A ~^ B;
 
-        compare:
-            Z = A == B; // Review this
-                        // Brendan: seems right, should we also add A <= B and A >= B or will == suffice?
-                        // Daniel: We want assignment immediately so blocking (==) will suffice
+        compare_equal:
+            Z = A == B;
         
-        log_shift:
+        compare_greater_than:
+            Z = A > B;
+        
+        compare_less_than:  // Daniel :Added compare_greater_than and compare_less_than to address 
+            Z = A < B;      //Brandon's comments. Technically, we only need either greater than OR less than, not both. 
+                            // If we need to optimze further down the line, we can remove the less than OR greater than..
+        
+        log_shift_left:
             Z = A << B; // Shift A according to B.. review this
                         // Brendan: A << 1 for logical shift (left)? Should we also add logical shift (right) A >> 1?
                         // Daniel: I agree.. maybe a different op code for right shift?
+        log_shift_right:
+            Z = A >> B;
+        
+        default: 
+                 Z = 64'bX;
 
         //default: IDLE // Necessary?
+                   //Daniel: I'll probably add that
     endcase
 
     end
