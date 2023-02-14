@@ -18,6 +18,8 @@ parameter IDLE         = 4'b0000,
 
 
 always @(*) // @(posedge clk) for synchronous?
+            // Daniel: Hmmm.. ALU will be synchronous due to the launching D-FF before it and capturing D-FF after.
+            // Sensitivity List should be A or B
     begin
 
     case (aluctrl)
@@ -27,6 +29,7 @@ always @(*) // @(posedge clk) for synchronous?
 
         ADD:
             Z = A + B;        //Mehul: Shouldn't we have a overflow detection?
+                          
 
         SUB:
             Z = A - B;
@@ -43,10 +46,12 @@ always @(*) // @(posedge clk) for synchronous?
         compare:
             Z = A == B; // Review this
                         // Brendan: seems right, should we also add A <= B and A >= B or will == suffice?
+                        // Daniel: We want assignment immediately so blocking (==) will suffice
         
         log_shift:
             Z = A << B; // Shift A according to B.. review this
                         // Brendan: A << 1 for logical shift (left)? Should we also add logical shift (right) A >> 1?
+                        // Daniel: I agree.. maybe a different op code for right shift?
 
         //default: IDLE // Necessary?
     endcase
