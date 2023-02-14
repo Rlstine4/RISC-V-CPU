@@ -48,7 +48,7 @@ always @(*) // @(posedge clk) for synchronous?
             Z = A << B; // Shift A according to B.. review this
                         // Brendan: A << 1 for logical shift (left)? Should we also add logical shift (right) A >> 1?
 
-        //default: Z = A or something? Necessary?
+        //default: IDLE // Necessary?
     endcase
 
     end
