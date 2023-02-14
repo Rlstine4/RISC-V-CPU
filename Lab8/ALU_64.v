@@ -26,7 +26,7 @@ always @(*) // @(posedge clk) for synchronous?
             Z = 64'bX;
 
         ADD:
-            Z = A + B;
+            Z = A + B;        //Mehul: Shouldn't we have a overflow detection?
 
         SUB:
             Z = A - B;
