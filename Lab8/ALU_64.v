@@ -1,10 +1,9 @@
-module ALU_64(A, B, aluctrl, overflow, Z); // add clk here?
+module ALU_64(A, B, aluctrl, overflow, Z);
 
-// input wire clk; for synchronous?
-input [63:0] A;
-input [63:0] B;
+input signed [63:0] A;
+input signed [63:0] B;
 input [3:0] aluctrl; //ALU CTRL signal can be a nibble, allowing up to 16 commands.. This can be changed later
-output reg [63:0] Z;
+output reg signed [63:0] Z;
 output reg overflow;
 
 parameter IDLE                    = 4'b0000,
@@ -30,15 +29,29 @@ always @(*)
             Z = 64'bX;
 
         ADD:
-            {Z, overflow} = A + B;        // Concatenate bit 64 with bits 63-0. In unsigned +, carry_out = 1 means overflow
-                       
-        SUB:
-            begin
-            Z = A - B;
-            if (A < B)          // In unsigned subtraction we cannot have negative numbers.. A < B would result in negative
+        begin
+            Z = A + B;        // Concatenate bit 64 with bits 63-0
+
+            if (A[63] && B[63] && ~Z[63])
                 overflow = 1;
-            end
-        
+            else if (~A[63] && ~B[63] && Z[63])
+                overflow = 1;
+            else
+                overflow = 0;
+        end
+       
+        SUB:
+        begin
+            Z = A - B;
+
+            if (~A[63] && B[63] && Z[63])
+                overflow = 1;
+            else if (A[63] && ~B[63] && ~Z[63])
+                overflow = 1;
+            else
+                overflow = 0;
+        end
+
         bitwise_AND:
             Z = A & B;
         
