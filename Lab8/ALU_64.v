@@ -29,7 +29,7 @@ always @(*)
 
         ADD:
         begin
-            Z = A + B;        // Concatenate bit 64 with bits 63-0
+            Z = A + B;
 
             if (A[63] && B[63] && ~Z[63])
                 overflow = 1;
@@ -66,7 +66,7 @@ always @(*)
         compare_greater_than:
             Z = A > B;
         
-        compare_less_than:  // Daniel :Added compare_greater_than and compare_less_than to address 
+        compare_less_than:
             Z = A < B;      
                             
         log_shift_left:
