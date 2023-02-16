@@ -1,10 +1,9 @@
-module ALU_64(A, B, aluctrl, overflow, Z);
+module ALU_64(input signed [63:0] A,
+              input signed [63:0] B,
+              input [3:0] aluctrl,
+              output reg signed [63:0] Z,
+              output reg overflow);
 
-input signed [63:0] A;
-input signed [63:0] B;
-input [3:0] aluctrl; //ALU CTRL signal can be a nibble, allowing up to 16 commands.. This can be changed later
-output reg signed [63:0] Z;
-output reg overflow;
 
 parameter IDLE                    = 4'b0000,
           ADD                     = 4'b0001,
@@ -68,21 +67,17 @@ always @(*)
             Z = A > B;
         
         compare_less_than:  // Daniel :Added compare_greater_than and compare_less_than to address 
-            Z = A < B;      //Brandon's comments. Technically, we only need either greater than OR less than, not both. 
-                            // If we need to optimze further down the line, we can remove the less than OR greater than..
-        
+            Z = A < B;      
+                            
         log_shift_left:
-            Z = A << B; // Shift A according to B.. review this
-                        // Brendan: A << 1 for logical shift (left)? Should we also add logical shift (right) A >> 1?
-                        // Daniel: I agree.. maybe a different op code for right shift?
+            Z = A << B; 
+
         log_shift_right:
             Z = A >> B;
         
         default: 
                  Z = 64'bX;
 
-        //default: IDLE // Necessary?
-                   //Daniel: I'll probably add that
     endcase
 
     end
