@@ -1,0 +1,42 @@
+ssh control."labname".isi.deterlab.net // To SSH into the control network
+sudo /usr/local/netfpga/lib/scripts/cpci_reprogram/cpci_reprogram.pl--all // Run after reboot of the computer containing the NetFPGA
+
+
+For configuring the IP addresses for all the NetFPGA interfaces (4 1Gbps interfaces), follow these steps:
+
+Example Email from DETER:
+
+Physical Lan/Link Mapping:
+ID              Member          IP              MAC                  NodeID   
+--------------- --------------- --------------- -------------------- ---------
+lan0            n0:0            10.1.0.3        a0:36:9f:0a:0f:ee    cpc25    
+                                                4/1 <-> 4/22         HP2e2    
+lan0            nfrouter:0      10.1.0.2        00:4E:46:32:43:00    nf2      
+                                                0/1 <-> 4/5          HP18c1   
+lan1            n1:0            10.1.1.3        a0:36:9f:09:29:12    cpc18    
+                                                4/1 <-> 6/16         HP2e2    
+lan1            nfrouter:1      10.1.1.2        00:4E:46:32:43:03    nf2      
+                                                3/1 <-> 4/8          HP18c1   
+lan2            n2:0            10.1.2.3        a0:36:9f:09:28:7a    cpc17    
+                                                4/1 <-> 6/22         HP2e2    
+lan2            nfrouter:2      10.1.2.2        00:4E:46:32:43:02    nf2      
+                                                2/1 <-> 4/7          HP18c1   
+lan3            n3:0            10.1.3.3        a0:36:9f:0a:5c:9e    cpc20    
+                                                4/1 <-> 6/4          HP2e2    
+lan3            nfrouter:3      10.1.3.2        00:4E:46:32:43:01    nf2      
+                                        
+
+NOTE: nf2c members (0-3) are usually NOT in order! So look at last two HEX digits (e.g. 00, 03, 02, 01) of the MAC address
+
+sudo /sbin/ifconfig nf2c0 10.1.0.2/24 up
+sudo /sbin/ifconfig nf2c3 10.1.1.2/24 up		
+sudo /sbin/ifconfig nf2c2 10.1.2.2/24 up
+sudo /sbin/ifconfig nf2c1 10.1.3.2/24 up
+
+From control network "ping" using the IP addresses you assigned above
+
+
+TO USE IPERF ON THE NODES:
+
+/usr/local/etc/emulab/emulab-iperf -c n1 -p 7001 // Set this node as a client and tell it that n1 is the server listening at port 7001
+/usr/local/etc/emulab/emulab-iperf -s -p 7001   // Set this node as server and tell it to listen at port 7001
