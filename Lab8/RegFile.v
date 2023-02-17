@@ -29,11 +29,12 @@ module RegFile(
     );
     
     reg [63:0]registerFile[0:31];
-    reg [63:0]temp1, temp2;
     integer i=0;
     
+	assign rdata1 = registerFile[raddr1];
+    assign rdata2 = registerFile[raddr2];
     
-    always@(posedge clk)
+    always@(negedge clk)
     begin
         if(rst == 1'b1)
         begin
@@ -44,17 +45,11 @@ module RegFile(
         end
         else
         begin
-            temp1 <= registerFile[raddr1];
-            temp2 <= registerFile[raddr2];
-            
             if(wen == 1'b1)
             begin
                 registerFile[waddr] <= wdata;
             end
         end
     end
-    
-    assign rdata1 = temp1;
-    assign rdata2 = temp2;
     
 endmodule
