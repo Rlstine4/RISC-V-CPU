@@ -19,7 +19,10 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module datapath(
-	input clk, rst
+	input clk, rst, memWE,
+	input [7:0]memAddr,
+	input [63:0]memInData,
+	output [63:0]memOutData
 	);
 	
 	//instruction Fetch wires
@@ -65,7 +68,7 @@ module datapath(
 		.WMemEnOut(mem_WMemEn), .WRegEnOut(mem_WRegEn), .rsData1Out(mem_rsData1), .rsData2Out(mem_rsData2), .rdAddrOut(mem_rd));
 		
 	//Memory stage datapath
-	data_mem dMem(.addr(mem_rsData1), .clk(clk), .din(mem_rsData2), .dout(mem_rdData), .we(mem_WMemEn));
+	data_mem dMem(.addra(mem_rsData1), .addrb(memAddr), .clka(clk), .clkb(clk), .dina(mem_rsData2), .dinb(memInData), .douta(mem_rdData), .doutb(memOutData), .wea(mem_WMemEn), .web(memWE));
 	
 	pipe_reg_mem_wb mem_wb_pipe_reg(.clk(clk), .WRegEnIn(mem_WRegEn), .rdAddrIn(mem_rd), .rdDataIn(mem_rdData), .WRegEnOut(wb_WRegEn), .rdAddrOut(wb_rd), .rdDataOut(wb_rdData));
 	

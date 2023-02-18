@@ -27,6 +27,10 @@ module datapath_tb;
 	// Inputs
 	reg clk;
 	reg rst;
+	reg memWE;
+	reg [7:0]memAddr;
+	reg [63:0]memInData;
+	wire [63:0]memOutData;
 	
 	//instruction Fetch wires
 	wire [8:0]pc;
@@ -55,7 +59,11 @@ module datapath_tb;
 	// Instantiate the Unit Under Test (UUT)
 	datapath uut (
 		.clk(clk), 
-		.rst(rst)
+		.rst(rst),
+		.memWE(memWE),
+		.memAddr(memAddr),
+		.memInData(memInData),
+		.memOutData(memOutData)
 	);
 	
 	assign pc = uut.pc;
@@ -88,6 +96,9 @@ module datapath_tb;
 		// Initialize Inputs
 		clk = 0;
 		rst = 0;
+		memWE = 0;
+		memAddr = 10;
+		memInData = 0;
 
 		// Wait 100 ns for global reset to finish
 		#100;
