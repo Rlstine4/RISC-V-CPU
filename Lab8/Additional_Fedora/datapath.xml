@@ -7,13 +7,23 @@
 	<nf:blocksize>64</nf:blocksize>
 	<nf:registers>
 		<nf:register>
-		  <nf:name>dmem_index</nf:name>
-			<nf:description>Index of data memory to serach</nf:description>
+		  <nf:name>input_cmd</nf:name>
+			<nf:description>command register</nf:description>
 			<nf:type>generic_software32</nf:type>
 		</nf:register>
 		<nf:register>
-		  <nf:name>input_cmd</nf:name>
-			<nf:description>command register</nf:description>
+		  <nf:name>dmem_index</nf:name>
+			<nf:description>Index of data memory to serach or write</nf:description>
+			<nf:type>generic_software32</nf:type>
+		</nf:register>
+		<nf:register>
+		  <nf:name>dmem_data_high</nf:name>
+			<nf:description>Value high to write into data memory</nf:description>
+			<nf:type>generic_software32</nf:type>
+		</nf:register>
+		<nf:register>
+		  <nf:name>dmem_data_low</nf:name>
+			<nf:description>Value low to write into data memory</nf:description>
 			<nf:type>generic_software32</nf:type>
 		</nf:register>
 		<nf:register>
