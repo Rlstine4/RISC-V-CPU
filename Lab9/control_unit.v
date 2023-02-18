@@ -13,9 +13,6 @@ module control_unit (input [6:0] opcode, [7:0] funct7, [2:0] funct3
             JALR        = 7'b1100111,
             BRANCH      = 7'b1100011;
 
-
-
-        
     always @(*)
 
     begin
@@ -24,17 +21,54 @@ module control_unit (input [6:0] opcode, [7:0] funct7, [2:0] funct3
 
             R_TYPE:
 
-                if ( (funct7 == 7'b0000000) && (func3 == 3'b000)) // ADD
-                    begin
+              {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b0000010;
+
+                if ( (funct7 == 7'b0000000) && (func3 == 3'b000)) // ADD   
                         alu_op     = 4'b0001; 
-                        alu_src    = 1'b0;
-                        branch     = 1'b0;
-                        jump       = 1'b0;
-                        mem_read   = 1'b0;
-                        mem_write  = 1'b0;
-                        reg_write  = 1'b1;
-                        mem_to_reg = 1'b0;
-                    end
+   
+                else if ( (funct7 == 7'b0100000) && (func3 == 3'b000)) // SUB
+                        alu_op     = 4'b0010;
+                
+                else if ( (funct7 == 7'b0000000) && (func3 == 3'b111)); // AND
+                        alu_op     = 4'b0011;
+
+            LOAD:
+
+                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b1001011;
+
+                alu_op      = 4'b0001; // ADD
+            
+            STORE:
+                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b1000100;
+
+                alu_op      = 4'b0001; // ADD
+
+            I_TYPE:
+                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 0; // TODO
+
+                alu_op      = 0; // TODO
+            
+            U_TYPE:
+                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 0; // TODO
+
+                alu_op      = 0; // TODO
+            
+            JAL:
+                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 0; // TODO
+
+                alu_op      = 0; // TODO
+            
+            JALR:
+                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 0; // TODO
+
+                alu_op      = 0; // TODO
+            
+            BRANCH:
+                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 0; // TODO
+
+                alu_op      = 0; // TODO
+
+    
 
 
 
