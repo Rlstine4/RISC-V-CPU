@@ -28,12 +28,23 @@ module datapath(
 	//instruction Fetch wires
 	wire [8:0]pc;
 	wire [31:0]if_inst;
-    wire [31:0]if_inst_out;
 	
 	//instruction decode wires
+    wire [31:0] id_inst;
+    wire [6:0] opcode;
+    wire [6:0] funct7;
+    wire [2:0] funct3;
 	wire id_WMemEn, id_WRegEn;
 	wire [4:0]id_rs1, id_rs2, id_rd;
 	wire [63:0]id_rsData1, id_rsData2;
+
+    assign id_rs1 = [19:15] id_inst; // rs1 must tap into bits 19-15 of the instruction
+    assign id_rs2 = [24:20] id_inst; // rs2 must tap into bits 24-20 of the instruction
+    assign id_rd  = [11:7]  id_rd;   // rd  must tap into bits 11-7 of the instruction
+
+    assign opcode = id_inst[6:0];
+    assign funct7 = id_inst[31:25];
+    assign func3  = id_inst[14:12];
 	
 	//Execution stage wires
 	wire ex_WMemEn, ex_WRegEn;
@@ -55,19 +66,19 @@ module datapath(
 	pcCounter pcc(.clk(clk), .rst(rst), .pc(pc));
 	inst_mem iMem(.addr(pc), .clk(clk), .dout(if_inst));
     
-	
 	//pipe_reg_if_id if_id_pipe_reg(.clk(clk), .WMemEnIn(if_inst[31]), .WRegEnIn(if_inst[30]), .rsAddr1In(if_inst[29:25]), .rsAddr2In(if_inst[24:20]), .rdAddrIn(if_inst[19:15]), 
 		//.WMemEnOut(id_WMemEn), .WRegEnOut(id_WRegEn), .rsAddr1Out(id_rs1), .rsAddr2Out(id_rs2), .rdAddrOut(id_rd));
     
-    pipe_reg_if_id if_id_pipe_reg(.clk(clk), .instruction_in(if_inst), .instruction_out(if_inst_out) );
+    pipe_reg_if_id if_id_pipe_reg(.clk(clk), .instruction_in(if_inst), .instruction_out(id_inst) );
     
-    control_unit control(.opcode(if_inst_out[6:0]), .funct7(if_inst_out[31:25]), .func3(if_inst_out[14:12]));
+    control_unit control(.opcode(opcode), .funct7(funct7), .func3(func3));
 		
 	RegFile register(.clk(clk), .rst(rst), .raddr1(id_rs1), .raddr2(id_rs2), .waddr(wb_rd), .wen(wb_WRegEn), .wdata(wb_rdData), .rdata1(id_rsData1), .rdata2(id_rsData2));
+
 	//Instruction Decode stage datapath
 	
 	pipe_reg_id_ex id_ex_pipe_reg(.clk(clk), .WMemEnIn(id_WMemEn), .WRegEnIn(id_WRegEn), .rsData1In(id_rsData1), .rsData2In(id_rsData2), .rdAddrIn(id_rd), 
-		.WMemEnOut(ex_WMemEn), .WRegEnOut(ex_WRegEn), .rsData1Out(ex_rsData1), .rsData2Out(ex_rsData2), .rdAddrOut(ex_rd)); // NEEDS MODIFICATION
+		.WMemEnOut(ex_WMemEn), .WRegEnOut(ex_WRegEn), .rsData1Out(ex_rsData1), .rsData2Out(ex_rsData2), .rdAddrOut(ex_rd)); 
 	
 	//Execution stage stage datapath
 	pipe_reg_id_ex ex_mem_pipe_reg(.clk(clk), .WMemEnIn(ex_WMemEn), .WRegEnIn(ex_WRegEn), .rsData1In(ex_rsData1), .rsData2In(ex_rsData2), .rdAddrIn(ex_rd), 
