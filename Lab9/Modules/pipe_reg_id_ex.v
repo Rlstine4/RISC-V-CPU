@@ -28,8 +28,6 @@ module pipe_reg_id_ex(
 	output reg [63:0]rsData1Out, rsData2Out,	
     output reg [4:0]rdAddrOut
     );
-
-    control_unit control(.)
     
     always@(posedge clk)
     begin
