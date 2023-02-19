@@ -25,8 +25,8 @@ module control_unit (input [6:0] opcode, [7:0] funct7, [2:0] funct3
             I_TYPE      = 7'b0010011, // ADDI, SLTI, SLTIU, XORI, ANDI, ORI
             LOAD        = 7'b0000011, // (Special I-TYPE) LB, LH, LW, LHU, LBU
             U_TYPE      = 7'b0110111, // LUI, AUIPC
-            S_TYPE      = 7'b0100011, // SB, SH, SW
-            B_TYPE      = 7'b1100011, // BEQ, BNE, BLT, BGE, BLTU, BGEU
+            STORE       = 7'b0100011, // SB, SH, SW
+            BRANCH      = 7'b1100011, // BEQ, BNE, BLT, BGE, BLTU, BGEU
             JAL         = 7'b1101111; // (J-Type)
             JALR        = 7'b1100111; // (Special I-Type) 
 
@@ -58,13 +58,34 @@ module control_unit (input [6:0] opcode, [7:0] funct7, [2:0] funct3
                 else if ( fun7 == 3'b110 ) // ORI
                     alu_op = 4'b0100;
                 
-                else if ( fun7 = 3'b111 ) //ANDI
+                else if ( fun7 == 3'b111 ) //ANDI
                     alu_op = 4'b0011;
                 
+                else if ( fun7 == 3'b001)  // SLLI
+                    alu_op = 4'b1001;
+           
             LOAD:
                 {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b1001011;
 
+                alu_op = 4'b0001; // ADD
+            
+            STORE:
+                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b1000100;
 
+                alu_op = 4'b0001;
+            
+            BRANCH:
+                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b0100000;
+
+                if ( func3 == 3'b000) // BEQ
+                    aluctrl = 4'b0110;
+                
+                if ( func3 == 3'b101) // BGE
+                    aluctrl = 4'b0111;
+            
+            JAL: // REVIEW
+                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b1010000;
+                aluctrl = 4'b0001; // ADD
 
 
 
