@@ -40,6 +40,8 @@ module datapath_deter
    //software register
    wire[31:0] input_cmd;
    wire[31:0] dmem_index;
+   wire[31:0] dmem_data_high;
+   wire[31:0] dmem_data_low;
    
    
    //hardware register
@@ -68,7 +70,7 @@ module datapath_deter
    assign processer_reset = (reset || input_cmd[0]);
    
    datapath data_path(.clk(clk), .rst(processer_reset), .memWE(input_cmd[1]), .memAddr(dmem_index), 
-      .memInData(64'd0), .memOutData(dmem_out));
+      .memInData({dmem_data_high,dmem_data_low}), .memOutData(dmem_out));
 
    always@(*)
    begin
@@ -82,7 +84,7 @@ module datapath_deter
       .TAG                 (`DATAPATH_BLOCK_ADDR),          // Tag -- eg. MODULE_TAG
       .REG_ADDR_WIDTH      (`DATAPATH_REG_ADDR_WIDTH),     // Width of block addresses -- eg. MODULE_REG_ADDR_WIDTH
       .NUM_COUNTERS        (0),                 // Number of counters(
-      .NUM_SOFTWARE_REGS   (2),                 // Number of sw regs
+      .NUM_SOFTWARE_REGS   (4),                 // Number of sw regs
       .NUM_HARDWARE_REGS   (2)                  // Number of hw regs
    ) module_regs (
       .reg_req_in       (reg_req_in),
@@ -104,7 +106,7 @@ module datapath_deter
       .counter_decrement(),
 
       // --- SW regs interface
-      .software_regs    ({input_cmd,dmem_index}),
+      .software_regs    ({dmem_data_low,dmem_data_high,dmem_index,input_cmd}),
 
       // --- HW regs interface
       .hardware_regs    ({dmem_value_low,dmem_value_high}),

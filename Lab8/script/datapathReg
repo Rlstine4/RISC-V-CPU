@@ -2,10 +2,12 @@
 use lib "/usr/local/netfpga/lib/Perl5";
 use strict;
 
-my $DATAPATH_DMEM_INDEX_REG = 0x2000300;
-my $DATAPATH_INPUT_CMD_REG = 0x2000304;
-my $DATAPATH_DMEM_VALUE_HIGH_REG = 0x2000308;
-my $DATAPATH_DMEM_VALUE_LOW_REG = 0x200030c;
+my $DATAPATH_INPUT_CMD_REG = 0x2000300;
+my $DATAPATH_DMEM_INDEX_REG = 0x2000304;
+my $DATAPATH_DMEM_DATA_HIGH_REG = 0x2000308;
+my $DATAPATH_DMEM_DATA_LOW_REG = 0x200030c;
+my $DATAPATH_DMEM_VALUE_HIGH_REG = 0x2000310;
+my $DATAPATH_DMEM_VALUE_LOW_REG = 0x2000314;
 
 sub regwrite {
    my( $addr, $value ) = @_;
@@ -97,6 +99,19 @@ elsif ($cmd eq "dmem") {
 
    print "Data at index  " , $ARGV[1], " is: ", ($dmemHigh<<32)|$dmemLow, "\n";
 } 
+elsif($cmd eq "dmemW"){
+   if ($numargs < 3) {
+      usage();
+      exit(1);
+   }
+   regwrite( $DATAPATH_DMEM_INDEX_REG, $ARGV[1] );
+   regwrite( $DATAPATH_DMEM_DATA_HIGH_REG, $ARGV[2]>>32 & 0xffffffff );
+   regwrite( $DATAPATH_DMEM_DATA_LOW_REG, $ARGV[2] & 0xffffffff );
+   
+   regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG ))|0x2 );
+   regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG ))&0xfffffffd );
+
+}
 elsif ($cmd eq "allregs") {
    my $dmemHigh = hex(regread( $DATAPATH_DMEM_VALUE_HIGH_REG ));
    my $dmemLow = hex(regread( $DATAPATH_DMEM_VALUE_LOW_REG ));
