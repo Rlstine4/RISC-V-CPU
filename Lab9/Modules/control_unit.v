@@ -88,8 +88,6 @@ module control_unit (input [6:0] opcode, [7:0] funct7, [2:0] funct3
                 aluctrl = 4'b0001; // ADD
 
 
-
-
         endcase
 
 

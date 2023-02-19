@@ -22,19 +22,26 @@
 
 module pipe_reg_if_id(
     input clk,
-    input WMemEnIn, WRegEnIn,           //Memory Write Enable and Regiser Write Enable
-    input [4:0]rsAddr1In, rsAddr2In, rdAddrIn,      //Source and destination registers
-    output reg WMemEnOut, WRegEnOut,           
-    output reg [4:0]rsAddr1Out, rsAddr2Out, rdAddrOut
+    input [31:0] instruction_in
+    output reg [31:0] instruction_out
+    //input WMemEnIn, WRegEnIn,           //Memory Write Enable and Regiser Write Enable
+    //input [4:0]rsAddr1In, rsAddr2In, rdAddrIn,      //Source and destination registers
+    //output reg WMemEnOut, WRegEnOut,           
+    //output reg [4:0]rsAddr1Out, rsAddr2Out, rdAddrOut
     );
     
     always@(posedge clk)
     begin
+        /*
         WMemEnOut       <= WMemEnIn;
         WRegEnOut       <= WRegEnIn;
         rsAddr1Out      <= rsAddr1In;
         rsAddr2Out      <= rsAddr2In;
         rdAddrOut       <= rdAddrIn;
+        */
+
+        instruction_out <= instruction_in;
+
     end
     
 endmodule
