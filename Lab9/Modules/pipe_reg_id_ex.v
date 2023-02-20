@@ -20,22 +20,27 @@
 //////////////////////////////////////////////////////////////////////////////////
 module pipe_reg_id_ex(
 	input clk,
-    //input WMemEnIn, WRegEnIn,           			//Memory Write Enable and Regiser Write Enable
 	input [63:0]rsData1In, rsData2In,
     input [4:0]rdAddrIn,
-    //output reg WMemEnOut, WRegEnOut,
-    output reg alu_op, alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg
+    input alu_op_in, alu_src_in, branch_in, jump_in, mem_read_in, mem_write_in, reg_write_in, mem_to_reg_in              
+    output reg alu_op_out, alu_src_out, branch_out, jump_out, mem_read_out, mem_write_out, reg_write_out, mem_to_reg_out
 	output reg [63:0]rsData1Out, rsData2Out,	
     output reg [4:0]rdAddrOut
     );
     
     always@(posedge clk)
     begin
-        WMemEnOut       <= WMemEnIn;
-        WRegEnOut       <= WRegEnIn;
         rsData1Out      <= rsData1In;
         rsData2Out      <= rsData2In;
         rdAddrOut       <= rdAddrIn;
+        alu_op_out      <= alu_op_in;
+        alu_src_out     <= alu_src_in;
+        branch_out      <= branch_in;
+        jump_out        <= jump_in;
+        mem_read_out    <= mem_read_in;
+        mem_write_out   <= mem_write_in;
+        reg_write_out   <= reg_write_in;
+        mem_to_reg_out  <= mem_to_reg_in; 
     end
 
 

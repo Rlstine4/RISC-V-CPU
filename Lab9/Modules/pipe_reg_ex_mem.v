@@ -20,19 +20,23 @@
 //////////////////////////////////////////////////////////////////////////////////
 module pipe_reg_ex_mem(
 	input clk,
-    input WRegEnIn,
-    input [4:0]rdAddrIn,
-	input [63:0]rdDataIn,
-    output reg WRegEnOut,	
-    output reg [4:0]rdAddrOut,
-	output reg [63:0]rdDataOut
+    input [63:0]ex_alu_output
+    input ex_overflow, ex_branch, ex_jump, ex_mem_read, ex_mem_write, ex_reg_write, ex_mem_to_reg
+    output mem_overflow, mem_branch, mem_jump, mem_read, mem_write, mem_reg_write, mem_to_reg, 
+    output [63:0] mem_alu_output
     );
 
 	always@(posedge clk)
 		begin
-			WRegEnOut   <= WRegEnIn;
-			rdAddrOut   <= rdAddrIn;
-			rdDataOut	<= rdDataIn;
+            mem_alu_output <= ex_alu_output;
+            mem_overflow   <= ex_overflow;
+            mem_branch     <= ex_branch;
+            mem_jump       <= ex_jump;
+            mem_read       <= ex_mem_read;
+            mem_write      <= ex_mem_write;
+            mem_reg_write  <= ex_reg_write;
+            mem_to_reg     <= ex_mem_to_reg;
+
 		end
 
 endmodule

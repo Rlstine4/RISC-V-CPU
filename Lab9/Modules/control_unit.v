@@ -21,7 +21,8 @@ module control_unit (input [6:0] opcode, [7:0] funct7, [2:0] funct3
 
   // Opcodes for different types of instructions
 
-  parameter R_TYPE      = 7'b0110011, // ADD, AND, OR, SLL, SLT, SLTU, SRA, SRL, SUB, XOR
+  parameter NOOP        = 7'b0000000,
+            R_TYPE      = 7'b0110011, // ADD, AND, OR, SLL, SLT, SLTU, SRA, SRL, SUB, XOR
             I_TYPE      = 7'b0010011, // ADDI, SLTI, SLTIU, XORI, ANDI, ORI
             LOAD        = 7'b0000011, // (Special I-TYPE) LB, LH, LW, LHU, LBU
             U_TYPE      = 7'b0110111, // LUI, AUIPC
@@ -35,6 +36,10 @@ module control_unit (input [6:0] opcode, [7:0] funct7, [2:0] funct3
     begin
 
         case (opcode)
+
+            NOOP:
+                 {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b0000000;
+                 alu_op = 4'b0000; // IDLE
 
             R_TYPE:
 
@@ -80,8 +85,14 @@ module control_unit (input [6:0] opcode, [7:0] funct7, [2:0] funct3
                 if ( func3 == 3'b000) // BEQ
                     aluctrl = 4'b0110;
                 
-                if ( func3 == 3'b101) // BGE
+                if ( func3 == 3'b001) // BNEQ
                     aluctrl = 4'b0111;
+
+                if ( func3 == 3'b100) // BLT
+                    aluctrl = 4'b1000;
+                
+                if ( func3 == 3'b101) // BGE
+                    aluctrl = 4'b1001;
             
             JAL: // REVIEW
                 {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b1010000;
