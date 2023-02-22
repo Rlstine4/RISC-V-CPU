@@ -40,6 +40,8 @@ module datapath(
 	wire id_WMemEn, id_WRegEn;
 	wire [4:0]id_rs1, id_rs2, id_rd;
 	wire [63:0]id_rsData1, id_rsData2;
+    wire [11:0] intermediate_12; // I-Type, B-Type, S-Type instructions use 12 bit intermediate
+    wire [20:0] intermediate_21; // JAL
 
     assign id_rs1 = [19:15] id_inst; // rs1 must tap into bits 19-15 of the instruction
     assign id_rs2 = [24:20] id_inst; // rs2 must tap into bits 24-20 of the instruction
@@ -48,18 +50,34 @@ module datapath(
     assign opcode = id_inst[6:0];    // Opcode is lower 7 bits of the instruction
     assign funct7 = id_inst[31:25];  // When applicable
     assign func3  = id_inst[14:12];  // When applicable
+
+    if (opcode == 7'b0010011) // I-TYPE
+        assign intermediate_12 = id_inst[31:20];
+    
+   else if (opcode == 7'b0100011) // S-TYPE
+        assign intermediate_12 = {id_inst[31:25], id_inst[11:7]};
+    
+    else
+        assign intermediate_12 = 12'b0;
+
 	
 	//Execution stage wires
 	wire [4:0]ex_rd;
-	wire [63:0]ex_rsData1, ex_rsData2, alu_out;
-    wire ex_alu_op ex_alu_src, ex_branch, ex_jump, ex_mem_read, ex_mem_write, ex_reg_write, ex_mem_to_reg, ex_overflow;
+	wire [63:0]ex_rsData1, ex_rsData2, alu_B, alu_out;
+    wire ex_alu_op ex_alu_src, ex_branch, ex_mem_read, ex_mem_write, ex_reg_write, ex_mem_to_reg, ex_overflow;
     wire branch_flag; // Replaces the "ZERO" output in the tradidtional 5-stage pipeline
     wire ex_equal, ex_not_equal, ex_less_than, ex_greater_than_equal;
+    wire [11:0] ex_intermediate_12;
+    signed wire [63:0] signed_intermediate;
+
+    assign signed_intermediate = {  {52 {ex_intermediate_12[11]}}, ex_intermediate_12 }; // Sign extend 12-bit intermediate to 64 bit signed
 	
 	//Memory stage wires
 	wire mem_WMemEn, mem_WRegEn;
 	wire [4:0]mem_rd;
 	wire [63:0]mem_rsData1, mem_rsData2, mem_rdData;
+    wire mem_overflow, mem_branch, mem_read, mem_write, mem_reg_write, mem_to_reg;
+    wire [63:0] mem_ALU_out;
 	
 	//WriteBack stage wires
 	wire wb_WRegWrite;
@@ -82,50 +100,55 @@ module datapath(
                     .rdata1(id_rsData1), .rdata2(id_rsData2));
 	
 	pipe_reg_id_ex id_ex_pipe_reg(.clk(clk), .rsData1In(id_rsData1), .rsData2In(id_rsData2), .rdAddrIn(id_rd), .alu_op_in(id_alu_op),
-                                    .alu_src_in(id_alu_src), .branch_in(id_branch), .jump_in(id_jump), .mem_read_in(id_mem_read), 
-                                    .mem_write_in(id_mem_write), .reg_write_in(id_reg_write), .mem_to_reg_in(id_mem_to_reg), 
-                                    .alu_op_out(ex_alu_op), .alu_src_out(ex_alu_src), .branch_out(ex_branch), .jump_out(ex_jump),
+                                    .alu_src_in(id_alu_src), .branch_in(id_branch), .mem_read_in(id_mem_read), 
+                                    .mem_write_in(id_mem_write), .reg_write_in(id_reg_write), .mem_to_reg_in(id_mem_to_reg), .intermediate_in(intermediate_12),
+                                    .alu_op_out(ex_alu_op), .alu_src_out(ex_alu_src), .branch_out(ex_branch),
                                     .mem_read_out(ex_mem_read), .mem_write_out(ex_mem_write), .reg_write_out(ex_reg_write), .mem_to_reg_out(ex_mem_read),
-                                    .rsData1Out(ex_rsData1), .rsData2Out(ex_rsData2), .rdAddrOut(ex_rd)
+                                    .rsData1Out(ex_rsData1), .rsData2Out(ex_rsData2), .rdAddrOut(ex_rd), intermediate_out(ex_intermediate)
                                     );
 	
 	//Execution stage stage datapath
 
-    if (~ex_alu_src)
-        //Put something here 
+    // if ALU SRC is 1 select the intermerdiate, else pass source register 2's value
 
+    if (ex_alu_src) 
+        assign alu_B = signed_intermediate;
+    else
+        assign alu_B = ex_rsData2;
+        
 
-    ALU_64(.A(ex_rsData1), .B(ex_rsData2), .aluctrl(ex_alu_op), .Z(alu_out), .overflow(ex_overflow), .equal(ex_equal), .not_equal(ex_not_equal), 
+    ALU_64(.A(ex_rsData1), .B(alu_B), .aluctrl(ex_alu_op), .Z(alu_out), .overflow(ex_overflow), .equal(ex_equal), .not_equal(ex_not_equal), 
     .less_than(ex_less_than), .greater_than_equal(ex_greater_than_equal) );
     
-    if (ex_branch) // NOTE: These conditional statement could be moved to a module called "Branch_Evaluator"
+    if (ex_branch)
     begin
 
         if (ex_equal && (ex_alu_op == 4'b0110))
-            branch_flag = 1;
+            assign branch_flag = 1;
         
         else if (ex_not_equal && (ex_alu_op == 4'b0111 ))
-            branch_flag = 1;
+            assign branch_flag = 1;
         
        else if (ex_less_than && (ex_alu_op == 4'b1000))
-            branch_flag = 1;
+            assign branch_flag = 1;
         
         else if (ex_greater_than_equal && (ex_alu_op == 4'b1001))
-            branch flag = 1;
+            assign branch flag = 1;
         
         else
-            branch_flag = 0;
+            assign branch_flag = 0;
 
     end
 
-    // NEEDS MODIFICATION
-	pipe_reg_ex_mem ex_mem_pipe_reg(.clk(clk), .WMemEnIn(ex_WMemEn), .WRegEnIn(ex_WRegEn), .rsData1In(ex_rsData1), .rsData2In(ex_rsData2), .rdAddrIn(ex_rd), 
-		.WMemEnOut(mem_WMemEn), .WRegEnOut(mem_WRegEn), .rsData1Out(mem_rsData1), .rsData2Out(mem_rsData2), .rdAddrOut(mem_rd));
+	pipe_reg_ex_mem ex_mem_pipe_reg(.clk(clk), .ex_alu_output(alu_out) .ex_overflow(ex_overflow), .ex_branch(branch_flag), .ex_mem_read(ex_mem_read), .ex_mem_write(ex_mem_write), 
+                                    .ex_reg_write(ex_reg_write), .ex_mem_to_reg(ex_mem_to_reg), .mem_overflow(mem_overflow), .mem_branch(mem_branch), .mem_read(mem_read), .mem_write(mem_write), 
+                                    .mem_reg_write(mem_reg_write), .mem_to_reg(mem_to_reg), .mem_alu_output(mem_alu_output)
+                                    )
 		
 	//Memory stage datapath
 	data_mem dMem(.addra(mem_rsData1), .addrb(memAddr), .clka(clk), .clkb(clk), .dina(mem_rsData2), .dinb(memInData), .douta(mem_rdData), .doutb(memOutData), .wea(mem_WMemEn), .web(memWE));
 	
-	pipe_reg_mem_wb mem_wb_pipe_reg(.clk(clk), .WRegEnIn(mem_WRegEn), .rdAddrIn(mem_rd), .rdDataIn(mem_rdData), .WRegEnOut(wb_WRegEn), .rdAddrOut(wb_rd), .rdDataOut(wb_rdData));
+	pipe_reg_mem_wb mem_wb_pipe_reg(.clk(clk), .mem_reg_write_in(mem_reg_write), .mem_to_reg_in(mem_to_reg), ); // TO COMPLETE 
 	
 
 
