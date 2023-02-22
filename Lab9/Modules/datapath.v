@@ -27,6 +27,7 @@ module datapath(
 	
 	//instruction Fetch wires
 	wire [8:0]pc;
+    wire [8:0] if_addr_in;
 	wire [31:0]if_inst;
     wire PCSrc;
     wire branchAddr;
@@ -78,6 +79,8 @@ module datapath(
 	wire [63:0]mem_rsData1, mem_rsData2, mem_rdData;
     wire mem_overflow, mem_branch, mem_read, mem_write, mem_reg_write, mem_to_reg;
     wire [63:0] mem_ALU_out;
+
+    assign PCSrc = mem_branch; //If branch existed in EX stage and the condition was evaluated to TRUE, change the PC to point to branch address produced by ALU
 	
 	//WriteBack stage wires
 	wire wb_WRegWrite;
@@ -86,8 +89,15 @@ module datapath(
 	
 	
 	//Instruction Fetch stage datapath
-	pcCounter pcc(.clk(clk), .rst(rst), .pc(pc), .PCSrc(PCSrc), .branchAddr(branchAddr));
-	inst_mem iMem(.addr(pc), .clk(clk), .dout(if_inst));
+	pcCounter pcc(.clk(clk), .rst(rst), .pc(pc));
+
+    if (PCSrc) // This signal will be set to 1 if branch_flag is 1 in MEM stage
+        if_addr_in = mem_alu_output;
+    else
+        if_addr_in = pc;
+
+
+	inst_mem iMem(.addr(if_addr_in), .clk(clk), .dout(if_inst));
     
     pipe_reg_if_id if_id_pipe_reg(.clk(clk), .instruction_in(if_inst), .instruction_out(id_inst));
 
