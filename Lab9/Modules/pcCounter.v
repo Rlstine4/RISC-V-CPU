@@ -19,8 +19,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module pcCounter(
-	input clk, rst, PCSrc, 
-	input [8:0]branchAddr,
+	input clk, rst,
 	output reg [8:0]pc	
     );
 
@@ -30,16 +29,10 @@ module pcCounter(
 		begin
 			pc <= 9'd0;
 		end
+
 		else 
-		begin
-			if (PCSrc)
-			begin
-				pc <= branchAddr;
-			end
-			else
-			begin
-				pc <= pc + 1;
-			end
+		begin	
+		pc <= pc + 1;	
 		end
 	end
 
