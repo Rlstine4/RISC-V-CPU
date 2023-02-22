@@ -47,7 +47,7 @@ module control_unit (
 
             R_TYPE:
 			begin
-              {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b0000010;
+              {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b0110011;
 
                 if ( (funct7 == 7'b0000000) && (funct3 == 3'b000)) // ADD   
 				begin
@@ -67,7 +67,7 @@ module control_unit (
 
             I_TYPE:
 			begin
-                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b1000010;
+                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b0010011;
 
                 if ( funct3 == 3'b000 ) // ADDI
 				begin
@@ -92,19 +92,19 @@ module control_unit (
            
             LOAD:
 			begin
-                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b1001011;
+                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b0000011;
                 alu_op = 4'b0001; // ADD
 			end
             
             STORE:
 			begin
-                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b1000100;
-                alu_op = 4'b0001;
+                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b0100011;
+                alu_op = 4'b0001; // ADD
 			end
             
             BRANCH:
 			begin
-                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b0100000;
+                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b1100011;
 
                 if ( funct3 == 3'b000) // BEQ
 				begin
@@ -129,7 +129,7 @@ module control_unit (
             
             JAL: // REVIEW
 			begin
-                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b1010000;
+                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b1101111;
                 alu_op = 4'b0001; // ADD
 			end
 
