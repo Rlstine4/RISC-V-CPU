@@ -57,16 +57,16 @@ module control_unit (input [6:0] opcode, [7:0] funct7, [2:0] funct3
             I_TYPE:
                 {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b1000010;
 
-                if ( fun7 == 3'b000 ) // ADDI
+                if ( funct3 == 3'b000 ) // ADDI
                     alu_op = 4'b0001;
                 
-                else if ( fun7 == 3'b110 ) // ORI
+                else if ( funct3 == 3'b110 ) // ORI
                     alu_op = 4'b0100;
                 
-                else if ( fun7 == 3'b111 ) //ANDI
+                else if ( funct3 == 3'b111 ) //ANDI
                     alu_op = 4'b0011;
                 
-                else if ( fun7 == 3'b001)  // SLLI
+                else if ( funct3 == 3'b001)  // SLLI
                     alu_op = 4'b1001;
            
             LOAD:
@@ -82,16 +82,16 @@ module control_unit (input [6:0] opcode, [7:0] funct7, [2:0] funct3
             BRANCH:
                 {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b0100000;
 
-                if ( func3 == 3'b000) // BEQ
+                if ( funct3 == 3'b000) // BEQ
                     aluctrl = 4'b0110;
                 
-                if ( func3 == 3'b001) // BNEQ
+                if ( funct3 == 3'b001) // BNEQ
                     aluctrl = 4'b0111;
 
-                if ( func3 == 3'b100) // BLT
+                if ( funct3 == 3'b100) // BLT
                     aluctrl = 4'b1000;
                 
-                if ( func3 == 3'b101) // BGE
+                if ( funct3 == 3'b101) // BGE
                     aluctrl = 4'b1001;
             
             JAL: // REVIEW
