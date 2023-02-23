@@ -165,9 +165,7 @@ module datapath(
 		end
 	end
 
-	pipe_reg_ex_mem ex_mem_pipe_reg(.clk(clk), .ex_alu_output(alu_out), .ex_overflow(ex_overflow), .ex_branch(branch_flag), .ex_mem_read(ex_mem_read), .ex_mem_write(ex_mem_write), 
-                                   .ex_reg_write(ex_reg_write), .ex_mem_to_reg(ex_mem_to_reg), .mem_overflow(mem_overflow), .mem_branch(mem_branch), .mem_read(mem_read), .mem_write(mem_write), 
-                                   .mem_reg_write(mem_reg_write), .mem_to_reg(mem_to_reg), .mem_alu_output(mem_alu_out));
+	
 	pipe_reg_ex_mem ex_mem_pipe_reg(.clk(clk), .rdAddrIn(ex_rd) .ex_alu_output(alu_out), .ex_overflow(ex_overflow), .ex_branch(branch_flag), .ex_mem_read(ex_mem_read), .ex_mem_write(ex_mem_write), 
                                     .ex_reg_write(ex_reg_write), .ex_mem_to_reg(ex_mem_to_reg), .rdAddrOut(mem_rd), .mem_overflow(mem_overflow), .mem_branch(mem_branch), .mem_read(mem_read), .mem_write(mem_write), 
                                     .mem_reg_write(mem_reg_write), .mem_to_reg(mem_to_reg), .mem_alu_output(mem_alu_out));
