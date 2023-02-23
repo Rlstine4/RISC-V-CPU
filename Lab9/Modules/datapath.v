@@ -97,11 +97,18 @@ module datapath(
 	
 	//Instruction Fetch stage datapath
 	pcCounter pcc(.clk(clk), .rst(rst), .pc(pc));
-
-    if (PCSrc) // This signal will be set to 1 if branch_flag is 1 in MEM stage
-        if_addr_in = mem_alu_output;
-    else
-        if_addr_in = pc;
+	
+	always@(*)
+	begin
+		if (PCSrc) // This signal will be set to 1 if branch_flag is 1 in MEM stage
+		begin
+			if_addr_in = mem_ALU_out;
+		end
+		else
+		begin
+			if_addr_in = pc;
+		end
+	end
 
 
 	inst_mem iMem(.addr(if_addr_in), .clk(clk), .dout(if_inst));
