@@ -38,7 +38,7 @@ module pcCounter(
 			end
 			else
 			begin
-				pc <= pc + 4;
+				pc <= pc + 1;
 			end
 		end
 	end
