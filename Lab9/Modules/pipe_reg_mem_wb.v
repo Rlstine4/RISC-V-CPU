@@ -19,13 +19,13 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module pipe_reg_mem_wb(
-	input clk, mem_reg_write_in, mem_to_reg_in
-    output wb_reg_write, wb_mem_to_reg
+	input clk, mem_reg_write_in, mem_to_reg_in,
+    output reg wb_reg_write, wb_mem_to_reg
     );
 
 	always@(posedge clk)
 		begin
-			wb_reg_write  <= mem_reg_write;
+			wb_reg_write  <= mem_reg_write_in;
             wb_mem_to_reg <= mem_to_reg_in;
 		end
 

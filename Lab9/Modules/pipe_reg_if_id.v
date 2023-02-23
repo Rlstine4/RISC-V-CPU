@@ -22,8 +22,8 @@
 
 module pipe_reg_if_id(
     input clk,
-    input [31:0] instruction_in
-    output reg [31:0] instruction_out
+    input [31:0]instruction_in,
+    output reg [31:0]instruction_out
     //input WMemEnIn, WRegEnIn,           //Memory Write Enable and Regiser Write Enable
     //input [4:0]rsAddr1In, rsAddr2In, rdAddrIn,      //Source and destination registers
     //output reg WMemEnOut, WRegEnOut,           
@@ -41,7 +41,6 @@ module pipe_reg_if_id(
         */
 
         instruction_out <= instruction_in;
-
     end
     
 endmodule
