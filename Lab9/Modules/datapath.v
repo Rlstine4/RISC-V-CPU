@@ -27,10 +27,9 @@ module datapath(
 	
 	//instruction Fetch wires
 	wire [8:0]pc;
-    wire [8:0] if_addr_in;
 	wire [31:0]if_inst;
     wire PCSrc;
-    wire branchAddr;
+    wire [8:0]branchAddr;
     
 	//instruction decode wires
     wire [31:0] id_inst;
@@ -77,6 +76,7 @@ module datapath(
     wire ex_equal, ex_not_equal, ex_less_than, ex_greater_than_equal;
     wire [11:0] ex_intermediate_12;
     wire [63:0] signed_intermediate;
+	wire [8:0]ex_btaAddr;
 
     assign signed_intermediate = {  {52 {ex_intermediate_12[11]}}, ex_intermediate_12 }; // Sign extend 12-bit intermediate to 64 bit signed
 	
@@ -96,22 +96,8 @@ module datapath(
 	
 	
 	//Instruction Fetch stage datapath
-	pcCounter pcc(.clk(clk), .rst(rst), .pc(pc));
-	
-	always@(*)
-	begin
-		if (PCSrc) // This signal will be set to 1 if branch_flag is 1 in MEM stage
-		begin
-			if_addr_in = mem_ALU_out;
-		end
-		else
-		begin
-			if_addr_in = pc;
-		end
-	end
-
-
-	inst_mem iMem(.addr(if_addr_in), .clk(clk), .dout(if_inst));
+	pcCounter pcc(.clk(clk), .rst(rst), .pc(pc), .PCSrc(PCSrc), .branchAddr(branchAddr));
+	inst_mem iMem(.addr(pc), .clk(clk), .dout(if_inst));
     
     pipe_reg_if_id if_id_pipe_reg(.clk(clk), .instruction_in(if_inst), .instruction_out(id_inst));
 
@@ -148,7 +134,7 @@ module datapath(
 	end
         
 
-    ALU_64(.A(ex_rsData1), .B(alu_B), .aluctrl(ex_alu_op), .Z(alu_out), .overflow(ex_overflow), .equal(ex_equal), .not_equal(ex_not_equal), 
+    ALU_64 alu(.A(ex_rsData1), .B(alu_B), .aluctrl(ex_alu_op), .Z(alu_out), .overflow(ex_overflow), .equal(ex_equal), .not_equal(ex_not_equal), 
     .less_than(ex_less_than), .greater_than_equal(ex_greater_than_equal) );
     always@(*)
 	begin
@@ -179,7 +165,7 @@ module datapath(
 
 	pipe_reg_ex_mem ex_mem_pipe_reg(.clk(clk), .ex_alu_output(alu_out), .ex_overflow(ex_overflow), .ex_branch(branch_flag), .ex_mem_read(ex_mem_read), .ex_mem_write(ex_mem_write), 
                                     .ex_reg_write(ex_reg_write), .ex_mem_to_reg(ex_mem_to_reg), .mem_overflow(mem_overflow), .mem_branch(mem_branch), .mem_read(mem_read), .mem_write(mem_write), 
-                                    .mem_reg_write(mem_reg_write), .mem_to_reg(mem_to_reg), .mem_alu_output(mem_alu_output));
+                                    .mem_reg_write(mem_reg_write), .mem_to_reg(mem_to_reg), .mem_alu_output(mem_alu_out));
 		
 	//Memory stage datapath
 	data_mem dMem(.addra(mem_rsData1), .addrb(memAddr), .clka(clk), .clkb(clk), .dina(mem_rsData2), .dinb(memInData), 
