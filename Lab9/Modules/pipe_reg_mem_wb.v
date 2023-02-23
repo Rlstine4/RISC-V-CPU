@@ -21,8 +21,8 @@
 module pipe_reg_mem_wb(
 	input clk, mem_reg_write_in, mem_to_reg_in, 
     input [4:0] rdAddrIn,
-    output reg wb_reg_write, wb_mem_to_reg
-    output reg [4:0] rdAddrOut
+    output reg wb_reg_write, wb_mem_to_reg,
+    output reg [4:0]rdAddrOut
     );
 
 	always@(posedge clk)

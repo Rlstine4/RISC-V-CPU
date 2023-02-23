@@ -17,7 +17,7 @@
 
 module control_unit (
 	input [6:0] opcode, 
-	input [7:0] funct7, 
+	input [6:0] funct7, 
 	input [2:0] funct3,
 	output reg [3:0] alu_op,
 	output reg alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg
@@ -52,14 +52,12 @@ module control_unit (
                 if ( (funct7 == 7'b0000000) && (funct3 == 3'b000)) // ADD   
 				begin
 					alu_op     = 4'b0001; 
-				end
-   
+				end   
                 else if ( (funct7 == 7'b0100000) && (funct3 == 3'b000)) // SUB
 				begin
 					alu_op     = 4'b0010;						
-				end
-                
-                else if ( (funct7 == 7'b0000000) && (funct3 == 3'b111)); // AND
+				end                
+                else if ( (funct7 == 7'b0000000) && (funct3 == 3'b111)) // AND
 				begin
 					alu_op     = 4'b0011;
 				end
@@ -72,18 +70,15 @@ module control_unit (
                 if ( funct3 == 3'b000 ) // ADDI
 				begin
                     alu_op = 4'b0001;
-				end
-                
+				end                
                 else if ( funct3 == 3'b110 ) // ORI
 				begin
                     alu_op = 4'b0100;
-				end
-                
+				end                
                 else if ( funct3 == 3'b111 ) //ANDI
 				begin
                     alu_op = 4'b0011;
-				end
-                
+				end                
                 else if ( funct3 == 3'b001)  // SLLI
 				begin
                     alu_op = 4'b1001;

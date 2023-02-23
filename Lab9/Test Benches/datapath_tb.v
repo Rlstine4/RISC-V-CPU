@@ -52,6 +52,18 @@ module datapath_tb;
 	wire [63:0]id_rsData1, id_rsData2;
     wire [11:0]intermediate_12; // I-Type, B-Type, S-Type instructions use 12 bit intermediate
     wire [20:0]intermediate_21; // JAL
+	
+	//Execution stage wires
+	wire [4:0]ex_rd;
+	wire [63:0]ex_rsData1, ex_rsData2, alu_B, ex_alu_out;
+	reg [63:0]alu_B_reg;
+    wire [3:0]ex_alu_op;
+	wire ex_alu_src, ex_branch, ex_mem_read, ex_mem_write, ex_reg_write, ex_mem_to_reg, ex_overflow;
+    wire branch_flag; // Replaces the "ZERO" output in the tradidtional 5-stage pipeline
+	reg branch_flag_reg;
+    wire ex_equal, ex_not_equal, ex_less_than, ex_greater_than_equal;
+    wire [11:0] ex_intermediate_12;
+    wire [63:0] signed_intermediate;
 
 	// Instantiate the Unit Under Test (UUT)
 	datapath uut (
@@ -63,31 +75,56 @@ module datapath_tb;
 		.memOutData(memOutData)
 	);
 	
-	assign pc = uut.pc;
-	assign if_inst = uut.if_inst;	
-	assign PCSrc = uut.PCSrc;
-	assign branchAddr = uut.branchAddr;
-	assign id_inst = uut.id_inst;
-	assign opcode = uut.opcode;
-	assign funct7 = uut.funct7;
-	assign funct3 = uut.funct3;
-	assign id_alu_op = uut.id_alu_op;
-	assign id_alu_src = uut.id_alu_src;
-	assign id_branch = uut.id_branch;
-	assign id_jump = uut.id_jump;
-	assign id_mem_read = uut.id_mem_read;
-	assign id_mem_write = uut.id_mem_write;
-	assign id_reg_write = uut.id_reg_write;
-	assign id_mem_to_reg = uut.id_mem_to_reg;
-	assign id_WMemEn = uut.id_WMemEn;
-	assign id_WRegEn = uut.id_WRegEn;
-	assign id_rs1 = uut.id_rs1;
-	assign id_rs2 = uut.id_rs2;
-	assign id_rd = uut.id_rd;
-	assign id_rsData1 = uut.id_rsData1;
-	assign id_rsData2 = uut.id_rsData2;
-	assign intermediate_12 = uut.intermediate_12;
-	assign intermediate_21 = uut.intermediate_21;
+	//fetch
+	assign pc 			= uut.pc;
+	assign if_inst 		= uut.if_inst;	
+	assign PCSrc 		= uut.PCSrc;
+	assign branchAddr 	= uut.branchAddr;
+	
+	//decode
+	assign id_inst 			= uut.id_inst;
+	assign opcode 			= uut.opcode;
+	assign funct7 			= uut.funct7;
+	assign funct3 			= uut.funct3;
+	assign id_alu_op 		= uut.id_alu_op;
+	assign id_alu_src 		= uut.id_alu_src;
+	assign id_branch 		= uut.id_branch;
+	assign id_jump 			= uut.id_jump;
+	assign id_mem_read 		= uut.id_mem_read;
+	assign id_mem_write 	= uut.id_mem_write;
+	assign id_reg_write 	= uut.id_reg_write;
+	assign id_mem_to_reg 	= uut.id_mem_to_reg;
+	assign id_WMemEn 		= uut.id_WMemEn;
+	assign id_WRegEn 		= uut.id_WRegEn;
+	assign id_rs1 			= uut.id_rs1;
+	assign id_rs2 			= uut.id_rs2;
+	assign id_rd 			= uut.id_rd;
+	assign id_rsData1 		= uut.id_rsData1;
+	assign id_rsData2 		= uut.id_rsData2;
+	assign intermediate_12 	= uut.intermediate_12;
+	assign intermediate_21 	= uut.intermediate_21;
+	
+	//execute
+	assign ex_rd 					= uut.ex_rd;
+	assign ex_rsData1 				= uut.ex_rsData1;
+	assign ex_rsData2 				= uut.ex_rsData2;
+	assign alu_B 					= uut.alu_B;
+	assign ex_alu_out 				= uut.ex_alu_out;
+	assign ex_alu_op 				= uut.ex_alu_op;
+	assign ex_alu_src 				= uut.ex_alu_src;
+	assign ex_branch 				= uut.ex_branch;
+	assign ex_mem_read 				= uut.ex_mem_read;
+	assign ex_mem_write 			= uut.ex_mem_write;
+	assign ex_reg_write 			= uut.ex_reg_write;
+	assign ex_mem_to_reg 			= uut.ex_mem_to_reg;
+	assign ex_overflow 				= uut.ex_overflow;
+	assign branch_flag 				= uut.branch_flag;
+	assign ex_equal 				= uut.ex_equal;
+	assign ex_not_equal 			= uut.ex_not_equal;
+	assign ex_less_than 			= uut.ex_less_than;
+	assign ex_greater_than_equal 	= uut.ex_greater_than_equal;
+	assign ex_intermediate_12 		= uut.ex_intermediate_12;
+	assign signed_intermediate 		= uut.signed_intermediate;
 	
 	
 
@@ -107,6 +144,10 @@ module datapath_tb;
 		rst = 1;
 		#225;
 		rst = 0;
+		
+		
+		force uut.register.registerFile[1] = 15;
+		force uut.register.registerFile[2] = 11;
 		
 //		#700;
 //		force uut.branchAddr = 100;

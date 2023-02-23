@@ -48,24 +48,22 @@ module datapath(
 	
 	//Execution stage wires
 	wire [4:0]ex_rd;
-	wire [63:0]ex_rsData1, ex_rsData2, alu_B, alu_out;
-    wire ex_alu_op, ex_alu_src, ex_branch, ex_mem_read, ex_mem_write, ex_reg_write, ex_mem_to_reg, ex_overflow;
+	wire [63:0]ex_rsData1, ex_rsData2, alu_B, ex_alu_out;
+	reg [63:0]alu_B_reg;
+    wire [3:0]ex_alu_op;
+	wire ex_alu_src, ex_branch, ex_mem_read, ex_mem_write, ex_reg_write, ex_mem_to_reg, ex_overflow;
     wire branch_flag; // Replaces the "ZERO" output in the tradidtional 5-stage pipeline
+	reg branch_flag_reg;
     wire ex_equal, ex_not_equal, ex_less_than, ex_greater_than_equal;
     wire [11:0] ex_intermediate_12;
     wire [63:0] signed_intermediate;
-	wire [8:0]ex_btaAddr;
-
-    assign signed_intermediate = {  {52 {ex_intermediate_12[11]}}, ex_intermediate_12 }; // Sign extend 12-bit intermediate to 64 bit signed
 	
 	//Memory stage wires
 	wire mem_WMemEn, mem_WRegEn;
 	wire [4:0]mem_rd;
 	wire [63:0]mem_rsData1, mem_rsData2, mem_rdData;
-    wire mem_overflow, mem_branch, mem_read, mem_write, mem_reg_write, mem_to_reg;
+    wire mem_overflow, mem_branch, mem_read, mem_write, mem_reg_write, mem_mem_to_reg;
     wire [63:0] mem_ALU_out;
-
-    assign PCSrc = mem_branch; //If branch existed in EX stage and the condition was evaluated to TRUE, change the PC to point to branch address produced by ALU
 	
 	//WriteBack stage wires
 	wire wb_WRegWrite;
@@ -111,70 +109,81 @@ module datapath(
 	RegFile register(.clk(clk), .rst(rst), .raddr1(id_rs1), .raddr2(id_rs2), .waddr(wb_rd), .wen(wb_wregwrite), .wdata(wb_rddata), 
                     .rdata1(id_rsData1), .rdata2(id_rsData2));
 	
-	pipe_reg_id_ex id_ex_pipe_reg(.clk(clk), .rsData1In(id_rsdata1), .rsData2In(id_rsdata2), .rdAddrIn(id_rd), .alu_op_in(id_alu_op),
+	pipe_reg_id_ex id_ex_pipe_reg(.clk(clk), .rsData1In(id_rsData1), .rsData2In(id_rsData2), .rdAddrIn(id_rd), .alu_op_in(id_alu_op),
                                     .alu_src_in(id_alu_src), .branch_in(id_branch), .mem_read_in(id_mem_read), 
                                     .mem_write_in(id_mem_write), .reg_write_in(id_reg_write), .mem_to_reg_in(id_mem_to_reg), .intermediate_in(intermediate_12),
                                     .alu_op_out(ex_alu_op), .alu_src_out(ex_alu_src), .branch_out(ex_branch),
-                                    .mem_read_out(ex_mem_read), .mem_write_out(ex_mem_write), .reg_write_out(ex_reg_write), .mem_to_reg_out(ex_mem_read),
-                                    .rsData1Out(ex_rsdata1), .rsData2Out(ex_rsdata2), .rdAddrOut(ex_rd), .intermediate_out(ex_intermediate)
+                                    .mem_read_out(ex_mem_read), .mem_write_out(ex_mem_write), .reg_write_out(ex_reg_write), .mem_to_reg_out(ex_mem_to_reg),
+                                    .rsData1Out(ex_rsData1), .rsData2Out(ex_rsData2), .rdAddrOut(ex_rd), .intermediate_out(ex_intermediate_12)
                                     );
 	
 	//Execution stage stage datapath
 
    // if ALU SRC is 1 select the intermerdiate, else pass source register 2's value
+   
+	assign signed_intermediate = {  {52 {ex_intermediate_12[11]}}, ex_intermediate_12 }; // Sign extend 12-bit intermediate to 64 bit signed
 
 	always@(*)
 	begin
-		if (ex_alu_src) 
+		if (ex_alu_src == 1'b1) 
 		begin
-			alu_B = signed_intermediate;
+			alu_B_reg = signed_intermediate;
 		end
 		else
 		begin
-			alu_B = ex_rsData2;
+			alu_B_reg = ex_rsData2;
 		end
 	end
-       
+	
+	assign alu_B = alu_B_reg;       
 
-   ALU_64 alu(.A(ex_rsData1), .B(alu_B), .aluctrl(ex_alu_op), .Z(alu_out), .overflow(ex_overflow), .equal(ex_equal), .not_equal(ex_not_equal), 
-   .less_than(ex_less_than), .greater_than_equal(ex_greater_than_equal) );
-   always@(*)
+	ALU_64 alu(.A(ex_rsData1), .B(alu_B), .aluctrl(ex_alu_op), .Z(ex_alu_out), .overflow(ex_overflow), .equal(ex_equal), .not_equal(ex_not_equal), 
+				.less_than(ex_less_than), .greater_than_equal(ex_greater_than_equal) );
+   
+	always@(*)
 	begin
 		if (ex_branch)
 		begin
 			if (ex_equal && (ex_alu_op == 4'b0110))
 			begin
-				branch_flag = 1;
+				branch_flag_reg = 1;
 			end        
 			else if (ex_not_equal && (ex_alu_op == 4'b0111 ))
 			begin
-				branch_flag = 1;
+				branch_flag_reg = 1;
 			end   
 			else if (ex_less_than && (ex_alu_op == 4'b1000))
 			begin
-				branch_flag = 1;
+				branch_flag_reg = 1;
 			end        
 			else if (ex_greater_than_equal && (ex_alu_op == 4'b1001))
 			begin
-				branch_flag = 1;
+				branch_flag_reg = 1;
 			end        
 			else
 			begin
-				branch_flag = 0;
+				branch_flag_reg = 0;
 			end
 		end
 	end
-
+	assign branch_flag = branch_flag_reg;
 	
-	pipe_reg_ex_mem ex_mem_pipe_reg(.clk(clk), .rdAddrIn(ex_rd) .ex_alu_output(alu_out), .ex_overflow(ex_overflow), .ex_branch(branch_flag), .ex_mem_read(ex_mem_read), .ex_mem_write(ex_mem_write), 
-                                    .ex_reg_write(ex_reg_write), .ex_mem_to_reg(ex_mem_to_reg), .rdAddrOut(mem_rd), .mem_overflow(mem_overflow), .mem_branch(mem_branch), .mem_read(mem_read), .mem_write(mem_write), 
-                                    .mem_reg_write(mem_reg_write), .mem_to_reg(mem_to_reg), .mem_alu_output(mem_alu_out));
+	pipe_reg_ex_mem ex_mem_pipe_reg(.clk(clk), .rdAddrIn(ex_rd), .ex_alu_output(ex_alu_out), .ex_overflow(ex_overflow), .ex_branch(branch_flag), .ex_mem_read(ex_mem_read), 
+									.ex_mem_write(ex_mem_write), .ex_reg_write(ex_reg_write), .ex_mem_to_reg(ex_mem_to_reg), .rdAddrOut(mem_rd), .mem_overflow(mem_overflow), 
+									.mem_branch(mem_branch), .mem_read(mem_read), .mem_write(mem_write), .mem_reg_write(mem_reg_write), .mem_to_reg(mem_mem_to_reg), 
+									.mem_alu_output(mem_alu_out));
 		
 	//Memory stage datapath
+	
+	//NEED TO CHECK BRANCH LOGIC 
+	assign PCSrc = mem_branch; //If branch existed in EX stage and the condition was evaluated to TRUE, change the PC to point to branch address produced by ALU
+	
 	data_mem dMem(.addra(mem_rsData1), .addrb(memAddr), .clka(clk), .clkb(clk), .dina(mem_rsData2), .dinb(memInData), 
 				.douta(mem_rdData), .doutb(memOutData), .wea(mem_WMemEn), .web(memWE));
 	
-	pipe_reg_mem_wb mem_wb_pipe_reg(.clk(clk), .mem_reg_write_in(mem_reg_write), .mem_to_reg_in(mem_to_reg), .rdAddrIn(mem_rd), rdAddrOut(wb_rd) );
+	pipe_reg_mem_wb mem_wb_pipe_reg(.clk(clk), .mem_reg_write_in(mem_reg_write), .mem_to_reg_in(mem_mem_to_reg), .rdAddrIn(mem_rd), .rdAddrOut(wb_rd) );
+	
+
 	
 
 
