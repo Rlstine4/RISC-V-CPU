@@ -163,15 +163,15 @@ module datapath(
 		end
 	end
 
-	pipe_reg_ex_mem ex_mem_pipe_reg(.clk(clk), .ex_alu_output(alu_out), .ex_overflow(ex_overflow), .ex_branch(branch_flag), .ex_mem_read(ex_mem_read), .ex_mem_write(ex_mem_write), 
-                                    .ex_reg_write(ex_reg_write), .ex_mem_to_reg(ex_mem_to_reg), .mem_overflow(mem_overflow), .mem_branch(mem_branch), .mem_read(mem_read), .mem_write(mem_write), 
+	pipe_reg_ex_mem ex_mem_pipe_reg(.clk(clk), .rdAddrIn(ex_rd) .ex_alu_output(alu_out), .ex_overflow(ex_overflow), .ex_branch(branch_flag), .ex_mem_read(ex_mem_read), .ex_mem_write(ex_mem_write), 
+                                    .ex_reg_write(ex_reg_write), .ex_mem_to_reg(ex_mem_to_reg), .rdAddrOut(mem_rd), .mem_overflow(mem_overflow), .mem_branch(mem_branch), .mem_read(mem_read), .mem_write(mem_write), 
                                     .mem_reg_write(mem_reg_write), .mem_to_reg(mem_to_reg), .mem_alu_output(mem_alu_out));
 		
 	//Memory stage datapath
 	data_mem dMem(.addra(mem_rsData1), .addrb(memAddr), .clka(clk), .clkb(clk), .dina(mem_rsData2), .dinb(memInData), 
 				.douta(mem_rdData), .doutb(memOutData), .wea(mem_WMemEn), .web(memWE));
 	
-	pipe_reg_mem_wb mem_wb_pipe_reg(.clk(clk), .mem_reg_write_in(mem_reg_write), .mem_to_reg_in(mem_to_reg) ); // TO COMPLETE 
+	pipe_reg_mem_wb mem_wb_pipe_reg(.clk(clk), .mem_reg_write_in(mem_reg_write), .mem_to_reg_in(mem_to_reg), .rdAddrIn(mem_rd), rdAddrOut(wb_rd) );
 	
 
 
