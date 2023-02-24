@@ -59,17 +59,18 @@ module datapath(
     wire [63:0] signed_intermediate;
 	
 	//Memory stage wires
-	wire mem_WMemEn, mem_WRegEn;
+	wire mem_WMemEn;
 	wire [4:0]mem_rd;
-	wire [63:0]mem_rsData1, mem_rsData2, mem_rdData;
+	wire [63:0]mem_rsData2, mem_mem_out;
     wire mem_overflow, mem_branch, mem_read, mem_write, mem_reg_write, mem_mem_to_reg;
-    wire [63:0] mem_ALU_out;
-    wire flush;
-	
+    wire [63:0] mem_alu_out;
+	wire flush;	
 	//WriteBack stage wires
-	wire wb_WRegWrite;
+	wire wb_RegWrite, wb_mem_to_reg;
 	wire [4:0]wb_rd;
+	wire [63:0]wb_mem_out, wb_alu_out;
 	wire [63:0]wb_rdData;
+	reg [63:0]wb_rdData_reg;
 	
 	
 	//Instruction Fetch stage datapath
@@ -107,7 +108,7 @@ module datapath(
     control_unit control(.opcode(opcode), .funct7(funct7), .funct3(funct3), .alu_op(id_alu_op), .alu_src(id_alu_src), .branch(id_branch), 
         .jump(id_jump), .mem_read(id_mem_read), .mem_write(id_mem_write), .reg_write(id_reg_write), .mem_to_reg(id_mem_to_reg));
 		
-	RegFile register(.clk(clk), .rst(rst), .raddr1(id_rs1), .raddr2(id_rs2), .waddr(wb_rd), .wen(wb_wregwrite), .wdata(wb_rddata), 
+	RegFile register(.clk(clk), .rst(rst), .raddr1(id_rs1), .raddr2(id_rs2), .waddr(wb_rd), .wen(wb_RegWrite), .wdata(wb_rdData), 
                     .rdata1(id_rsData1), .rdata2(id_rsData2));
 	
 	pipe_reg_id_ex id_ex_pipe_reg(.clk(clk), .clear(flush), .rsData1In(id_rsData1), .rsData2In(id_rsData2), .rdAddrIn(id_rd), .alu_op_in(id_alu_op),
@@ -169,20 +170,44 @@ module datapath(
 	end
 	assign branch_flag = branch_flag_reg;
 	
-	pipe_reg_ex_mem ex_mem_pipe_reg(.clk(clk), .clear(flush), .rdAddrIn(ex_rd), .ex_alu_output(ex_alu_out), .ex_overflow(ex_overflow), .ex_branch(branch_flag), .ex_mem_read(ex_mem_read), 
-									.ex_mem_write(ex_mem_write), .ex_reg_write(ex_reg_write), .ex_mem_to_reg(ex_mem_to_reg), .rdAddrOut(mem_rd), .mem_overflow(mem_overflow), 
-									.mem_branch(mem_branch), .mem_read(mem_read), .mem_write(mem_write), .mem_reg_write(mem_reg_write), .mem_to_reg(mem_mem_to_reg), 
-									.mem_alu_output(mem_alu_out));
+	pipe_reg_ex_mem ex_mem_pipe_reg(.clk(clk), .clear(flush), .rdAddrIn(ex_rd), .rsData2In(ex_rsData2), .ex_alu_output(ex_alu_out), .ex_overflow(ex_overflow), .ex_branch(branch_flag), 
+									.ex_mem_read(ex_mem_read), .ex_mem_write(ex_mem_write), .ex_reg_write(ex_reg_write), .ex_mem_to_reg(ex_mem_to_reg), .rdAddrOut(mem_rd), 
+									.mem_overflow(mem_overflow), .mem_branch(mem_branch), .mem_read(mem_read), .mem_write(mem_write), .mem_reg_write(mem_reg_write), 
+									.mem_to_reg(mem_mem_to_reg), .mem_alu_output(mem_alu_out), .rsData2Out(mem_rsData2));
 		
 	//Memory stage datapath
 	
+	//NEED TO CHECK BRANCH LOGIC 
 	assign PCSrc = mem_branch; //If branch existed in EX stage and the condition was evaluated to TRUE, change the PC to point to branch address produced by ALU
-    assign flush = mem_branch; // Flush junior instruction in ID and EX stage if senior branch is TRUE in MEM
+	assign flush = mem_branch; // Flush junior instruction in ID and EX stage if senior branch is TRUE in MEM
+
+// Swapping SW/HW ports and processor port. Unable to make port A negetive edge triggered
+//	data_mem dMem(.addra(mem_alu_out), .addrb(memAddr), .clka(clk), .clkb(clk), .dina(mem_rsData2), .dinb(memInData), 
+//				.douta(mem_rdData), .doutb(memOutData), .wea(mem_write), .web(memWE));
+				
+	data_mem dMem(.addra(memAddr), .addrb(mem_alu_out), .clka(clk), .clkb(clk), .dina(memInData), .dinb(mem_rsData2), 
+				.douta(memOutData), .doutb(mem_mem_out), .wea(memWE), .web(mem_write));
 	
-	data_mem dMem(.addra(mem_rsData1), .addrb(memAddr), .clka(clk), .clkb(clk), .dina(mem_rsData2), .dinb(memInData), 
-				.douta(mem_rdData), .doutb(memOutData), .wea(mem_WMemEn), .web(memWE));
 	
-	pipe_reg_mem_wb mem_wb_pipe_reg(.clk(clk), .mem_reg_write_in(mem_reg_write), .mem_to_reg_in(mem_mem_to_reg), .rdAddrIn(mem_rd), .rdAddrOut(wb_rd) );
+	pipe_reg_mem_wb mem_wb_pipe_reg(.clk(clk), .mem_reg_write_in(mem_reg_write), .mem_to_reg_in(mem_mem_to_reg), .rdAddrIn(mem_rd), .mem_mem_out(mem_mem_out), 
+									.mem_alu_out(mem_alu_out), .wb_reg_write(wb_RegWrite), .wb_mem_to_reg(wb_mem_to_reg), .rdAddrOut(wb_rd), .wb_mem_out(wb_mem_out), 
+									.wb_alu_out(wb_alu_out));
+	
+	//Write back Stage Datapath
+	
+	always@(*)
+	begin
+		if (wb_mem_to_reg == 1'b1) 
+		begin
+			wb_rdData_reg = wb_mem_out;
+		end
+		else
+		begin
+			wb_rdData_reg = wb_alu_out;
+		end
+	end	
+	assign wb_rdData = wb_rdData_reg;
+	
 	
 
 	

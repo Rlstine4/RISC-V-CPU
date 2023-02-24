@@ -56,14 +56,25 @@ module datapath_tb;
 	//Execution stage wires
 	wire [4:0]ex_rd;
 	wire [63:0]ex_rsData1, ex_rsData2, alu_B, ex_alu_out;
-	reg [63:0]alu_B_reg;
     wire [3:0]ex_alu_op;
 	wire ex_alu_src, ex_branch, ex_mem_read, ex_mem_write, ex_reg_write, ex_mem_to_reg, ex_overflow;
     wire branch_flag; // Replaces the "ZERO" output in the tradidtional 5-stage pipeline
-	reg branch_flag_reg;
     wire ex_equal, ex_not_equal, ex_less_than, ex_greater_than_equal;
     wire [11:0] ex_intermediate_12;
     wire [63:0] signed_intermediate;
+	
+	//Memory stage wires
+	wire mem_WMemEn;
+	wire [4:0]mem_rd;
+	wire [63:0]mem_rsData2, mem_mem_out;
+    wire mem_overflow, mem_branch, mem_read, mem_write, mem_reg_write, mem_mem_to_reg;
+    wire [63:0] mem_alu_out;
+	
+	//WriteBack stage wires
+	wire wb_RegWrite, wb_mem_to_reg;
+	wire [4:0]wb_rd;
+	wire [63:0]wb_mem_out, wb_alu_out;
+	wire [63:0]wb_rdData;
 
 	// Instantiate the Unit Under Test (UUT)
 	datapath uut (
@@ -126,6 +137,28 @@ module datapath_tb;
 	assign ex_intermediate_12 		= uut.ex_intermediate_12;
 	assign signed_intermediate 		= uut.signed_intermediate;
 	
+	//memory
+	assign mem_WMemEn 		= uut.mem_WMemEn;
+	assign mem_rd 			= uut.mem_rd;
+	assign mem_rsData2 		= uut.mem_rsData2;
+	assign mem_mem_out 		= uut.mem_mem_out;
+	assign mem_overflow 	= uut.mem_overflow;
+	assign mem_branch 		= uut.mem_branch;
+	assign mem_read 		= uut.mem_read;
+	assign mem_write 		= uut.mem_write;
+	assign mem_reg_write 	= uut.mem_reg_write;
+	assign mem_mem_to_reg 	= uut.mem_mem_to_reg;
+	assign mem_alu_out 		= uut.mem_alu_out;
+	
+	//write back
+	assign wb_RegWrite 		= uut.wb_RegWrite;
+	assign wb_mem_to_reg 	= uut.wb_mem_to_reg;
+	assign wb_rd 			= uut.wb_rd;
+	assign wb_mem_out 		= uut.wb_mem_out;
+	assign wb_alu_out 		= uut.wb_alu_out;
+	assign wb_rdData 		= uut.wb_rdData;
+	
+	
 	
 
 
@@ -142,12 +175,16 @@ module datapath_tb;
         
 		// Add stimulus here
 		rst = 1;
-		#225;
+		#125;
 		rst = 0;
 		
+		#326
+		memAddr = 5;
 		
-		force uut.register.registerFile[1] = 15;
-		force uut.register.registerFile[2] = 11;
+		
+		
+//		force uut.register.registerFile[1] = 15;
+//		force uut.register.registerFile[2] = 11;
 		
 //		#700;
 //		force uut.branchAddr = 100;

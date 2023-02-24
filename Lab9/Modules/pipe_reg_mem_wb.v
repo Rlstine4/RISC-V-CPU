@@ -21,15 +21,19 @@
 module pipe_reg_mem_wb(
 	input clk, mem_reg_write_in, mem_to_reg_in, 
     input [4:0] rdAddrIn,
+	input [63:0]mem_mem_out, mem_alu_out,
     output reg wb_reg_write, wb_mem_to_reg,
-    output reg [4:0]rdAddrOut
+    output reg [4:0]rdAddrOut,
+	output reg [63:0]wb_mem_out, wb_alu_out
     );
 
 	always@(posedge clk)
-		begin
-			wb_reg_write  <= mem_reg_write_in;
-            wb_mem_to_reg <= mem_to_reg_in;
-            rdAddrOut     <= rdAddrIn;
-		end
+	begin
+		wb_reg_write  	<= mem_reg_write_in;
+		wb_mem_to_reg 	<= mem_to_reg_in;
+		rdAddrOut     	<= rdAddrIn;
+		wb_mem_out		<= mem_mem_out;
+		wb_alu_out		<= mem_alu_out;
+	end
 
 endmodule

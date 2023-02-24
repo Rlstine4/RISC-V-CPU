@@ -30,8 +30,7 @@ module pipe_reg_ex_mem(
     );
 
 	always@(posedge clk)
-
-        if (clear)
+    if (clear)
         begin
             mem_alu_output <= 0;
             mem_overflow   <= 0;
