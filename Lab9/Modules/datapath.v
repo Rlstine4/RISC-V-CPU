@@ -45,6 +45,7 @@ module datapath(
 	reg [11:0]intermediate_12_reg;
     wire [20:0]intermediate_21; // JAL
 	reg [20:0]intermediate_21_reg;
+    reg [12:0] branch_offset;
 	
 	//Execution stage wires
 	wire [4:0]ex_rd;
@@ -96,7 +97,11 @@ module datapath(
 		else if (opcode == 7'b0100011) // s-type
 		begin
 			intermediate_12_reg = {id_inst[31:25], id_inst[11:7]};
-		end	
+		end
+        else if (opcode == 7'b1100011) // branch
+        begin
+            branch_offset = {id_inst[31], id_inst[7], id_inst[30:25], id_inst[11:8], 0};
+        end
 		else
 		begin
 			intermediate_12_reg = 12'b0;
