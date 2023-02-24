@@ -106,7 +106,7 @@ module datapath(
         end
         else if (opcode == 7'b1101111)
         begin
-            jump_offset = 
+            jump_offset = {id_inst[31], id_inst[19:12], id_inst[20], id_inst[30:21]};
         end
 		else
 		begin
@@ -115,7 +115,7 @@ module datapath(
 	end
 	assign intermediate_12 = intermediate_12_reg;
     
-    control_unit control(.opcode(opcode), .funct7(funct7), .funct3(funct3), .alu_op(id_alu_op), .alu_src(id_alu_src), .branch(id_branch), 
+    control_unit control(.opcode(opcode), .rd(id_rd), .funct7(funct7), .funct3(funct3), .alu_op(id_alu_op), .alu_src(id_alu_src), .branch(id_branch), 
         .jump(id_jump), .mem_read(id_mem_read), .mem_write(id_mem_write), .reg_write(id_reg_write), .mem_to_reg(id_mem_to_reg));
 		
 	RegFile register(.clk(clk), .rst(rst), .raddr1(id_rs1), .raddr2(id_rs2), .waddr(wb_rd), .wen(wb_RegWrite), .wdata(wb_rdData), 

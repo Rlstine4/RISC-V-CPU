@@ -30,7 +30,7 @@ always @(*)
     case (aluctrl)
 
         IDLE:
-            Z = 64'bX;
+            Z = 64'b0;
 
         ADD:
         begin
