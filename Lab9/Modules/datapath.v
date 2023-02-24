@@ -46,6 +46,7 @@ module datapath(
     wire [20:0]intermediate_21; // JAL
 	reg [20:0]intermediate_21_reg;
     reg [12:0] branch_offset;
+    reg [19:0] jump_offset;
 	
 	//Execution stage wires
 	wire [4:0]ex_rd;
@@ -102,6 +103,10 @@ module datapath(
         else if (opcode == 7'b1100011) // branch
         begin
             branch_offset = {id_inst[31], id_inst[7], id_inst[30:25], id_inst[11:8], 0};
+        end
+        else if (opcode == 7'b1101111)
+        begin
+            jump_offset = 
         end
 		else
 		begin
