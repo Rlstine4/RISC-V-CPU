@@ -12,6 +12,9 @@
         6. reg_write
         7. mem_to_reg. When this is 0, the data bypass D-MEM. When this is a 1, value must be pulled from data memory
 
+        NOP = ADDI x0, x0, 0
+            = 000000000000_00000_000_00000_0010011
+
 */
 
 
@@ -59,8 +62,6 @@ module control_unit (
 
             I_TYPE:
 			begin
-                //{alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b1000010;
-
                 if ( funct3 == 3'b000 ) // ADDI
 				begin
                     if(rd == 0)
@@ -73,9 +74,6 @@ module control_unit (
                         {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b1000010;
                         alu_op = 4'b0001;
                     end
-
-
-                    
 				end                
                 else if ( funct3 == 3'b110 ) // ORI
 				begin
