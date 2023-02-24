@@ -40,7 +40,8 @@ module datapath(
 	wire id_alu_src, id_branch, id_jump, id_mem_read, id_mem_write, id_reg_write, id_mem_to_reg;
 	wire id_WMemEn, id_WRegEn;
 	wire [4:0]id_rs1, id_rs2, id_rd;
-	reg [63:0]id_rsData1, id_rsData2; // Since these values will be ASSIGNED, declare as reg
+	wire [63:0]rf_rsData1, rf_rsData2;
+    reg [63:0]id_rsData1, id_rsData2;
     wire [11:0]intermediate_12; // I-Type, B-Type, S-Type instructions use 12 bit intermediate
 	reg [11:0]intermediate_12_reg;
     wire [20:0]intermediate_21; // JAL
@@ -119,7 +120,7 @@ module datapath(
         .jump(id_jump), .mem_read(id_mem_read), .mem_write(id_mem_write), .reg_write(id_reg_write), .mem_to_reg(id_mem_to_reg));
 		
 	RegFile register(.clk(clk), .rst(rst), .raddr1(id_rs1), .raddr2(id_rs2), .waddr(wb_rd), .wen(wb_RegWrite), .wdata(wb_rdData), 
-                    .rdata1(id_rsData1), .rdata2(id_rsData2));
+                    .rdata1(rf_rsData1), .rdata2(rf_rsData2));
 
 // Internal Register Forwarding logic
 
@@ -133,6 +134,12 @@ begin
     else if (id_rs2 == wb_rd)
     begin
         id_rsData2 = wb_rdData;
+    end
+
+    else // Grab from the Register File
+    begin
+        id_rsData1 = rf_rsData1;
+        id_rsData2 = rf_rsData2;
     end
 end
 	
