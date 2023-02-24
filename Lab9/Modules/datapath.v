@@ -64,6 +64,7 @@ module datapath(
 	wire [63:0]mem_rsData1, mem_rsData2, mem_rdData;
     wire mem_overflow, mem_branch, mem_read, mem_write, mem_reg_write, mem_mem_to_reg;
     wire [63:0] mem_ALU_out;
+    wire flush;
 	
 	//WriteBack stage wires
 	wire wb_WRegWrite;
@@ -109,7 +110,7 @@ module datapath(
 	RegFile register(.clk(clk), .rst(rst), .raddr1(id_rs1), .raddr2(id_rs2), .waddr(wb_rd), .wen(wb_wregwrite), .wdata(wb_rddata), 
                     .rdata1(id_rsData1), .rdata2(id_rsData2));
 	
-	pipe_reg_id_ex id_ex_pipe_reg(.clk(clk), .rsData1In(id_rsData1), .rsData2In(id_rsData2), .rdAddrIn(id_rd), .alu_op_in(id_alu_op),
+	pipe_reg_id_ex id_ex_pipe_reg(.clk(clk), .clear(flush), .rsData1In(id_rsData1), .rsData2In(id_rsData2), .rdAddrIn(id_rd), .alu_op_in(id_alu_op),
                                     .alu_src_in(id_alu_src), .branch_in(id_branch), .mem_read_in(id_mem_read), 
                                     .mem_write_in(id_mem_write), .reg_write_in(id_reg_write), .mem_to_reg_in(id_mem_to_reg), .intermediate_in(intermediate_12),
                                     .alu_op_out(ex_alu_op), .alu_src_out(ex_alu_src), .branch_out(ex_branch),
@@ -119,7 +120,7 @@ module datapath(
 	
 	//Execution stage stage datapath
 
-   // if ALU SRC is 1 select the intermerdiate, else pass source register 2's value
+   // if ALU SRC is 1 select the intermediate, else pass source register 2's value
    
 	assign signed_intermediate = {  {52 {ex_intermediate_12[11]}}, ex_intermediate_12 }; // Sign extend 12-bit intermediate to 64 bit signed
 
@@ -168,15 +169,15 @@ module datapath(
 	end
 	assign branch_flag = branch_flag_reg;
 	
-	pipe_reg_ex_mem ex_mem_pipe_reg(.clk(clk), .rdAddrIn(ex_rd), .ex_alu_output(ex_alu_out), .ex_overflow(ex_overflow), .ex_branch(branch_flag), .ex_mem_read(ex_mem_read), 
+	pipe_reg_ex_mem ex_mem_pipe_reg(.clk(clk), .clear(flush), .rdAddrIn(ex_rd), .ex_alu_output(ex_alu_out), .ex_overflow(ex_overflow), .ex_branch(branch_flag), .ex_mem_read(ex_mem_read), 
 									.ex_mem_write(ex_mem_write), .ex_reg_write(ex_reg_write), .ex_mem_to_reg(ex_mem_to_reg), .rdAddrOut(mem_rd), .mem_overflow(mem_overflow), 
 									.mem_branch(mem_branch), .mem_read(mem_read), .mem_write(mem_write), .mem_reg_write(mem_reg_write), .mem_to_reg(mem_mem_to_reg), 
 									.mem_alu_output(mem_alu_out));
 		
 	//Memory stage datapath
 	
-	//NEED TO CHECK BRANCH LOGIC 
 	assign PCSrc = mem_branch; //If branch existed in EX stage and the condition was evaluated to TRUE, change the PC to point to branch address produced by ALU
+    assign flush = mem_branch; // Flush junior instruction in ID and EX stage if senior branch is TRUE in MEM
 	
 	data_mem dMem(.addra(mem_rsData1), .addrb(memAddr), .clka(clk), .clkb(clk), .dina(mem_rsData2), .dinb(memInData), 
 				.douta(mem_rdData), .doutb(memOutData), .wea(mem_WMemEn), .web(memWE));

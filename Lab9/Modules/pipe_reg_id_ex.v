@@ -20,6 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 module pipe_reg_id_ex(
 	input clk,
+    input clear,
 	input [63:0]rsData1In, rsData2In,
     input [4:0]rdAddrIn,
     input [11:0] intermediate_in,
@@ -33,6 +34,23 @@ module pipe_reg_id_ex(
     );
     
     always@(posedge clk)
+
+    if (clear)
+    begin
+        rsData1Out       <= 0;
+        rsData2Out       <= 0;
+        rdAddrOut        <= 0;
+        alu_op_out       <= 0;
+        alu_src_out      <= 0;
+        branch_out       <= 0;
+        mem_read_out     <= 0;
+        mem_write_out    <= 0;
+        reg_write_out    <= 0;
+        mem_to_reg_out   <= 0;
+        intermediate_out <= 0;
+    end
+
+    else
     begin
         rsData1Out       <= rsData1In;
         rsData2Out       <= rsData2In;
@@ -46,6 +64,5 @@ module pipe_reg_id_ex(
         mem_to_reg_out   <= mem_to_reg_in; 
         intermediate_out <= intermediate_in;
     end
-
 
 endmodule

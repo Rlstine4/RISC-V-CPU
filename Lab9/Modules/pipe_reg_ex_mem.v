@@ -20,6 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 module pipe_reg_ex_mem(
 	input clk,
+    input clear,
     input [63:0]ex_alu_output,
     input [4:0]rdAddrIn,
     input ex_overflow, ex_branch, ex_mem_read, ex_mem_write, ex_reg_write, ex_mem_to_reg,
@@ -29,6 +30,20 @@ module pipe_reg_ex_mem(
     );
 
 	always@(posedge clk)
+
+        if (clear)
+        begin
+            mem_alu_output <= 0;
+            mem_overflow   <= 0;
+            mem_branch     <= 0;
+            mem_read       <= 0;
+            mem_write      <= 0;
+            mem_reg_write  <= 0;
+            mem_to_reg     <= 0;
+            rdAddrOut      <= 0;
+        end
+
+        else
 		begin
             mem_alu_output <= ex_alu_output;
             mem_overflow   <= ex_overflow;
