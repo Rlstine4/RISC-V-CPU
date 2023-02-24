@@ -81,7 +81,7 @@ module control_unit (
 				end                
                 else if ( funct3 == 3'b001)  // SLLI
 				begin
-                    alu_op = 4'b1001;
+                    alu_op = 4'b1010;
 				end
 			end
            
