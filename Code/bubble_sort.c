@@ -1,15 +1,15 @@
 
-int main()
+void main()
 
 {
-    int arr[] = {100, 20, 200, 40, 892, 5, 1, 1210};
+    int arr[] = {40, 89, 5, 74, 1};
 
     int temp = 0;
-    int size = sizeof(arr) / sizeof(arr[0]);
+    //int size = sizeof(arr) / sizeof(arr[0]);
 
-    for (int i = 0; i < size; i++)
+    for (int i = 0; i <= 3; i++)
     {
-        for (int j = 0; j < size - i; j++)
+        for (int j = 0; j <= 3 - i; j++)
         {
             if (arr[j] > arr[j+1]) 
             {
@@ -20,5 +20,4 @@ int main()
         }
     }
 
-    return 0;
 }
