@@ -83,7 +83,7 @@ always @(*)
         begin
             Z = A >= B;
  
-            if (Z)
+            if (Z == 1'b1)
                 greater_than_equal = 1;
             else
                 greater_than_equal = 0;
@@ -93,7 +93,7 @@ always @(*)
         begin
             Z = A < B;
 
-            if (Z)
+            if (Z == 1'b1)
                 less_than = 1;
             else
                 less_than = 0;

@@ -19,39 +19,37 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module pipe_reg_ex_mem(
-	input clk,
-    input clear,
+	input clk, clr,
     input [63:0]ex_alu_output, rsData2In,
     input [4:0]rdAddrIn,
-    input ex_overflow, ex_branch, ex_mem_read, ex_mem_write, ex_reg_write, ex_mem_to_reg,
-    output reg mem_overflow, mem_branch, mem_read, mem_write, mem_reg_write, mem_to_reg,
+    input ex_overflow, ex_mem_read, ex_mem_write, ex_reg_write, ex_mem_to_reg,
+    output reg mem_overflow, mem_read, mem_write, mem_reg_write, mem_to_reg,
     output reg [4:0]rdAddrOut,
     output reg [63:0]rsData2Out, mem_alu_output
     );
 
 	always@(posedge clk)
-    if (clear)
-        begin
-            mem_alu_output <= 0;
-            mem_overflow   <= 0;
-            mem_branch     <= 0;
-            mem_read       <= 0;
-            mem_write      <= 0;
-            mem_reg_write  <= 0;
-            mem_to_reg     <= 0;
-            rdAddrOut      <= 0;
-        end
-
-        else
-		begin
-            mem_alu_output <= ex_alu_output;
-            mem_overflow   <= ex_overflow;
-            mem_branch     <= ex_branch;
-            mem_read       <= ex_mem_read;
-            mem_write      <= ex_mem_write;
-            mem_reg_write  <= ex_reg_write;
-            mem_to_reg     <= ex_mem_to_reg;
-            rdAddrOut      <= rdAddrIn;
-		end
+	if (clr == 1'b1)
+    begin
+        mem_alu_output 	<= 0;
+		mem_overflow   	<= 0;
+		mem_read       	<= 0;
+		mem_write      	<= 0;
+		mem_reg_write  	<= 0;
+		mem_to_reg     	<= 0;
+		rdAddrOut      	<= 0;
+		rsData2Out		<= 0;
+    end
+    else
+	begin
+		mem_alu_output 	<= ex_alu_output;
+		mem_overflow   	<= ex_overflow;
+		mem_read       	<= ex_mem_read;
+		mem_write      	<= ex_mem_write;
+		mem_reg_write  	<= ex_reg_write;
+		mem_to_reg     	<= ex_mem_to_reg;
+		rdAddrOut      	<= rdAddrIn;
+		rsData2Out		<= rsData2In;
+	end
 
 endmodule

@@ -29,7 +29,8 @@ module control_unit (
 
   // Opcodes for different types of instructions
 
-  parameter R_TYPE      = 7'b0110011, // ADD, AND, OR, SLL, SLT, SLTU, SRA, SRL, SUB, XOR
+  parameter NOP			= 7'b0000000,
+			R_TYPE      = 7'b0110011, // ADD, AND, OR, SLL, SLT, SLTU, SRA, SRL, SUB, XOR
             I_TYPE      = 7'b0010011, // ADDI, SLTI, SLTIU, XORI, ANDI, ORI
             LOAD        = 7'b0000011, // (Special I-TYPE) LB, LH, LW, LHU, LBU
             U_TYPE      = 7'b0110111, // LUI, AUIPC
@@ -41,6 +42,11 @@ module control_unit (
     always @(*)
     begin
         case (opcode)
+			NOP:
+			begin
+				{alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b0000000;
+                alu_op = 4'b0000; // ADD
+			end
 
             R_TYPE:
 			begin

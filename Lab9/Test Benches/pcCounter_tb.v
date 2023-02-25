@@ -25,28 +25,33 @@
 module pcCounter_tb;
 
 	// Inputs
+	reg en;
 	reg clk;
 	reg rst;
-	reg PCSrc;
-	reg [8:0] branchAddr;
+	reg [1:0]PCSrc;
+	reg [8:0] branchAddr, jumpAddr;
 	
 	wire [8:0]pc;
 
 	// Instantiate the Unit Under Test (UUT)
 	pcCounter uut (
+		.en(en),
 		.clk(clk), 
 		.rst(rst), 
 		.PCSrc(PCSrc), 
 		.branchAddr(branchAddr),
+		.jumpAddr(jumpAddr),
 		.pc(pc)
 	);
 
 	initial begin
 		// Initialize Inputs
+		en=1;
 		clk = 0;
 		rst = 0;
 		PCSrc = 0;
 		branchAddr = 100;
+		jumpAddr = 50;
 
 		// Wait 100 ns for global reset to finish
 		#100;
@@ -60,6 +65,9 @@ module pcCounter_tb;
 		PCSrc = 1;
 		#50;
 		PCSrc = 0;
+		
+		#500;
+		PCSrc = 2;
 
 	end
 	

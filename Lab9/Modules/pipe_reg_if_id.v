@@ -21,13 +21,28 @@
 
 
 module pipe_reg_if_id(
-    input clk,
+    input en, clk, clr,
     input [31:0]instruction_in,
     output reg [31:0]instruction_out
+    );
     
     always@(posedge clk)
     begin
-        instruction_out <= instruction_in;
+		if(en == 1'b0)
+		begin
+			instruction_out <= instruction_out;
+		end
+		else
+		begin
+			if(clr == 1'b1)
+			begin
+				instruction_out <= 0;
+			end
+			else
+			begin
+				instruction_out <= instruction_in;
+			end
+		end
     end
     
 endmodule

@@ -19,26 +19,42 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module pcCounter(
-	input clk, rst, PCSrc, 
-	input [8:0]branchAddr,
+	input en, clk, rst, 
+	input [1:0]PCSrc, 
+	input [8:0]branchAddr, jumpAddr,
 	output reg [8:0]pc	
     );
 	
 	always@(posedge clk)
 	begin
-		if(rst == 1'b1)
+		if(en == 1'b0)
 		begin
-			pc <= 9'd0;
+			pc <= pc;
 		end
-		else 
+		else
 		begin
-			if (PCSrc)
+			if(rst == 1'b1)
 			begin
-				pc <= branchAddr;
+				pc <= 9'd0;
 			end
-			else
+			else 
 			begin
-				pc <= pc + 1;
+				if(pc == 9'b111111111)
+				begin
+					pc <= pc;
+				end
+				else if (PCSrc == 2'b01)
+				begin
+					pc <= branchAddr;
+				end
+				else if (PCSrc == 2'b10)
+				begin
+					pc <= jumpAddr;
+				end
+				else
+				begin
+					pc <= pc + 1;
+				end
 			end
 		end
 	end
