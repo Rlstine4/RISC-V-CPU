@@ -83,8 +83,8 @@ module datapath(
 	reg [63:0]wb_rdData_reg;
 	
 	//misc
-	reg [31:0]cycle_count_reg= 0;
-	wire [31:0]cycle_count;
+	reg [31:0]cycle_count_reg= 0, ex_inst_check_reg, mem_inst_check_reg, wb_inst_check_reg;
+	wire [31:0]cycle_count, ex_inst_check, mem_inst_check, wb_inst_check;
 	always@(posedge clk) 
 	begin
 		if(if_inst == 32'h06e7d263)
@@ -95,14 +95,20 @@ module datapath(
 		begin
 			cycle_count_reg = cycle_count_reg +1;
 		end
+		ex_inst_check_reg <= id_inst;
+		mem_inst_check_reg <= ex_inst_check_reg;
+		wb_inst_check_reg <= mem_inst_check_reg;
 	end
 	assign cycle_count = cycle_count_reg;
+	assign ex_inst_check = ex_inst_check_reg;
+	assign mem_inst_check = mem_inst_check_reg;
+	assign wb_inst_check = wb_inst_check_reg;
 	
 	//Instruction Fetch stage datapath
 	pcCounter pcc(.en(~id_stall), .clk(clk), .rst(rst), .pc(pc), .PCSrc(PCSrc), .jumpAddr(jumpAddr), .branchAddr(branchAddr));
-	inst_mem iMem(.en(~(id_stall || branch_flag)), .addr(pc), .clk(clk), .dout(if_inst));
+	inst_mem iMem(.en(~(id_stall)), .addr(pc), .clk(clk), .dout(if_inst));
     
-    pipe_reg_if_id if_id_pipe_reg(.en(~id_stall), .clk(clk), .clr(id_jump && branch_flag), .instruction_in(if_inst), .instruction_out(id_inst));
+    pipe_reg_if_id if_id_pipe_reg(.en(~id_stall), .clk(clk), .clr(id_jump || branch_flag), .instruction_in(if_inst), .instruction_out(id_inst));
 
     //Instruction Decode stage datapath
 	assign id_rs1 = id_inst[19:15]; // rs1 must tap into bits 19-15 of the instruction
@@ -136,7 +142,7 @@ module datapath(
 				id_stall_reg = 1'b0;
 			end
 		end
-		else if((ex_valid && opcode == 7'b0010011) || opcode == 7'b0000011)	//I-type, load
+		else if((opcode == 7'b0010011) || opcode == 7'b0000011)	//I-type, load
 		begin
 			if((ex_valid && id_rs1 == ex_rd) || (mem_valid && id_rs1 == mem_rd))
 			begin

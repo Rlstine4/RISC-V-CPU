@@ -68,18 +68,10 @@ module control_unit (
 
             I_TYPE:
 			begin
+				{alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b1000010;
                 if ( funct3 == 3'b000 ) // ADDI
-				begin
-                    if(rd == 0)
-                    begin
-                        {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b0000000;
-                        alu_op = 4'b0000;
-                    end
-                    else
-                    begin
-                        {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b1000010;
-                        alu_op = 4'b0001;
-                    end
+				begin		
+					alu_op = 4'b0001;
 				end                
                 else if ( funct3 == 3'b110 ) // ORI
 				begin
