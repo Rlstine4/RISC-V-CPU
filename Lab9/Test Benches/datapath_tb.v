@@ -82,7 +82,7 @@ module datapath_tb;
 	
 	//misc
 	wire [63:0]register[0:31];
-	wire [31:0]cycle_count;
+	wire [31:0]cycle_count, ex_inst_check, mem_inst_check, wb_inst_check;
 
 	// Instantiate the Unit Under Test (UUT)
 	datapath uut (
@@ -207,11 +207,9 @@ module datapath_tb;
 	assign register[30]	 = uut.register.registerFile[30];
 	assign register[31]	 = uut.register.registerFile[31];
 	assign cycle_count	 = uut.cycle_count;
-	
-	
-	
-	
-	
+	assign ex_inst_check	 = uut.ex_inst_check;
+	assign mem_inst_check	 = uut.mem_inst_check;
+	assign wb_inst_check	 = uut.wb_inst_check;
 
 
 	initial begin
@@ -230,8 +228,24 @@ module datapath_tb;
 		#125;
 		rst = 0;
 		
-		#326
-		memAddr = -52;
+		#5000
+		memAddr = -40;
+		#200
+		memAddr = -36;
+		#200
+		memAddr = -32;
+		#200
+		memAddr = 0;
+		
+		
+		#50000
+		memAddr = -40;
+		#200
+		memAddr = -36;
+		#200
+		memAddr = -32;
+		#200
+		memAddr = 0;
 		
 		
 		
