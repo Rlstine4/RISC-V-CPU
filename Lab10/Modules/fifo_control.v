@@ -1,4 +1,4 @@
-// TODO: implement state machine
+// TODO: implement state machine. USE IDS.v AS REFERENCE
 
 module fifo_control(input FIFO_EMPTY,
                     input FIFO_FULL,
