@@ -39,7 +39,7 @@ module pcCounter(
 			end
 			else 
 			begin
-				if(pc == 9'b111111111)
+				if(pc == 9'b011111111)
 				begin
 					pc <= pc;
 				end

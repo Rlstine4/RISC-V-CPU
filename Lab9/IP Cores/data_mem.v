@@ -103,7 +103,7 @@ input web;
 		.c_write_modeb(0),
 		.c_ybottom_addr("0"),
 		.c_yclka_is_rising(1),
-		.c_yclkb_is_rising(0),
+		.c_yclkb_is_rising(1),
 		.c_yena_is_high(1),
 		.c_yenb_is_high(1),
 		.c_yhierarchy("hierarchy1"),

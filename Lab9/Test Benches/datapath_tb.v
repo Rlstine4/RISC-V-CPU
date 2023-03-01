@@ -229,21 +229,29 @@ module datapath_tb;
 		rst = 0;
 		
 		#5000
-		memAddr = -40;
+		memAddr = -12;
 		#200
-		memAddr = -36;
+		memAddr = -16;
 		#200
-		memAddr = -32;
+		memAddr = -20;
+		#200
+		memAddr = -24;
+		#200
+		memAddr = -28;
 		#200
 		memAddr = 0;
 		
 		
-		#50000
-		memAddr = -40;
+		#165000
+		memAddr = -4;
 		#200
-		memAddr = -36;
+		memAddr = -8;
 		#200
-		memAddr = -32;
+		memAddr = -12;
+		#200
+		memAddr = -16;
+		#200
+		memAddr = -20;
 		#200
 		memAddr = 0;
 		

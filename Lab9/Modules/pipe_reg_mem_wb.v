@@ -19,7 +19,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module pipe_reg_mem_wb(
-	input clk, mem_reg_write_in, mem_to_reg_in, 
+	input en, clk, mem_reg_write_in, mem_to_reg_in, 
     input [4:0] rdAddrIn,
 	input [63:0]mem_mem_out, mem_alu_out,
     output reg wb_reg_write, wb_mem_to_reg,
@@ -28,11 +28,20 @@ module pipe_reg_mem_wb(
     );
 
 	always@(posedge clk)
+	if (en == 1'b0)
+    begin
+		wb_reg_write  	<= 0;
+		wb_mem_to_reg 	<= 0;
+		rdAddrOut     	<= 0;
+		wb_mem_out		<= 0;
+		wb_alu_out		<= 0;
+	end
+	else
 	begin
 		wb_reg_write  	<= mem_reg_write_in;
 		wb_mem_to_reg 	<= mem_to_reg_in;
 		rdAddrOut     	<= rdAddrIn;
-		wb_mem_out		<= mem_mem_out;
+		//wb_mem_out		<= mem_mem_out;
 		wb_alu_out		<= mem_alu_out;
 	end
 

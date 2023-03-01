@@ -60,7 +60,9 @@ module datapath(
 	wire [63:0]ex_rsData1, ex_rsData2, alu_B, ex_alu_out;
 	reg [63:0]alu_B_reg;
     wire [3:0]ex_alu_op;
-	wire ex_alu_src, ex_branch, ex_mem_read, ex_mem_write, ex_reg_write, ex_mem_to_reg, ex_overflow;
+	wire ex_alu_src;
+	//wire ex_branch = 0, ex_mem_read = 0, ex_mem_write = 0, ex_reg_write = 0, ex_mem_to_reg = 0, ex_overflow = 0;
+	wire ex_branch, ex_mem_read, ex_mem_write, ex_reg_write, ex_mem_to_reg, ex_overflow;
     wire branch_flag; // Replaces the "ZERO" output in the tradidtional 5-stage pipeline
 	reg branch_flag_reg;
     wire ex_equal, ex_not_equal, ex_less_than, ex_greater_than_equal;
@@ -72,7 +74,8 @@ module datapath(
 	wire mem_WMemEn;
 	wire [4:0]mem_rd;
 	wire [63:0]mem_rsData2, mem_mem_out;
-    wire mem_overflow, mem_branch, mem_read, mem_write, mem_reg_write, mem_mem_to_reg;
+    //wire mem_overflow = 0, mem_branch = 0, mem_read = 0, mem_reg_write = 0, mem_mem_to_reg = 0;
+    wire mem_overflow, mem_branch, mem_read, mem_reg_write, mem_mem_to_reg, mem_write;
     wire [63:0] mem_alu_out;
 	
 	//WriteBack stage wires
@@ -87,28 +90,19 @@ module datapath(
 	wire [31:0]cycle_count, ex_inst_check, mem_inst_check, wb_inst_check;
 	always@(posedge clk) 
 	begin
-		if(if_inst == 32'h06e7d263)
-		begin
-			cycle_count_reg = 0;
-		end
-		else
-		begin
-			cycle_count_reg = cycle_count_reg +1;
-		end
 		ex_inst_check_reg <= id_inst;
 		mem_inst_check_reg <= ex_inst_check_reg;
 		wb_inst_check_reg <= mem_inst_check_reg;
 	end
-	assign cycle_count = cycle_count_reg;
 	assign ex_inst_check = ex_inst_check_reg;
 	assign mem_inst_check = mem_inst_check_reg;
 	assign wb_inst_check = wb_inst_check_reg;
 	
 	//Instruction Fetch stage datapath
-	pcCounter pcc(.en(~id_stall), .clk(clk), .rst(rst), .pc(pc), .PCSrc(PCSrc), .jumpAddr(jumpAddr), .branchAddr(branchAddr));
+	pcCounter pcc(.en(~(id_stall)), .clk(clk), .rst(rst), .pc(pc), .PCSrc(PCSrc), .jumpAddr(jumpAddr), .branchAddr(branchAddr));
 	inst_mem iMem(.en(~(id_stall)), .addr(pc), .clk(clk), .dout(if_inst));
     
-    pipe_reg_if_id if_id_pipe_reg(.en(~id_stall), .clk(clk), .clr(id_jump || branch_flag), .instruction_in(if_inst), .instruction_out(id_inst));
+    pipe_reg_if_id if_id_pipe_reg(.en(~(id_stall || rst)), .clk(clk), .clr(id_jump || branch_flag), .instruction_in(if_inst), .instruction_out(id_inst));
 
     //Instruction Decode stage datapath
 	assign id_rs1 = id_inst[19:15]; // rs1 must tap into bits 19-15 of the instruction
@@ -120,42 +114,45 @@ module datapath(
     assign funct3  	= id_inst[14:12];  // when applicable
 	
 	//HDU
-	reg ex_valid, mem_valid;
+	wire ex_valid, mem_valid;
+	assign ex_valid = ex_alu_src || ex_mem_read || ex_mem_write || ex_reg_write || ex_mem_to_reg;
+	assign mem_valid =  mem_read || mem_write || mem_reg_write || mem_mem_to_reg;
 	
-	always@(*)
-	begin
-		ex_valid = ex_alu_src || ex_branch || ex_mem_read || ex_mem_write || ex_reg_write || ex_mem_to_reg || ex_overflow;
-		mem_valid = mem_overflow || mem_branch || mem_read || mem_write || mem_reg_write || mem_mem_to_reg;
-		if(opcode == 7'b0000000 || ex_rd == 5'b00000 || mem_rd == 5'b00000)
-		begin
-			id_stall_reg = 1'b0;
-		end
-		if(opcode == 7'b0110011 || opcode == 7'b0100011 ||  opcode == 7'b1100011)	//R-type, Store
-		begin
-			if((ex_valid && ((id_rs1 == ex_rd) || (id_rs2 == ex_rd)))
-				|| (mem_valid && ((id_rs1 == mem_rd) || (id_rs2 == mem_rd))))
-			begin
-				id_stall_reg = 1'b1;
-			end
-			else
-			begin
-				id_stall_reg = 1'b0;
-			end
-		end
-		else if((opcode == 7'b0010011) || opcode == 7'b0000011)	//I-type, load
-		begin
-			if((ex_valid && id_rs1 == ex_rd) || (mem_valid && id_rs1 == mem_rd))
-			begin
-				id_stall_reg = 1'b1;
-			end
-			else
-			begin
-				id_stall_reg = 1'b0;
-			end
-		end
-		
-	end
-	assign id_stall = id_stall_reg;
+	assign id_stall =  (ex_valid || mem_valid);
+//	always@(*)
+//	begin
+//		ex_valid = ex_alu_src || ex_branch || ex_mem_read || ex_mem_write || ex_reg_write || ex_mem_to_reg || ex_overflow;
+//		mem_valid = mem_overflow || mem_branch || mem_read || mem_write || mem_reg_write || mem_mem_to_reg;
+//		if(opcode == 7'b0000000 || ex_rd == 5'b00000 || mem_rd == 5'b00000)
+//		begin
+//			id_stall_reg = 1'b0;
+//		end
+//		if(opcode == 7'b0110011 || opcode == 7'b0100011 ||  opcode == 7'b1100011)	//R-type, Store
+//		begin
+//			if((ex_valid && ((id_rs1 == ex_rd) || (id_rs2 == ex_rd)))
+//				|| (mem_valid && ((id_rs1 == mem_rd) || (id_rs2 == mem_rd))))
+//			begin
+//				id_stall_reg = 1'b1;
+//			end
+//			else
+//			begin
+//				id_stall_reg = 1'b0;
+//			end
+//		end
+//		else if((opcode == 7'b0010011) || opcode == 7'b0000011)	//I-type, load
+//		begin
+//			if((ex_valid && id_rs1 == ex_rd) || (mem_valid && id_rs1 == mem_rd))
+//			begin
+//				id_stall_reg = 1'b1;
+//			end
+//			else
+//			begin
+//				id_stall_reg = 1'b0;
+//			end
+//		end
+//		
+//	end
+//	assign id_stall = id_stall_reg;
 
 	always@(*)
 	begin
@@ -179,7 +176,7 @@ module datapath(
         begin
             jump_offset_reg = ({id_inst[31], id_inst[19:12], id_inst[20], id_inst[30:21]}) >>> 1;
 			jumpAddr_reg = pc + jump_offset_reg - 1;
-			PCSrc_reg = 2'b10;
+			//PCSrc_reg = 2'b10;
         end
 		else
 		begin
@@ -191,7 +188,7 @@ module datapath(
 	assign id_branch_offset = id_branch_offset_reg;
 	assign jump_offset = jump_offset_reg;
 	assign jumpAddr = jumpAddr_reg;
-	assign PCSrc = PCSrc_reg;
+	//assign PCSrc = PCSrc_reg;
     
     control_unit control(.opcode(opcode), .rd(id_rd), .funct7(funct7), .funct3(funct3), .alu_op(id_alu_op), .alu_src(id_alu_src), .branch(id_branch), 
         .jump(id_jump), .mem_read(id_mem_read), .mem_write(id_mem_write), .reg_write(id_reg_write), .mem_to_reg(id_mem_to_reg));
@@ -199,7 +196,7 @@ module datapath(
 	RegFile register(.clk(clk), .rst(rst), .raddr1(id_rs1), .raddr2(id_rs2), .waddr(wb_rd), .wen(wb_RegWrite), .wdata(wb_rdData), 
                     .rdata1(id_rsData1), .rdata2(id_rsData2));
 	
-	pipe_reg_id_ex id_ex_pipe_reg(.en(~id_stall), .clk(clk), .clr(branch_flag), .rsData1In(id_rsData1), .rsData2In(id_rsData2), .rdAddrIn(id_rd), .alu_op_in(id_alu_op),
+	pipe_reg_id_ex id_ex_pipe_reg(.en(~(id_stall || rst)), .clk(clk), .clr(branch_flag), .rsData1In(id_rsData1), .rsData2In(id_rsData2), .rdAddrIn(id_rd), .alu_op_in(id_alu_op),
                                     .alu_src_in(id_alu_src), .branch_in(id_branch), .mem_read_in(id_mem_read), .mem_write_in(id_mem_write), .reg_write_in(id_reg_write), 
 									.mem_to_reg_in(id_mem_to_reg), .intermediate_in(intermediate_12), .branch_offset_in(id_branch_offset), .alu_op_out(ex_alu_op), 
 									.alu_src_out(ex_alu_src), .branch_out(ex_branch), .mem_read_out(ex_mem_read), .mem_write_out(ex_mem_write), .reg_write_out(ex_reg_write), 
@@ -263,6 +260,8 @@ module datapath(
 				branch_flag_reg = 0;
 				branchAddr_reg = 0;
 				PCSrc_reg = 2'b00;
+				if(id_jump)
+					PCSrc_reg = 2'b10;
 			end
 		end
 		else
@@ -270,13 +269,15 @@ module datapath(
 			branch_flag_reg = 0;
 			branchAddr_reg = 0;
 			PCSrc_reg = 2'b00;
+			if(id_jump)
+					PCSrc_reg = 2'b10;
 		end
 	end
 	assign PCSrc = PCSrc_reg;
 	assign branch_flag = branch_flag_reg;
 	assign branchAddr = branchAddr_reg;
 	
-	pipe_reg_ex_mem ex_mem_pipe_reg(.clr(branch_flag), .clk(clk), .rdAddrIn(ex_rd), .rsData2In(ex_rsData2), .ex_alu_output(ex_alu_out), .ex_overflow(ex_overflow),
+	pipe_reg_ex_mem ex_mem_pipe_reg(.en(~rst), .clr(branch_flag), .clk(clk), .rdAddrIn(ex_rd), .rsData2In(ex_rsData2), .ex_alu_output(ex_alu_out), .ex_overflow(ex_overflow),
 									.ex_mem_read(ex_mem_read), .ex_mem_write(ex_mem_write), .ex_reg_write(ex_reg_write), .ex_mem_to_reg(ex_mem_to_reg), .rdAddrOut(mem_rd), 
 									.mem_overflow(mem_overflow), .mem_read(mem_read), .mem_write(mem_write), .mem_reg_write(mem_reg_write), .mem_to_reg(mem_mem_to_reg), 
 									.mem_alu_output(mem_alu_out), .rsData2Out(mem_rsData2)
@@ -289,11 +290,11 @@ module datapath(
 //				.douta(mem_rdData), .doutb(memOutData), .wea(mem_write), .web(memWE));
 				
 	data_mem dMem(.addra(memAddr), .addrb(mem_alu_out), .clka(clk), .clkb(clk), .dina(memInData), .dinb(mem_rsData2), 
-				.douta(memOutData), .doutb(mem_mem_out), .wea(memWE), .web(mem_write));
+				.douta(memOutData), .doutb(wb_mem_out), .wea(memWE), .web(mem_write));
 	
 	
-	pipe_reg_mem_wb mem_wb_pipe_reg(.clk(clk), .mem_reg_write_in(mem_reg_write), .mem_to_reg_in(mem_mem_to_reg), .rdAddrIn(mem_rd), .mem_mem_out(mem_mem_out), 
-									.mem_alu_out(mem_alu_out), .wb_reg_write(wb_RegWrite), .wb_mem_to_reg(wb_mem_to_reg), .rdAddrOut(wb_rd), .wb_mem_out(wb_mem_out), 
+	pipe_reg_mem_wb mem_wb_pipe_reg(.en(~rst), .clk(clk), .mem_reg_write_in(mem_reg_write), .mem_to_reg_in(mem_mem_to_reg), .rdAddrIn(mem_rd), .mem_mem_out(mem_mem_out), 
+									.mem_alu_out(mem_alu_out), .wb_reg_write(wb_RegWrite), .wb_mem_to_reg(wb_mem_to_reg), .rdAddrOut(wb_rd), 
 									.wb_alu_out(wb_alu_out));
 	
 	//Write back Stage Datapath

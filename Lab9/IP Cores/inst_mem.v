@@ -40,14 +40,18 @@
 module inst_mem(
 	addr,
 	clk,
+	din,
 	dout,
-	en);
+	en,
+	we);
 
 
 input [7 : 0] addr;
 input clk;
+input [31 : 0] din;
 output [31 : 0] dout;
 input en;
+input we;
 
 // synthesis translate_off
 
@@ -57,14 +61,14 @@ input en;
 		.c_depth(256),
 		.c_enable_rlocs(0),
 		.c_has_default_data(0),
-		.c_has_din(0),
+		.c_has_din(1),
 		.c_has_en(1),
 		.c_has_limit_data_pitch(0),
 		.c_has_nd(0),
 		.c_has_rdy(0),
 		.c_has_rfd(0),
 		.c_has_sinit(0),
-		.c_has_we(0),
+		.c_has_we(1),
 		.c_limit_data_pitch(18),
 		.c_mem_init_file("inst_mem.mif"),
 		.c_pipe_stages(0),
@@ -73,7 +77,7 @@ input en;
 		.c_width(32),
 		.c_write_mode(0),
 		.c_ybottom_addr("0"),
-		.c_yclk_is_rising(0),
+		.c_yclk_is_rising(1),
 		.c_yen_is_high(1),
 		.c_yhierarchy("hierarchy1"),
 		.c_ymake_bmm(0),
@@ -86,14 +90,14 @@ input en;
 	inst (
 		.ADDR(addr),
 		.CLK(clk),
+		.DIN(din),
 		.DOUT(dout),
 		.EN(en),
-		.DIN(),
+		.WE(we),
 		.ND(),
 		.RFD(),
 		.RDY(),
-		.SINIT(),
-		.WE());
+		.SINIT());
 
 
 // synthesis translate_on
