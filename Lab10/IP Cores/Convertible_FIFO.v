@@ -35,8 +35,6 @@
 // reference the XilinxCoreLib Verilog simulation library. For detailed
 // instructions, please refer to the "CORE Generator Help".
 
-// DUAL PORTED BLOCK RAM w/ 512, 64-bit wide locations. Depth is subject to change
-
 `timescale 1ns/1ps
 
 module Convertible_FIFO(
@@ -44,30 +42,24 @@ module Convertible_FIFO(
 	dina,
 	addra,
 	wea,
-	douta,
 	clkb,
-	dinb,
 	addrb,
-	web,
 	doutb);
 
 
 input clka;
-input [63 : 0] dina;
-input [8 : 0] addra;
+input [71 : 0] dina;
+input [7 : 0] addra;
 input [0 : 0] wea;
-output [63 : 0] douta;
 input clkb;
-input [63 : 0] dinb;
-input [8 : 0] addrb;
-input [0 : 0] web;
-output [63 : 0] doutb;
+input [7 : 0] addrb;
+output [71 : 0] doutb;
 
 // synthesis translate_off
 
       BLK_MEM_GEN_V2_8 #(
-		.C_ADDRA_WIDTH(9),
-		.C_ADDRB_WIDTH(9),
+		.C_ADDRA_WIDTH(8),
+		.C_ADDRB_WIDTH(8),
 		.C_ALGORITHM(1),
 		.C_BYTE_SIZE(9),
 		.C_COMMON_CLK(0),
@@ -87,13 +79,13 @@ output [63 : 0] doutb;
 		.C_HAS_SSRB(0),
 		.C_INIT_FILE_NAME("no_coe_file_loaded"),
 		.C_LOAD_INIT_FILE(0),
-		.C_MEM_TYPE(2),
+		.C_MEM_TYPE(1),
 		.C_MUX_PIPELINE_STAGES(0),
 		.C_PRIM_TYPE(1),
-		.C_READ_DEPTH_A(512),
-		.C_READ_DEPTH_B(512),
-		.C_READ_WIDTH_A(64),
-		.C_READ_WIDTH_B(64),
+		.C_READ_DEPTH_A(256),
+		.C_READ_DEPTH_B(256),
+		.C_READ_WIDTH_A(72),
+		.C_READ_WIDTH_B(72),
 		.C_SIM_COLLISION_CHECK("ALL"),
 		.C_SINITA_VAL("0"),
 		.C_SINITB_VAL("0"),
@@ -104,29 +96,29 @@ output [63 : 0] doutb;
 		.C_USE_RAMB16BWER_RST_BHV(0),
 		.C_WEA_WIDTH(1),
 		.C_WEB_WIDTH(1),
-		.C_WRITE_DEPTH_A(512),
-		.C_WRITE_DEPTH_B(512),
+		.C_WRITE_DEPTH_A(256),
+		.C_WRITE_DEPTH_B(256),
 		.C_WRITE_MODE_A("READ_FIRST"),
 		.C_WRITE_MODE_B("READ_FIRST"),
-		.C_WRITE_WIDTH_A(64),
-		.C_WRITE_WIDTH_B(64),
+		.C_WRITE_WIDTH_A(72),
+		.C_WRITE_WIDTH_B(72),
 		.C_XDEVICEFAMILY("virtex2p"))
 	inst (
 		.CLKA(clka),
 		.DINA(dina),
 		.ADDRA(addra),
 		.WEA(wea),
-		.DOUTA(douta),
 		.CLKB(clkb),
-		.DINB(dinb),
 		.ADDRB(addrb),
-		.WEB(web),
 		.DOUTB(doutb),
 		.ENA(),
 		.REGCEA(),
 		.SSRA(),
+		.DOUTA(),
+		.DINB(),
 		.ENB(),
 		.REGCEB(),
+		.WEB(),
 		.SSRB(),
 		.DBITERR(),
 		.SBITERR());
