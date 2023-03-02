@@ -20,5 +20,3 @@ with open(file_name, 'r') as file:
         words.remove('')
     
     print(words)
-
-

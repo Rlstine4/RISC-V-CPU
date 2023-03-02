@@ -37,27 +37,30 @@
 
 module special_fifo(input clk 
                     input rst,
-                    input rd_req,
-                    input wr_req,
+                    input fifo_rd,
+                    input fifo_wr,
                     input [71:0] data_in,
                     input first_word,
                     input last_word,
                     output FIFO_FULL,
                     output FIFO_EMPTY,
+                    output in_progress,
                     output [63:0] data_out
+                    output  [7:0] control_out
                     );     
                     
 
 
 reg [8:0] counter;
-reg [7:0] write_ptr, read_ptr, packet_head; // Keep track of where we are writing, reading, and the head of the packet being buffered
+reg [7:0] write_ptr, read_ptr, packet_head_ptr; // Keep track of where we are writing, reading, and the head of the packet being buffered
 
 
-assign FIFO_FULL  = (counter = 9'b011111111) ? 1 : 0; // Set FIFO_FULL to 1 if counter reaches maximum depth
-assign FIFO_EMPTY = (counter = 9'b0)         ? 1 : 0; // Set FIFO_EMPTY to 1 if counter is 0
+assign FIFO_FULL   = (counter = 9'b011111111) ? 1 : 0; // Set FIFO_FULL to 1 if counter reaches maximum depth
+assign FIFO_EMPTY  = (counter = 9'b0)         ? 1 : 0; // Set FIFO_EMPTY to 1 if counter is 0
+assign in_progress = (fifo_rd || fifo_wr);
 
-assign read_en    = (~FIFO_EMPTY && read_req) ? 1 : 0; // Read only if Fifo not empty and read_enable signal 
-assign write_en   = (~FIFO_FULL && wr_req)    ? 1 : 0;
+assign read_en    = (~FIFO_EMPTY && fifo_rd) ? 1 : 0; // Read only if FIFO not empty and fifo_rd signal
+assign write_en   = (~FIFO_FULL  && fifo_wr) ? 1 : 0; // Write only if FIFO not full and fifo_wr signal
 
 
 // TODO: Regenerate this IP Core to remove unnecessary function (2 input ports, 1 output port), then add write_en, read_en, data in and data out
@@ -69,20 +72,20 @@ begin
 
     if (rst)
     begin
-        counter     <= 0;
-        read_ptr    <= 0;
-        write_ptr   <= 0;
-        packet_head <= 0;
-        ready_rd    <= 0;
-        ready_wr    <= 1; // FIFO will be "empty", so write requests can be accepted
+        counter         <= 0;
+        read_ptr        <= 0;
+        write_ptr       <= 0;
+        packet_head_ptr <= 0;
+        ready_rd        <= 0;
+        ready_wr        <= 1; // FIFO will be "empty", so write requests can be accepted
     end
 
     else if (first_word || last_word)
     begin
-        packet_head <= write_ptr; // packet head can either be the beginning of the packet or the end of packet
+        packet_head_ptr <= write_ptr; // packet head can either be the beginning of the packet or the end of packet
     end
 
-    else if (write_req && ~FIFO_FULL) // We are assuming that read_req cannot be HIGH at the same time as dictated by control unit
+    else if (write_en && ~FIFO_FULL) // We are assuming that read_req cannot be HIGH at the same time as dictated by control unit
     begin
         write_ptr <= write_ptr + 1;
         counter   <= counter   + 1;

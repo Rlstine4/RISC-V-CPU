@@ -1,5 +1,5 @@
 
-void main()
+int main()
 
 {
     int arr[] = {40, 89, 5, 74, 1};
