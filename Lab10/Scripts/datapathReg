@@ -1,0 +1,165 @@
+#!/usr/bin/perl -w
+use lib "/usr/local/netfpga/lib/Perl5";
+use strict;
+
+my $DATAPATH_INPUT_CMD_REG = 0x2000300;
+my $DATAPATH_DMEM_INDEX_REG = 0x2000304;
+my $DATAPATH_DMEM_DATA_HIGH_REG = 0x2000308;
+my $DATAPATH_DMEM_DATA_LOW_REG = 0x200030c;
+my $DATAPATH_DMEM_VALUE_HIGH_REG = 0x2000310;
+my $DATAPATH_DMEM_VALUE_LOW_REG = 0x2000314;
+
+sub regwrite {
+   my( $addr, $value ) = @_;
+   my $cmd = sprintf( "regwrite $addr 0x%08x", $value );
+   my $result = `$cmd`;
+   # print "Ran command '$cmd' and got result '$result'\n";
+}
+
+sub regread {
+   my( $addr ) = @_;
+   my $cmd = sprintf( "regread $addr" );
+   my @out = `$cmd`;
+   my $result = $out[0];
+   if ( $result =~ m/Reg (0x[0-9a-f]+) \((\d+)\):\s+(0x[0-9a-f]+) \((\d+)\)/ ) {
+      $result = $3;
+   }
+   return $result;
+}
+
+sub idsreset {
+   regwrite( $DATAPATH_INPUT_CMD_REG, 0x1 );
+   regwrite( $DATAPATH_INPUT_CMD_REG, 0x0 );
+}
+
+sub write_pattern {
+   my($hi, $lo) = @_;
+   regwrite($DATAPATH_DMEM_VALUE_HIGH_REG, $hi);
+   regwrite($DATAPATH_DMEM_VALUE_LOW_REG, $lo);
+}
+
+# Turns an ascii string into a (pattern_hi,pattern_lo) list
+sub pattern_from_ascii {
+   my( $patstr ) = @_;
+   my @chars = split(//, $patstr);
+   my @ints = map {  ord( $_ ) } @chars;
+   my $validBytes = $#ints + 1;
+   my $hi = 0;
+   my $lo = 0;
+   for (my $i = 0; $i <= 6; $i++) {
+      if ($i < $validBytes) {
+         my $bit = 1 << (6 - $i);
+         # print "Setting mask bit $bit for byte $i\n";
+         $hi |= ($bit << 24);
+         if ($i <= 2) {
+            $hi |= ($ints[$i] << (8 * (2 - $i)));
+         } else {
+            my $pos = $i - 3;
+            $lo |= ($ints[$i] << (8 * (3 - $pos)));
+         }
+      }
+   }
+   return ($hi, $lo);
+}
+
+sub usage {
+   print "Usage: idsreg <cmd> <cmd options>\n";
+   print "  Commands:\n";
+   print "    reset                       resets the processor\n";
+   print "    command                     bit[0]: reset pc, bit[1]: dMem WE \n";
+   print "    dmem <data_mem_index>       set index to get\n";
+   print "    allregs                     displays all SW/HW registers\n";
+}
+
+my $numargs = $#ARGV + 1;
+if( $numargs < 1 ) {
+   usage();
+   exit(1);
+}
+my $cmd = $ARGV[0];
+if ($cmd eq "reset") {
+   idsreset();
+}
+elsif ($cmd eq "command") {
+   if ($numargs < 2) {
+      usage();
+      exit(1);
+   }
+   regwrite( $DATAPATH_INPUT_CMD_REG, $ARGV[1] );
+}
+elsif ($cmd eq "dmem") {
+   if ($numargs < 2) {
+      usage();
+      exit(1);
+   }
+
+   regwrite( $DATAPATH_DMEM_INDEX_REG, $ARGV[1] );
+   my $dmemHigh = hex(regread( $DATAPATH_DMEM_VALUE_HIGH_REG ));
+   my $dmemLow = hex(regread( $DATAPATH_DMEM_VALUE_LOW_REG ));
+
+   print "Data at index  " , $ARGV[1], " is: ", ($dmemHigh<<32)|$dmemLow, "\n";
+} 
+elsif($cmd eq "dmemW"){
+   if ($numargs < 3) {
+      usage();
+      exit(1);
+   }
+   regwrite( $DATAPATH_DMEM_INDEX_REG, $ARGV[1] );
+   regwrite( $DATAPATH_DMEM_DATA_HIGH_REG, $ARGV[2]>>32 & 0xffffffff );
+   regwrite( $DATAPATH_DMEM_DATA_LOW_REG, $ARGV[2] & 0xffffffff );
+   
+   regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG ))|0x2 );
+   regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG ))&0xfffffffd );
+
+}
+elsif($cmd eq "allmem"){
+   my @ind = (0..255);
+   my $i = 0;
+   my @memData = ();
+   for $i (@ind){
+      regwrite( $DATAPATH_DMEM_INDEX_REG, $i );
+      my $dmemHigh = hex(regread( $DATAPATH_DMEM_VALUE_HIGH_REG ));
+      my $dmemLow = hex(regread( $DATAPATH_DMEM_VALUE_LOW_REG ));
+      $memData[$i] = ($dmemHigh<<32)|$dmemLow;
+   }
+   for $i (@ind){
+      print "Data at index  " , $i, " is: 0x%08x", sprintf("0x%X", $memData[$i]), " ($memData[$i]) \n";
+   }
+}
+elsif($cmd eq "reset_allmem"){
+   my @ind = (0..255);
+   my $i = 0;
+   my @memData = ();
+   for $i (@ind){
+      regwrite( $DATAPATH_DMEM_INDEX_REG, $i );
+      regwrite( $DATAPATH_DMEM_DATA_HIGH_REG, 0 );
+      regwrite( $DATAPATH_DMEM_DATA_LOW_REG, 0 );
+   
+        regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG ))|0x2 );
+      regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG ))&0xfffffffd );
+   }
+   
+   for $i (@ind){
+      regwrite( $DATAPATH_DMEM_INDEX_REG, $i );
+      my $dmemHigh = hex(regread( $DATAPATH_DMEM_VALUE_HIGH_REG ));
+      my $dmemLow = hex(regread( $DATAPATH_DMEM_VALUE_LOW_REG ));
+      $memData[$i] = ($dmemHigh<<32)|$dmemLow;
+   }
+   for $i (@ind){
+      print "Data at index  " , $i, " is: 0x%08x", sprintf("0x%X", $memData[$i]), " ($memData[$i]) \n";
+   }
+}
+elsif ($cmd eq "allregs") {
+   my $dmemHigh = hex(regread( $DATAPATH_DMEM_VALUE_HIGH_REG ));
+   my $dmemLow = hex(regread( $DATAPATH_DMEM_VALUE_LOW_REG ));
+   my $command = regread( $DATAPATH_INPUT_CMD_REG );
+
+   print "Data Memory index: ", regread( $DATAPATH_DMEM_INDEX_REG ), "\n";
+   print "Data Memory Data : ", ($dmemHigh<<32)|$dmemLow, "\n";
+   print "Command          : ", $command, "\n";
+} else {
+   print "Unrecognized command $cmd\n";
+   usage();
+   exit(1)
+}
+
