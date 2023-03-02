@@ -1,4 +1,4 @@
-bit_lengths = [31, 1, 1, 1, 4, 3, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 4, 63, 4, 1, 1, 1, 1, 1, 1, 4, 64]
+bit_lengths = [32, 1, 1, 1, 5, 4, 1, 1, 1, 1, 1, 1, 4, 1, 1, 1, 1, 1, 1, 4, 64, 5, 1, 1, 1, 1, 1, 1, 5, 64]
 
 file_path = r"analyzer_script_input.txt"
 outfile_path = r"analyzer_script_output.txt"
