@@ -20,6 +20,6 @@ for i in range(len(list)):
     for i in range(len(res)):
         if i%30 == 0:
             out.write("\n" + "\n" + "\n")
-            out.write(string_list[i] + "   " + res[i] + "\n")
+            out.write(string_list[i] + "   " + hex(int(res[i], 2)) + "\n")
         else:
-            out.write(string_list[i] + "   " + res[i] + "\n")
+            out.write(string_list[i] + "   " + hex(int(res[i], 2)) + "\n")
