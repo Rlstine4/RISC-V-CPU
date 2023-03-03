@@ -63,9 +63,7 @@ assign read_en    = (~FIFO_EMPTY && fifo_rd) ? 1 : 0; // Read only if FIFO not e
 assign write_en   = (~FIFO_FULL  && fifo_wr) ? 1 : 0; // Write only if FIFO not full and fifo_wr signal
 
 
-// TODO: Regenerate this IP Core to remove unnecessary function (2 input ports, 1 output port), then add write_en, read_en, data in and data out
-
-Convertible_FIFO fifo_memory(.clka(clk), .dina(data_in), .addra(fifo_addr), .wea(write_en). .douta(), .clkb(clk), .dinb(), .addrb(head), .web(9'b0), .doutb());
+Convertible_FIFO fifo_memory(.clka(clk), .dina(data_in), .addra(write_ptr), .wea(write_en), .clkb(clk), .addrb(read_ptr), .doutb(data_out) );
 
 always @(negedge clk)
 begin
