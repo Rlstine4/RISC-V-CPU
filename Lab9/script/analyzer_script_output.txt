@@ -1,150 +1,150 @@
-0000010110010000000001010001001
-1
-0
-0
-0010
-100
-0
-0
-1
-1
-0
-0
-010
-0
-0
-0
-0
-0
-0
-0000
-000000000000000000000000000000000000000000000000000000000000000
-0000
-0
-0
-0
-0
-0
-0
-0000
-0000110000000000000000000000000000000000000000000000000000000000
-1111111010100100001001000010001
-1
-1
-0
-0010
-000
-0
-0
-1
-1
-0
-0
-100
-0
-0
-0
-1
-1
-0
-0010
-010100000000000000000000000000000000000000000000000000000000001
-0110
-0
-1
-0
-0
-0
-0
-0000
-0000000000000000000000000000000000000000000000000000000000000000
-1111111010100100001001000010001
-1
-1
-0
-0010
-000
-0
-0
-1
-1
-0
-0
-100
-0
-0
-0
-0
-0
-0
-0000
-000000000000000000000000000000000000000000000000000000000000000
-0000
-0
-0
-0
-1
-0
-1
-0001
-0000000000000000000000000000000000000000000000000000000000000000
-1111111010100100001001000010001
-1
-0
-0
-0010
-000
-0
-0
-1
-1
-0
-0
-100
-0
-0
-0
-0
-0
-0
-0000
-000000000000000000000000000000000000000000000000000000000000000
-0000
-0
-0
-0
-0
-0
-0
-0000
-0100101000000000000000000000000000000000000000000000000000000000
-0000001010000000000001010001001
-1
-1
-0
-0010
-100
-0
-0
-1
-1
-0
-0
-010
-0
-0
-0
-1
-1
-0
-0100
-010001111111111111111111111111111111111111111111111111111111111
-1010
-0
-0
-0
-0
-0
-0
-0000
-0000000000000000000000000000000000000000000000000000000000000000
+id_inst                 :   00000101100100000000010100010011
+id_stall                :   0
+id_jump                 ;   0
+branch_flag             :   0
+id_rd                   :   01010
+id_alu_op               :   0001
+id_alu_src              :   1
+id_branch               :   0
+id_mem_read             :   0
+id_mem_write            :   0
+id_reg_write            :   1
+id_mem_to_reg           :   0
+ex_alu_op               :   0000
+ex_alu_src              :   0
+ex_branch               :   0
+ex_mem_read             :   0
+ex_mem_write            :   0
+ex_reg_write            :   0
+ex_mem_to_reg           :   0
+ex_rd                   :   0000
+ex_alu_out              :   0000000000000000000000000000000000000000000000000000000000000000
+mem_rd                  :   00000
+mem_read                :   0
+mem_write               :   0
+mem_reg_write		:   0
+mem_mem_to_reg          :   0
+wb_RegWrite             :   0
+wb_mem_to_reg           :   0
+wb_rd                   :   00110
+wb_mem_out              :   0000000000000000000000000000000000000000000000000000000000000010
+id_inst                 :   11111110101001000010010000100011
+id_stall                :   1
+id_jump                 ;   0
+branch_flag             :   0
+id_rd                   :   01000
+id_alu_op               :   0001
+id_alu_src              :   1
+id_branch               :   0
+id_mem_read             :   0
+id_mem_write            :   1
+id_reg_write            :   0
+id_mem_to_reg           :   0
+ex_alu_op               :   0001
+ex_alu_src              :   1
+ex_branch               :   0
+ex_mem_read             :   0
+ex_mem_write            :   0
+ex_reg_write            :   1
+ex_mem_to_reg           :   0
+ex_rd                   :   0101
+ex_alu_out              :   0000000000000000000000000000000000000000000000000000000000101100
+mem_rd                  :   10000
+mem_read                :   0
+mem_write               :   0
+mem_reg_write		:   0
+mem_mem_to_reg          :   0
+wb_RegWrite             :   0
+wb_mem_to_reg           :   0
+wb_rd                   :   00000
+wb_mem_out              :   0000000000000000000000000000000000000000000000000000000000000000
+id_inst                 :   11111110101001000010010000100011
+id_stall                :   1
+id_jump                 ;   0
+branch_flag             :   0
+id_rd                   :   01000
+id_alu_op               :   0001
+id_alu_src              :   1
+id_branch               :   0
+id_mem_read             :   0
+id_mem_write            :   1
+id_reg_write            :   0
+id_mem_to_reg           :   0
+ex_alu_op               :   0000
+ex_alu_src              :   0
+ex_branch               :   0
+ex_mem_read             :   0
+ex_mem_write            :   0
+ex_reg_write            :   0
+ex_mem_to_reg           :   0
+ex_rd                   :   0000
+ex_alu_out              :   0000000000000000000000000000000000000000000000000000000000000000
+mem_rd                  :   00101
+mem_read                :   0
+mem_write               :   0
+mem_reg_write		:   0
+mem_mem_to_reg          :   1
+wb_RegWrite             :   0
+wb_mem_to_reg           :   0
+wb_rd                   :   00000
+wb_mem_out              :   0000000000000000000000000000000000000000000000000000000000000000
+id_inst                 :   11111110101001000010010000100011
+id_stall                :   0
+id_jump                 ;   0
+branch_flag             :   0
+id_rd                   :   01000
+id_alu_op               :   0001
+id_alu_src              :   1
+id_branch               :   0
+id_mem_read             :   0
+id_mem_write            :   1
+id_reg_write            :   0
+id_mem_to_reg           :   0
+ex_alu_op               :   0000
+ex_alu_src              :   0
+ex_branch               :   0
+ex_mem_read             :   0
+ex_mem_write            :   0
+ex_reg_write            :   0
+ex_mem_to_reg           :   0
+ex_rd                   :   0000
+ex_alu_out              :   0000000000000000000000000000000000000000000000000000000000000000
+mem_rd                  :   00000
+mem_read                :   0
+mem_write               :   0
+mem_reg_write		:   0
+mem_mem_to_reg          :   0
+wb_RegWrite             :   0
+wb_mem_to_reg           :   1
+wb_rd                   :   00101
+wb_mem_out              :   0000000000000000000000000000000000000000000000000000000000000000
+id_inst                 :   00000010100000000000010100010011
+id_stall                :   1
+id_jump                 ;   0
+branch_flag             :   0
+id_rd                   :   01010
+id_alu_op               :   0001
+id_alu_src              :   1
+id_branch               :   0
+id_mem_read             :   0
+id_mem_write            :   0
+id_reg_write            :   1
+id_mem_to_reg           :   0
+ex_alu_op               :   0001
+ex_alu_src              :   1
+ex_branch               :   0
+ex_mem_read             :   0
+ex_mem_write            :   1
+ex_reg_write            :   0
+ex_mem_to_reg           :   0
+ex_rd                   :   0100
+ex_alu_out              :   0111111111111111111111111111111111111111111111111111111111110100
+mem_rd                  :   00000
+mem_read                :   0
+mem_write               :   0
+mem_reg_write		:   0
+mem_mem_to_reg          :   0
+wb_RegWrite             :   0
+wb_mem_to_reg           :   0
+wb_rd                   :   00000
+wb_mem_out              :   0000000000000000000000000000000000000000000000000000000000000000
