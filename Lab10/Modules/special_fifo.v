@@ -145,10 +145,12 @@ begin
                     state = IDLE;
                 end
 
-                else if (counter == 0 && packet_write && in_ctrl == 0)
+                else if (counter == 0 && packet_write) // Need better logic to detect if a packet is raedy
                 begin
-                    state = 
+                    state = HEADER;
                 end
+
+                // SHOULD NEVER JUST WRITE DATA WITHOUT HEADER
 
             end
 
@@ -164,6 +166,8 @@ end
 
 always @(negedge clk)
 begin
+
+    prev_ctrl <= in_ctrl;
 
     if (rst)
     begin
