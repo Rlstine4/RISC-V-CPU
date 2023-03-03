@@ -1,4 +1,6 @@
-id_inst                 :   00000101100100000000010100010011
+
+
+
 id_stall                :   0
 id_jump                 ;   0
 branch_flag             :   0
@@ -28,7 +30,9 @@ wb_RegWrite             :   0
 wb_mem_to_reg           :   0
 wb_rd                   :   00110
 wb_mem_out              :   0000000000000000000000000000000000000000000000000000000000000010
-id_inst                 :   11111110101001000010010000100011
+
+
+
 id_stall                :   1
 id_jump                 ;   0
 branch_flag             :   0
@@ -58,7 +62,9 @@ wb_RegWrite             :   0
 wb_mem_to_reg           :   0
 wb_rd                   :   00000
 wb_mem_out              :   0000000000000000000000000000000000000000000000000000000000000000
-id_inst                 :   11111110101001000010010000100011
+
+
+
 id_stall                :   1
 id_jump                 ;   0
 branch_flag             :   0
@@ -88,7 +94,9 @@ wb_RegWrite             :   0
 wb_mem_to_reg           :   0
 wb_rd                   :   00000
 wb_mem_out              :   0000000000000000000000000000000000000000000000000000000000000000
-id_inst                 :   11111110101001000010010000100011
+
+
+
 id_stall                :   0
 id_jump                 ;   0
 branch_flag             :   0
@@ -118,7 +126,9 @@ wb_RegWrite             :   0
 wb_mem_to_reg           :   1
 wb_rd                   :   00101
 wb_mem_out              :   0000000000000000000000000000000000000000000000000000000000000000
-id_inst                 :   00000010100000000000010100010011
+
+
+
 id_stall                :   1
 id_jump                 ;   0
 branch_flag             :   0
