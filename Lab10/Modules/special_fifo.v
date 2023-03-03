@@ -1,10 +1,26 @@
 /*
 
     Description: This special FIFO will be placed in the MEM stage of our 5-stage pipeline. It can acts as both a FIFO or block RAM.
-                 Essentially, this FIFO can buffer incoming packets AND be read at any point (if it's not being written to ) A control unit
-                 decide when the FIFO is being read and when it is being written
+                 Essentially, this FIFO can buffer a single packet AND be read by the processor. A control unit (embedded in this module)
+                 decides when the FIFO is being read and when it is being written
 
-    Ouput ports: 64-bit output to MEM/WB stage FF
+    Ouput ports: 64-bit output to MEM/WB stage FF (Data portion of the packet)
+
+    How do we detect when a packet starts and ends?
+
+    The CTRL bus is used for two purposes. The first is to distinguish module headers from each other (see next paragraph), and to determine the end of the packet. 
+    The CTRL bus is non-zero for module headers and distinguishes module headers from each other when there are multiple module headers. When the actual packet received 
+    starts after the module headers, the CTRL bus is reset to 0, and then at the last word of the packet, the CTRL lines will indicate which byte is the last byte in the 
+    last word. This is done by setting a 1 in the position of the last byte. Note that the first byte of the packet is stored in the most significant byte position (byte 
+    7, i.e. bits 63-56) of the first word of the packet, and so on. For example, if the last word has only 1 byte, then the last word will have the last byte in byte 7, 
+    and the CTRL word associated with that DATA word is 0b10000000. On the other hand, if the last word has six valid bytes (i.e. packet length in bytes mod 8 = 6) then 
+    the CTRL word that signifies the end-of-packet will be 0b00000100.
+
+    The Rx Queues create a module header when they receive a packet and prepend it to the beginning of the packet. 
+    The Rx queues store the length of the packet in bytes at the lowest 16 bits of the module header, the source port as a 
+    binary-encoded number (port 0 is MAC port 0 and port 1 is CPU port 0, ...) in bits 16–31, and the packet length in 64-bit 
+    words in bits 32–47. We call this module header the IOQ module header.
+
 
     INPUTS:
             clk = synchronous negative-edge triggered FIFO
@@ -23,50 +39,135 @@
             data_out      = Grab 64 bits of data to feed into processor
             ctrl_out      = 8 bits of control signal (This may be necesary if packet needs to be sent back into output queue) ???
             //counter       = 8 bit counter to keep track of how many packets are in the FIFO. Useful for logic analyzer (prevent rollover)
-
 */
 
-
-/* TODO
-
-    1. Regenerate the IP Core. Depth = 256, data_width = 72 bits (our processor will grab 64-bits of data)
-
-
-
-*/
-
-module special_fifo(input clk 
-                    input rst,
-                    input fifo_rd,
-                    input fifo_wr,
-                    input [71:0] data_in,
-                    input first_word,
-                    input last_word,
-                    output FIFO_FULL,
-                    output FIFO_EMPTY,
-                    output in_progress,
-                    output [63:0] data_out
-                    output  [7:0] control_out
+module special_fifo #(parameter FIFO_WIDTH      = 72,
+                      parameter DEPTH           = 256,
+                      parameter PROCESSOR_WIDTH = 64,
+                      parameter CTRL_WIDTH      = 8)
+                     (input clk 
+                      input rst,
+                      input [CTRL_WIDTH-1] in_ctrl,
+                      input processor_rd,
+                      input packet_write,
+                      input [WIDTH-1:0] data_in,
+                      output FIFO_FULL,
+                      output FIFO_EMPTY,
+                      output busy,
+                      output [PROCESSOR_WIDTH-1:0] data_out
                     );     
                     
 
-
-reg [8:0] counter;
+reg [1:0] state;
+reg [8:0] counter; // 9-bit counter allows us to distinguish whether we are full or empty (Read pointer = Write Pointer)
 reg [7:0] write_ptr, read_ptr, packet_head_ptr; // Keep track of where we are writing, reading, and the head of the packet being buffered
+reg fifo_rd, fifo_wr;
+reg prev_ctrl; // If we are in CPU Mode, we want to know if the control signal is high due to incoming header or if it's just idle
 
 
-assign FIFO_FULL   = (counter = 9'b011111111) ? 1 : 0; // Set FIFO_FULL to 1 if counter reaches maximum depth
-assign FIFO_EMPTY  = (counter = 9'b0)         ? 1 : 0; // Set FIFO_EMPTY to 1 if counter is 0
-assign in_progress = (fifo_rd || fifo_wr);
+assign FIFO_FULL   = (counter == DEPTH)      ? 1 : 0; // Set FIFO_FULL to 1 if counter reaches maximum depth
+assign FIFO_EMPTY  = (counter == 9'b0)       ? 1 : 0; // Set FIFO_EMPTY to 1 if counter is 0
+assign busy = (fifo_rd || fifo_wr)           ? 1 : 0;
 
 assign read_en    = (~FIFO_EMPTY && fifo_rd) ? 1 : 0; // Read only if FIFO not empty and fifo_rd signal
 assign write_en   = (~FIFO_FULL  && fifo_wr) ? 1 : 0; // Write only if FIFO not full and fifo_wr signal
 
+// 4 possible states
 
-Convertible_FIFO fifo_memory(.clka(clk), .dina(data_in), .addra(write_ptr), .wea(write_en), .clkb(clk), .addrb(read_ptr), .doutb(data_out) );
+parameter IDLE           = 2'b00,
+          HEADER         = 2'b01,
+          PAYLOAD        = 2'b10,
+          PROCESSOR_MODE = 2'b11;
+
+
+//Control Logic
+
+always @(*)
+begin
+
+    if (rst)
+    begin
+        state   = IDLE; // We would like to IDLE as soon as possible
+        fifo_rd = 0;
+        fifo_wr = 0;
+    end
+
+    else
+    begin
+
+        case(state)
+
+            IDLE:
+            begin
+                fifo_rd = 0;
+                fifo_wr   = 0;
+
+                if (in_ctrl == 1)
+                begin  
+                    state   = HEADER;
+                end
+            end
+
+            HEADER:
+            begin
+                fifo_wr = 1;
+                if (in_ctrl == 0)
+                begin
+                    state = PAYLOAD;
+                end
+
+            end
+
+            PAYLOAD:
+            begin
+
+                if ((in_ctrl == 1 && ~processor_rd) || FIFO_FULL) // IDLE if done buffering packet and no processor request. OR if FIFO fills up prematurely
+                begin
+                    state = IDLE;
+                end
+
+                else if (in_ctrl == 1 && processor_rd) // Done buffering the packet and processor would like to read FIFO 
+                begin
+                    state = PROCESSOR_MODE;
+                end
+
+            end
+
+            PROCESSOR_MODE:
+            begin
+
+                fifo_wr = 0;
+                fifo_rd = 1;
+                prev_ctrl = in_ctrl;
+
+                if (counter == 0 && in_ctrl ) // READ ALL of the FIFO
+                begin
+                    state = IDLE;
+                end
+
+                else if (counter == 0 && packet_write) // Need better logic to detect if a packet is raedy
+                begin
+                    state = HEADER;
+                end
+
+                // SHOULD NEVER JUST WRITE DATA WITHOUT HEADER
+
+            end
+
+        endcase
+
+
+    end
+
+end
+
+
+// FIFO Logic
 
 always @(negedge clk)
 begin
+
+    prev_ctrl <= in_ctrl;
 
     if (rst)
     begin
@@ -76,11 +177,6 @@ begin
         packet_head_ptr <= 0;
         ready_rd        <= 0;
         ready_wr        <= 1; // FIFO will be "empty", so write requests can be accepted
-    end
-
-    else if (first_word || last_word)
-    begin
-        packet_head_ptr <= write_ptr; // packet head can either be the beginning of the packet or the end of packet
     end
 
     else if (write_en && ~FIFO_FULL) // We are assuming that read_req cannot be HIGH at the same time as dictated by control unit
@@ -95,10 +191,12 @@ begin
         counter  <= counter  - 1;
     end
 
-
-
     
 end
 
+reg [71:0] fifo_mem_out;
+assign data_out = fifo_mem_out[63:0];
+
+Convertible_FIFO fifo_memory(.clka(clk), .dina(data_in), .addra(write_ptr), .wea(write_en), .clkb(clk), .addrb(read_ptr), .doutb(fifo_mem_out) );
 
 endmodule
