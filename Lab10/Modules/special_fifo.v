@@ -45,10 +45,10 @@ module special_fifo #(parameter FIFO_WIDTH      = 72,
                       parameter DEPTH           = 256,
                       parameter PROCESSOR_WIDTH = 64,
                       parameter CTRL_WIDTH      = 8)
-                     (input clk 
+                      (input clk, 
                       input rst,
-                      input [CTRL_WIDTH-1] in_ctrl,
-                      input [WIDTH-1:0] data_in,
+                      input [CTRL_WIDTH-1:0] in_ctrl,
+                      input [PROCESSOR_WIDTH-1:0] data_in,
                       output FIFO_FULL,
                       output FIFO_EMPTY,
                       output busy,
@@ -121,7 +121,7 @@ begin
                 if ((in_ctrl == 1) || FIFO_FULL) // Done buffering so allow processor to consume data
                 begin
                     state = PROCESSOR_MODE;
-                    ready = 1'b1;
+                    FIFO_ready = 1'b1;
                 end
 
 
@@ -132,14 +132,14 @@ begin
 
                 fifo_wr = 0;
                 fifo_rd = 1'b1;
-                prev_ctrl = in_ctrl;
+                //prev_ctrl = in_ctrl;
 
                 if (counter == 0 && in_ctrl ) // READ ALL of the FIFO
                 begin
                     state = IDLE;
                 end
 
-                else if (counter == 0 && packet_write) // Need better logic to detect if a packet is raedy
+                else if (counter == 0) // Need better logic to detect if a packet is raedy
                 begin
                     state = HEADER;
                 end
@@ -161,7 +161,7 @@ end
 always @(posedge clk)
 begin
 
-    prev_ctrl <= in_ctrl;
+    //prev_ctrl <= in_ctrl;
 
     if (rst)
     begin
@@ -169,8 +169,8 @@ begin
         read_ptr        <= 0;
         write_ptr       <= 0;
         packet_head_ptr <= 0;
-        ready_rd        <= 0;
-        ready_wr        <= 1; // FIFO will be "empty", so write requests can be accepted
+       // ready_rd        <= 0;
+       // ready_wr        <= 1; // FIFO will be "empty", so write requests can be accepted
     end
 
     else if (write_en && ~FIFO_FULL) // We are assuming that read_req cannot be HIGH at the same time as dictated by control unit
