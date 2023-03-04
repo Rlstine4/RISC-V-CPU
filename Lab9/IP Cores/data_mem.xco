@@ -1,7 +1,7 @@
 ##############################################################
 #
 # Xilinx Core Generator version K.39
-# Date: Fri Feb 17 19:14:31 2023
+# Date: Wed Mar 01 00:40:21 2023
 #
 ##############################################################
 #
@@ -35,7 +35,7 @@ SET vhdlsim = True
 SELECT Dual_Port_Block_Memory family Xilinx,_Inc. 6.3
 # END Select
 # BEGIN Parameters
-CSET coefficient_file="C:\Documents and Settings\Mehul\My Documents\EE533\lab8_new\data_mem.coe"
+CSET coefficient_file="C:\Documents and Settings\Mehul\My Documents\EE533\lab9_new\data_mem.coe"
 CSET component_name=data_mem
 CSET configuration_port_a=Read_And_Write
 CSET configuration_port_b=Read_And_Write
@@ -72,5 +72,5 @@ CSET write_mode_port_a=Read_After_Write
 CSET write_mode_port_b=Read_After_Write
 # END Parameters
 GENERATE
-# CRC: a4c14457
+# CRC: 70a2b292
 

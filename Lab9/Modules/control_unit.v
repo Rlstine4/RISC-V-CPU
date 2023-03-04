@@ -56,14 +56,14 @@ module control_unit (
 				begin
 					alu_op     = 4'b0001; 
 				end   
-                else if ( (funct7 == 7'b0100000) && (funct3 == 3'b000)) // SUB
+                if ( (funct7 == 7'b0100000) && (funct3 == 3'b000)) // SUB
 				begin
 					alu_op     = 4'b0010;						
 				end                
-                else if ( (funct7 == 7'b0000000) && (funct3 == 3'b111)) // AND
-				begin
-					alu_op     = 4'b0011;
-				end
+//                else if ( (funct7 == 7'b0000000) && (funct3 == 3'b111)) // AND
+//				begin
+//					alu_op     = 4'b0011;
+//				end
 			end
 
             I_TYPE:
@@ -73,15 +73,15 @@ module control_unit (
 				begin		
 					alu_op = 4'b0001;
 				end                
-                else if ( funct3 == 3'b110 ) // ORI
-				begin
-                    alu_op = 4'b0100;
-				end                
-                else if ( funct3 == 3'b111 ) //ANDI
-				begin
-                    alu_op = 4'b0011;
-				end                
-                else if ( funct3 == 3'b001)  // SLLI
+//                else if ( funct3 == 3'b110 ) // ORI
+//				begin
+//                    alu_op = 4'b0100;
+//				end                
+//                else if ( funct3 == 3'b111 ) //ANDI
+//				begin
+//                    alu_op = 4'b0011;
+//				end                
+                if ( funct3 == 3'b001)  // SLLI
 				begin
                     alu_op = 4'b1010;
 				end
@@ -103,22 +103,21 @@ module control_unit (
 			begin
                 {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b0100000;
 
-                if ( funct3 == 3'b000) // BEQ
-				begin
-                    alu_op = 4'b0110;
-				end
-                
-                if ( funct3 == 3'b001) // BNEQ
-				begin
-                    alu_op = 4'b0111;
-				end
+//                if ( funct3 == 3'b000) // BEQ
+//				begin
+//                    alu_op = 4'b0110;
+//				end
+//                
+//                if ( funct3 == 3'b001) // BNEQ
+//				begin
+//                    alu_op = 4'b0111;
+//				end
 
                 if ( funct3 == 3'b100) // BLT
 				begin
                     alu_op = 4'b1000;
-				end
-                
-                if ( funct3 == 3'b101) // BGE
+				end 
+				if ( funct3 == 3'b101) // BGE
 				begin
                     alu_op = 4'b1001;
 				end
@@ -128,6 +127,12 @@ module control_unit (
 			begin
                 {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b1010000;
                 alu_op = 4'b0001; // ADD
+			end
+			
+			default:
+			begin
+				{alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b0000000;
+                alu_op = 4'b0000; 
 			end
 
 

@@ -42,13 +42,16 @@ module datapath_deter
    wire[31:0] dmem_index;
    wire[31:0] dmem_data_high;
    wire[31:0] dmem_data_low;
-   
+   wire[31:0] logic_analyser_index;
+   wire[31:0]imem_index;
+   wire[31:0]imem_data;   
    
    //hardware register
    reg[31:0] dmem_value_high;
-   reg[63:32] dmem_value_low;
-
+   reg[31:0] dmem_value_low;
+   reg [31:0]logic_analyser_data[6:0];
    wire [63:0]dmem_out;
+   wire [208:0]logic_analyser_out;
    
    
    wire [DATA_WIDTH-1:0] in_data_wire;
@@ -69,13 +72,21 @@ module datapath_deter
    
    assign processer_reset = (reset || input_cmd[0]);
    
-   datapath data_path(.clk(clk), .rst(processer_reset), .memWE(input_cmd[1]), .memAddr(dmem_index), 
-      .memInData({dmem_data_high,dmem_data_low}), .memOutData(dmem_out));
+   datapath data_path(.clk(clk), .rst(processer_reset), .logicEn(input_cmd[3]), .logicWe(input_cmd[2]), .iMemWE(input_cmd[4]), 
+                        .memWE(input_cmd[1]), .memAddr(dmem_index), .logicAddr(logic_analyser_index), .memInData({dmem_data_high,dmem_data_low}), 
+                        .memOutData(dmem_out), .logicData(logic_analyser_out), .iMemAddr(imem_index), .iMemInData(imem_data));
 
    always@(*)
    begin
-      dmem_value_high = dmem_out[63:32];
-      dmem_value_low = dmem_out[31:0];
+      dmem_value_high         <= dmem_out[63:32];
+      dmem_value_low          <= dmem_out[31:0];
+      logic_analyser_data[0]  <= logic_analyser_out[31:0];
+      logic_analyser_data[1]  <= logic_analyser_out[63:32];
+      logic_analyser_data[2]  <= logic_analyser_out[95:64];
+      logic_analyser_data[3]  <= logic_analyser_out[127:96];
+      logic_analyser_data[4]  <= logic_analyser_out[159:128];
+      logic_analyser_data[5]  <= logic_analyser_out[191:160];
+      logic_analyser_data[6]  <= logic_analyser_out[217:192];
    end
    
    generic_regs
@@ -84,8 +95,8 @@ module datapath_deter
       .TAG                 (`DATAPATH_BLOCK_ADDR),          // Tag -- eg. MODULE_TAG
       .REG_ADDR_WIDTH      (`DATAPATH_REG_ADDR_WIDTH),     // Width of block addresses -- eg. MODULE_REG_ADDR_WIDTH
       .NUM_COUNTERS        (0),                 // Number of counters(
-      .NUM_SOFTWARE_REGS   (4),                 // Number of sw regs
-      .NUM_HARDWARE_REGS   (2)                  // Number of hw regs
+      .NUM_SOFTWARE_REGS   (7),                 // Number of sw regs
+      .NUM_HARDWARE_REGS   (11)                  // Number of hw regs
    ) module_regs (
       .reg_req_in       (reg_req_in),
       .reg_ack_in       (reg_ack_in),
@@ -106,10 +117,11 @@ module datapath_deter
       .counter_decrement(),
 
       // --- SW regs interface
-      .software_regs    ({dmem_data_low,dmem_data_high,dmem_index,input_cmd}),
+      .software_regs    ({imem_data,imem_index,logic_analyser_index,dmem_data_low,dmem_data_high,dmem_index,input_cmd}),
 
       // --- HW regs interface
-      .hardware_regs    ({dmem_value_low,dmem_value_high}),
+      .hardware_regs    ({logic_analyser_data[6],logic_analyser_data[5],logic_analyser_data[4],logic_analyser_data[3],
+                           logic_analyser_data[2],logic_analyser_data[1],logic_analyser_data[0],dmem_value_low,dmem_value_high}),
 
       .clk              (clk),
       .reset            (reset)

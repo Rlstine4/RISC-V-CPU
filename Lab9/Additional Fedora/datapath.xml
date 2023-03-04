@@ -27,13 +27,63 @@
 			<nf:type>generic_software32</nf:type>
 		</nf:register>
 		<nf:register>
-		  <nf:name>dmem_value_high</nf:name>
-			<nf:description>upper 32 bits of data memory value</nf:description>
+		  <nf:name>logic_analyser_index</nf:name>
+			<nf:description>to index logic analyser</nf:description>
 			<nf:type>generic_software32</nf:type>
 		</nf:register>
-        	<nf:register>
-		  <nf:name>dmem_value_low</nf:name>
+		<nf:register>
+		  <nf:name>imem_index</nf:name>
+			<nf:description>to index logic analyser</nf:description>
+			<nf:type>generic_software32</nf:type>
+		</nf:register>
+		<nf:register>
+		  <nf:name>imem_data</nf:name>
+			<nf:description>to index logic analyser</nf:description>
+			<nf:type>generic_software32</nf:type>
+		</nf:register>
+		<nf:register>
+		  <nf:name>dmem_value_high</nf:name>
+			<nf:description>upper 32 bits of data memory value</nf:description>
+			<nf:type>generic_hardware32</nf:type>
+		</nf:register>
+        <nf:register>
+		<nf:name>dmem_value_low</nf:name>
 			<nf:description>Lower 32 bits of data memory value</nf:description>
+			<nf:type>generic_hardware32</nf:type>
+		</nf:register>
+		<nf:register>
+			<nf:name>logic_analyser_data_0</nf:name>
+			<nf:description>logic analyser data</nf:description>
+			<nf:type>generic_hardware32</nf:type>
+		</nf:register>
+		<nf:register>
+			<nf:name>logic_analyser_data_1</nf:name>
+			<nf:description>logic analyser data</nf:description>
+			<nf:type>generic_hardware32</nf:type>
+		</nf:register>
+		<nf:register>
+			<nf:name>logic_analyser_data_2</nf:name>
+			<nf:description>logic analyser data</nf:description>
+			<nf:type>generic_hardware32</nf:type>
+		</nf:register>
+		<nf:register>
+			<nf:name>logic_analyser_data_3</nf:name>
+			<nf:description>logic analyser data</nf:description>
+			<nf:type>generic_hardware32</nf:type>
+		</nf:register>
+		<nf:register>
+			<nf:name>logic_analyser_data_4</nf:name>
+			<nf:description>logic analyser data</nf:description>
+			<nf:type>generic_hardware32</nf:type>
+		</nf:register>
+		<nf:register>
+			<nf:name>logic_analyser_data_5</nf:name>
+			<nf:description>logic analyser data</nf:description>
+			<nf:type>generic_hardware32</nf:type>
+		</nf:register>
+		<nf:register>
+			<nf:name>logic_analyser_data_6</nf:name>
+			<nf:description>logic analyser data</nf:description>
 			<nf:type>generic_hardware32</nf:type>
 		</nf:register>
 	</nf:registers>

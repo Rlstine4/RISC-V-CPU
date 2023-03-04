@@ -19,10 +19,14 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module datapath(
-	input clk, rst, memWE,
+	input clk, rst, memWE, iMemWE, logicEn, logicWe,
 	input [7:0]memAddr,
+	input [8:0]iMemAddr,
 	input [63:0]memInData,
-	output [63:0]memOutData
+	input [31:0]iMemInData,
+	input [13:0]logicAddr,
+	output [63:0]memOutData,
+	output [217:0]logicData
 	);
 	
 	//instruction Fetch wires
@@ -52,7 +56,7 @@ module datapath(
 	reg [12:0] id_branch_offset_reg;
     wire [19:0] jump_offset;
 	reg [19:0] jump_offset_reg;
-	wire id_stall;
+	reg id_stall;
 	reg id_stall_reg;
 	
 	//Execution stage wires
@@ -74,9 +78,12 @@ module datapath(
 	wire mem_WMemEn;
 	wire [4:0]mem_rd;
 	wire [63:0]mem_rsData2, mem_mem_out;
-    //wire mem_overflow = 0, mem_branch = 0, mem_read = 0, mem_reg_write = 0, mem_mem_to_reg = 0;
+    //wire mem_overflow = 0, mem_branch = 0, mem_read = 0, mem_reg_write = 0, mem_mem_to_reg = 0
     wire mem_overflow, mem_branch, mem_read, mem_reg_write, mem_mem_to_reg, mem_write;
+	wire mem_equal, mem_not_equal, mem_less_than, mem_greater_than_equal;
     wire [63:0] mem_alu_out;
+	wire [12:0] mem_branch_offset;
+	wire [3:0]mem_alu_op;
 	
 	//WriteBack stage wires
 	wire wb_RegWrite, wb_mem_to_reg;
@@ -99,10 +106,11 @@ module datapath(
 	assign wb_inst_check = wb_inst_check_reg;
 	
 	//Instruction Fetch stage datapath
-	pcCounter pcc(.en(~(id_stall)), .clk(clk), .rst(rst), .pc(pc), .PCSrc(PCSrc), .jumpAddr(jumpAddr), .branchAddr(branchAddr));
-	inst_mem iMem(.en(~(id_stall)), .addr(pc), .clk(clk), .dout(if_inst));
+	pcCounter pcc(.en(~(id_stall)), .clk(clk), .rst(rst), .pc(pc), .PCSrc(PCSrc), .jumpAddr(jumpAddr_reg), .branchAddr(branchAddr));
+	inst_mem iMem(.ena(~(id_stall || rst)), .sinita(id_jump || branch_flag), .addra(pc), .clka(clk), .douta(id_inst), 
+					.web(iMemWE), .addrb(iMemAddr), .dinb(iMemInData), .clkb(clk));
     
-    pipe_reg_if_id if_id_pipe_reg(.en(~(id_stall || rst)), .clk(clk), .clr(id_jump || branch_flag), .instruction_in(if_inst), .instruction_out(id_inst));
+    //pipe_reg_if_id if_id_pipe_reg(.en(~(id_stall || rst)), .clk(clk), .clr(id_jump || branch_flag), .instruction_in(if_inst), .instruction_out(id_inst));
 
     //Instruction Decode stage datapath
 	assign id_rs1 = id_inst[19:15]; // rs1 must tap into bits 19-15 of the instruction
@@ -114,80 +122,45 @@ module datapath(
     assign funct3  	= id_inst[14:12];  // when applicable
 	
 	//HDU
-	wire ex_valid, mem_valid;
-	assign ex_valid = ex_alu_src || ex_mem_read || ex_mem_write || ex_reg_write || ex_mem_to_reg;
-	assign mem_valid =  mem_read || mem_write || mem_reg_write || mem_mem_to_reg;
+	reg ex_valid, mem_valid;
+	always@(*)
+	begin
+		ex_valid = ex_alu_src || ex_mem_read || ex_mem_write || ex_reg_write || ex_mem_to_reg || ex_branch ;
+		mem_valid =  mem_read || mem_write || mem_reg_write || mem_mem_to_reg;
+		id_stall =  (ex_valid || mem_valid);
+	end
 	
-	assign id_stall =  (ex_valid || mem_valid);
-//	always@(*)
-//	begin
-//		ex_valid = ex_alu_src || ex_branch || ex_mem_read || ex_mem_write || ex_reg_write || ex_mem_to_reg || ex_overflow;
-//		mem_valid = mem_overflow || mem_branch || mem_read || mem_write || mem_reg_write || mem_mem_to_reg;
-//		if(opcode == 7'b0000000 || ex_rd == 5'b00000 || mem_rd == 5'b00000)
-//		begin
-//			id_stall_reg = 1'b0;
-//		end
-//		if(opcode == 7'b0110011 || opcode == 7'b0100011 ||  opcode == 7'b1100011)	//R-type, Store
-//		begin
-//			if((ex_valid && ((id_rs1 == ex_rd) || (id_rs2 == ex_rd)))
-//				|| (mem_valid && ((id_rs1 == mem_rd) || (id_rs2 == mem_rd))))
-//			begin
-//				id_stall_reg = 1'b1;
-//			end
-//			else
-//			begin
-//				id_stall_reg = 1'b0;
-//			end
-//		end
-//		else if((opcode == 7'b0010011) || opcode == 7'b0000011)	//I-type, load
-//		begin
-//			if((ex_valid && id_rs1 == ex_rd) || (mem_valid && id_rs1 == mem_rd))
-//			begin
-//				id_stall_reg = 1'b1;
-//			end
-//			else
-//			begin
-//				id_stall_reg = 1'b0;
-//			end
-//		end
-//		
-//	end
-//	assign id_stall = id_stall_reg;
 
 	always@(*)
 	begin
+		intermediate_12_reg = 12'b0;
 		if (opcode == 7'b0010011 || opcode == 7'b0000011) // i-type or load
 		begin
 			intermediate_12_reg = id_inst[31:20];
 			//PCSrc_reg = 2'b00;
 		end
-		else if (opcode == 7'b0100011) // s-type
+		if (opcode == 7'b0100011) // s-type
 		begin
 			intermediate_12_reg = {id_inst[31:25], id_inst[11:7]};
 			//PCSrc_reg = 2'b00;
 		end
-        else if (opcode == 7'b1100011) // branch
+        if (opcode == 7'b1100011) // branch
         begin
             id_branch_offset_reg = ({id_inst[31], id_inst[31], id_inst[31], id_inst[7], id_inst[30:25], id_inst[11:9]});
 			//PCSrc_reg = 2'b00;
 			//branchAddr_reg = pc + id_branch_offset_reg - 1;
         end
-        else if (opcode == 7'b1101111)	//jump
+        if (opcode == 7'b1101111)	//jump
         begin
-            jump_offset_reg = ({id_inst[31], id_inst[19:12], id_inst[20], id_inst[30:21]}) >>> 1;
-			jumpAddr_reg = pc + jump_offset_reg - 1;
+            //jump_offset_reg = ({id_inst[31], id_inst[19:12], id_inst[20], id_inst[30:21]}) >>> 1;
+			jumpAddr_reg = pc + (({id_inst[31], id_inst[19:12], id_inst[20], id_inst[30:21]}) >>> 1) - 1;
 			//PCSrc_reg = 2'b10;
         end
-		else
-		begin
-			intermediate_12_reg = 12'b0;
-			//PCSrc_reg = 2'b00;
-		end
 	end
-	assign intermediate_12 = intermediate_12_reg;
-	assign id_branch_offset = id_branch_offset_reg;
-	assign jump_offset = jump_offset_reg;
-	assign jumpAddr = jumpAddr_reg;
+//	assign intermediate_12 = intermediate_12_reg;
+//	assign id_branch_offset = id_branch_offset_reg;
+//	assign jump_offset = jump_offset_reg;
+//	assign jumpAddr = jumpAddr_reg;
 	//assign PCSrc = PCSrc_reg;
     
     control_unit control(.opcode(opcode), .rd(id_rd), .funct7(funct7), .funct3(funct3), .alu_op(id_alu_op), .alu_src(id_alu_src), .branch(id_branch), 
@@ -198,7 +171,7 @@ module datapath(
 	
 	pipe_reg_id_ex id_ex_pipe_reg(.en(~(id_stall || rst)), .clk(clk), .clr(branch_flag), .rsData1In(id_rsData1), .rsData2In(id_rsData2), .rdAddrIn(id_rd), .alu_op_in(id_alu_op),
                                     .alu_src_in(id_alu_src), .branch_in(id_branch), .mem_read_in(id_mem_read), .mem_write_in(id_mem_write), .reg_write_in(id_reg_write), 
-									.mem_to_reg_in(id_mem_to_reg), .intermediate_in(intermediate_12), .branch_offset_in(id_branch_offset), .alu_op_out(ex_alu_op), 
+									.mem_to_reg_in(id_mem_to_reg), .intermediate_in(intermediate_12_reg), .branch_offset_in(id_branch_offset_reg), .alu_op_out(ex_alu_op), 
 									.alu_src_out(ex_alu_src), .branch_out(ex_branch), .mem_read_out(ex_mem_read), .mem_write_out(ex_mem_write), .reg_write_out(ex_reg_write), 
 									.mem_to_reg_out(ex_mem_to_reg), .rsData1Out(ex_rsData1), .rsData2Out(ex_rsData2), .rdAddrOut(ex_rd), .intermediate_out(ex_intermediate_12), 
 									.branch_offset_out(ex_branch_offset)
@@ -224,35 +197,52 @@ module datapath(
 	
 	assign alu_B = alu_B_reg;       
 
-	ALU_64 alu(.A(ex_rsData1), .B(alu_B), .aluctrl(ex_alu_op), .Z(ex_alu_out), .overflow(ex_overflow), .equal(ex_equal), .not_equal(ex_not_equal), 
+	ALU_64 alu(.A(ex_rsData1), .B(alu_B), .aluctrl(ex_alu_op), .Z(ex_alu_out), .overflow(ex_overflow), //.equal(ex_equal), .not_equal(ex_not_equal), 
 				.less_than(ex_less_than), .greater_than_equal(ex_greater_than_equal));
-   
+	
+	pipe_reg_ex_mem ex_mem_pipe_reg(.en(~rst), .clr(branch_flag), .clk(clk), .rdAddrIn(ex_rd), .rsData2In(ex_rsData2), .ex_alu_output(ex_alu_out), .ex_overflow(ex_overflow),
+									.ex_mem_read(ex_mem_read), .ex_mem_write(ex_mem_write), .ex_reg_write(ex_reg_write), .ex_mem_to_reg(ex_mem_to_reg), .ex_branch(ex_branch),
+									//.ex_equal(ex_equal), .ex_not_equal(ex_not_equal), 
+									.ex_less_than(ex_less_than), .ex_greater_than_equal(ex_greater_than_equal), 
+									.ex_alu_op(ex_alu_op), .branch_offset_in(ex_branch_offset), .rdAddrOut(mem_rd), .mem_overflow(mem_overflow), .mem_read(mem_read), 
+									.mem_write(mem_write), .mem_reg_write(mem_reg_write), .mem_to_reg(mem_mem_to_reg), .mem_alu_output(mem_alu_out), .rsData2Out(mem_rsData2), 
+									.mem_branch(mem_branch), //.mem_equal(mem_equal), .mem_not_equal(mem_not_equal), 
+									.mem_less_than(mem_less_than), .mem_greater_than_equal(mem_greater_than_equal), .mem_alu_op(mem_alu_op), .branch_offset_out(mem_branch_offset)
+									);
+		
+	//Memory stage datapath
+
+// Swapping SW/HW ports and processor port. Unable to make port A negetive edge triggered
+//	data_mem dMem(.addra(mem_alu_out), .addrb(memAddr), .clka(clk), .clkb(clk), .dina(mem_rsData2), .dinb(memInData), 
+//				.douta(mem_rdData), .doutb(memOutData), .wea(mem_write), .web(memWE));
+
+
 	always@(*)
 	begin
-		if (ex_branch)
+		if (mem_branch)
 		begin
-			if (ex_equal && (ex_alu_op == 4'b0110))
+//			if (mem_equal && (mem_alu_op == 4'b0110))
+//			begin
+//				branch_flag_reg = 1;
+//				branchAddr_reg = pc + mem_branch_offset - 2;
+//				PCSrc_reg = 2'b01;
+//			end        
+//			else if (mem_not_equal && (mem_alu_op == 4'b0111))
+//			begin
+//				branch_flag_reg = 1;
+//				branchAddr_reg = pc + mem_branch_offset - 2;
+//				PCSrc_reg = 2'b01;
+//			end   
+//			else 
+			branchAddr_reg = pc + mem_branch_offset - 2;
+			if (mem_less_than && (mem_alu_op == 4'b1000))
 			begin
 				branch_flag_reg = 1;
-				branchAddr_reg = pc + ex_branch_offset - 2;
 				PCSrc_reg = 2'b01;
 			end        
-			else if (ex_not_equal && (ex_alu_op == 4'b0111))
+			else if (mem_greater_than_equal && (mem_alu_op == 4'b1001))
 			begin
 				branch_flag_reg = 1;
-				branchAddr_reg = pc + ex_branch_offset - 2;
-				PCSrc_reg = 2'b01;
-			end   
-			else if (ex_less_than && (ex_alu_op == 4'b1000))
-			begin
-				branch_flag_reg = 1;
-				branchAddr_reg = pc + ex_branch_offset - 2;
-				PCSrc_reg = 2'b01;
-			end        
-			else if (ex_greater_than_equal && (ex_alu_op == 4'b1001))
-			begin
-				branch_flag_reg = 1;
-				branchAddr_reg = pc + ex_branch_offset - 2;
 				PCSrc_reg = 2'b01;
 			end        
 			else
@@ -260,7 +250,7 @@ module datapath(
 				branch_flag_reg = 0;
 				branchAddr_reg = 0;
 				PCSrc_reg = 2'b00;
-				if(id_jump)
+				if(id_jump && ~ex_branch)
 					PCSrc_reg = 2'b10;
 			end
 		end
@@ -269,33 +259,20 @@ module datapath(
 			branch_flag_reg = 0;
 			branchAddr_reg = 0;
 			PCSrc_reg = 2'b00;
-			if(id_jump)
+			if(id_jump && ~ex_branch)
 					PCSrc_reg = 2'b10;
 		end
 	end
 	assign PCSrc = PCSrc_reg;
 	assign branch_flag = branch_flag_reg;
 	assign branchAddr = branchAddr_reg;
-	
-	pipe_reg_ex_mem ex_mem_pipe_reg(.en(~rst), .clr(branch_flag), .clk(clk), .rdAddrIn(ex_rd), .rsData2In(ex_rsData2), .ex_alu_output(ex_alu_out), .ex_overflow(ex_overflow),
-									.ex_mem_read(ex_mem_read), .ex_mem_write(ex_mem_write), .ex_reg_write(ex_reg_write), .ex_mem_to_reg(ex_mem_to_reg), .rdAddrOut(mem_rd), 
-									.mem_overflow(mem_overflow), .mem_read(mem_read), .mem_write(mem_write), .mem_reg_write(mem_reg_write), .mem_to_reg(mem_mem_to_reg), 
-									.mem_alu_output(mem_alu_out), .rsData2Out(mem_rsData2)
-									);
-		
-	//Memory stage datapath
-
-// Swapping SW/HW ports and processor port. Unable to make port A negetive edge triggered
-//	data_mem dMem(.addra(mem_alu_out), .addrb(memAddr), .clka(clk), .clkb(clk), .dina(mem_rsData2), .dinb(memInData), 
-//				.douta(mem_rdData), .doutb(memOutData), .wea(mem_write), .web(memWE));
 				
-	data_mem dMem(.addra(memAddr), .addrb(mem_alu_out), .clka(clk), .clkb(clk), .dina(memInData), .dinb(mem_rsData2), 
-				.douta(memOutData), .doutb(wb_mem_out), .wea(memWE), .web(mem_write));
+	data_mem dMem(.addra(memAddr), .addrb(mem_alu_out), .clka(clk), .clkb(clk), .dina(memInData), .dinb(mem_rsData2), .douta(memOutData), .doutb(wb_mem_out), .wea(memWE), 
+					.web(mem_write));
 	
 	
 	pipe_reg_mem_wb mem_wb_pipe_reg(.en(~rst), .clk(clk), .mem_reg_write_in(mem_reg_write), .mem_to_reg_in(mem_mem_to_reg), .rdAddrIn(mem_rd), .mem_mem_out(mem_mem_out), 
-									.mem_alu_out(mem_alu_out), .wb_reg_write(wb_RegWrite), .wb_mem_to_reg(wb_mem_to_reg), .rdAddrOut(wb_rd), 
-									.wb_alu_out(wb_alu_out));
+									.mem_alu_out(mem_alu_out), .wb_reg_write(wb_RegWrite), .wb_mem_to_reg(wb_mem_to_reg), .rdAddrOut(wb_rd), .wb_alu_out(wb_alu_out));
 	
 	//Write back Stage Datapath
 	
@@ -311,6 +288,18 @@ module datapath(
 		end
 	end	
 	assign wb_rdData = wb_rdData_reg;
+	
+	
+	//logic Analyser
+	// LogicAnalyser la(.en(logicEn), .clk(clk), .we(logicWe), 
+	// 					.data({pc, id_inst, id_stall, id_jump, branch_flag, id_rd,						//40
+	// 						id_alu_op, id_alu_src, id_branch, id_mem_read, id_mem_write, 					//8
+	// 						id_reg_write, id_mem_to_reg, ex_alu_op, ex_alu_src,	ex_branch,					//8
+	// 						ex_mem_read, ex_mem_write, ex_reg_write, ex_mem_to_reg, ex_rd, 					//9
+	// 						ex_alu_out, mem_rd, mem_read, mem_write, mem_reg_write, 						//72					
+	// 						mem_mem_to_reg, wb_regwrite, wb_mem_to_reg, wb_rd, wb_mem_out, 38'd0					//72
+	// 					}), 
+	// 					.logicAddr(logicAddr), .logicOut(logicData));
 	
 	
 
