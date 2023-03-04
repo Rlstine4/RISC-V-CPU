@@ -175,7 +175,7 @@ module datapath(
 	RegFile register(.clk(clk), .rst(rst || ~fifo_rdy), .raddr1(id_rs1), .raddr2(id_rs2), .waddr(wb_rd), .wen(wb_RegWrite), .wdata(wb_rdData), 
                     .rdata1(id_rsData1), .rdata2(id_rsData2));
 	
-	pipe_reg_id_ex id_ex_pipe_reg(.en(~(id_stall || rst || ~fifo_rdy)), .clk(clk), .clr(branch_flag), .id_fifo_select(id_fifo_select) .rsData1In(id_rsData1), .rsData2In(id_rsData2), 
+	pipe_reg_id_ex id_ex_pipe_reg(.en(~(id_stall || rst || ~fifo_rdy)), .clk(clk), .clr(branch_flag), .id_fifo_select(id_fifo_select), .rsData1In(id_rsData1), .rsData2In(id_rsData2), 
                                     .rdAddrIn(id_rd), .alu_op_in(id_alu_op),
                                     .alu_src_in(id_alu_src), .branch_in(id_branch), .mem_read_in(id_mem_read), .mem_write_in(id_mem_write), .reg_write_in(id_reg_write), 
 									.mem_to_reg_in(id_mem_to_reg), .intermediate_in(intermediate_12_reg), .branch_offset_in(id_branch_offset_reg), .alu_op_out(ex_alu_op), 
