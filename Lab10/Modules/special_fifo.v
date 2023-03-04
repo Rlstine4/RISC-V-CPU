@@ -48,12 +48,11 @@ module special_fifo #(parameter FIFO_WIDTH      = 72,
                      (input clk 
                       input rst,
                       input [CTRL_WIDTH-1] in_ctrl,
-                      input processor_rd,
-                      input packet_write,
                       input [WIDTH-1:0] data_in,
                       output FIFO_FULL,
                       output FIFO_EMPTY,
                       output busy,
+                      output reg FIFO_ready,
                       output [PROCESSOR_WIDTH-1:0] data_out
                     );     
                     
@@ -62,8 +61,6 @@ reg [1:0] state;
 reg [8:0] counter; // 9-bit counter allows us to distinguish whether we are full or empty (Read pointer = Write Pointer)
 reg [7:0] write_ptr, read_ptr, packet_head_ptr; // Keep track of where we are writing, reading, and the head of the packet being buffered
 reg fifo_rd, fifo_wr;
-reg prev_ctrl; // If we are in CPU Mode, we want to know if the control signal is high due to incoming header or if it's just idle
-
 
 assign FIFO_FULL   = (counter == DEPTH)      ? 1 : 0; // Set FIFO_FULL to 1 if counter reaches maximum depth
 assign FIFO_EMPTY  = (counter == 9'b0)       ? 1 : 0; // Set FIFO_EMPTY to 1 if counter is 0
@@ -87,7 +84,7 @@ begin
 
     if (rst)
     begin
-        state   = IDLE; // We would like to IDLE as soon as possible
+        state   <= IDLE;
         fifo_rd = 0;
         fifo_wr = 0;
     end
@@ -99,18 +96,18 @@ begin
 
             IDLE:
             begin
-                fifo_rd = 0;
+                fifo_rd   = 0;
                 fifo_wr   = 0;
 
-                if (in_ctrl == 1)
+                if (in_ctrl != 0)
                 begin  
-                    state   = HEADER;
+                    state  = HEADER;
                 end
             end
 
             HEADER:
             begin
-                fifo_wr = 1;
+                fifo_wr = 1'b1;
                 if (in_ctrl == 0)
                 begin
                     state = PAYLOAD;
@@ -121,15 +118,12 @@ begin
             PAYLOAD:
             begin
 
-                if ((in_ctrl == 1 && ~processor_rd) || FIFO_FULL) // IDLE if done buffering packet and no processor request. OR if FIFO fills up prematurely
-                begin
-                    state = IDLE;
-                end
-
-                else if (in_ctrl == 1 && processor_rd) // Done buffering the packet and processor would like to read FIFO 
+                if ((in_ctrl == 1) || FIFO_FULL) // Done buffering so allow processor to consume data
                 begin
                     state = PROCESSOR_MODE;
+                    ready = 1'b1;
                 end
+
 
             end
 
@@ -137,7 +131,7 @@ begin
             begin
 
                 fifo_wr = 0;
-                fifo_rd = 1;
+                fifo_rd = 1'b1;
                 prev_ctrl = in_ctrl;
 
                 if (counter == 0 && in_ctrl ) // READ ALL of the FIFO
@@ -164,7 +158,7 @@ end
 
 // FIFO Logic
 
-always @(negedge clk)
+always @(posedge clk)
 begin
 
     prev_ctrl <= in_ctrl;
