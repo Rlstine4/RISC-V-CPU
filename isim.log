@@ -1,0 +1,129 @@
+Command line:
+   ./datapath_tb_isim_beh.exe
+     -intstyle  ise
+     -ipchost  localhost
+     -ipcport  1141
+WARNING:Simulator:678 -  For instance uut/FIFO/, width 64 of formal port data_in
+   is not equal to width 72 of actual signal implSig7.
+
+Sat Mar 04 18:52:38 2023
+
+WARNING:Simulator:694 - "C:/Documents and Settings/Archive/My
+   Documents/Lab10/datapath.v" Line 290.  Module special_fifo does not have a
+   `timescale directive but previous modules do.
+Total Line Count : 1493
+
+ Elaboration Time: 0.020029 sec
+
+ Current Memory Usage: 253.157 Meg
+
+ Total Signals          : 573
+ Total Nets             : 8173
+ Total Signal Drivers   : 429
+ Total Blocks           : 71
+ Total Primitive Blocks : 50
+ Total Processes        : 403
+ Total Traceable Variables  : 455
+ Total Scalar Nets and Variables : 13199
+ntrace select -o on -n /datapath_tb/pc 
+ntrace select -o on -n /datapath_tb/if_inst 
+ntrace select -o on -n /datapath_tb/PCSrc 
+ntrace select -o on -n /datapath_tb/branchAddr 
+ntrace select -o on -n /datapath_tb/jumpAddr 
+ntrace select -o on -n /datapath_tb/id_inst 
+ntrace select -o on -n /datapath_tb/opcode 
+ntrace select -o on -n /datapath_tb/funct7 
+ntrace select -o on -n /datapath_tb/funct3 
+ntrace select -o on -n /datapath_tb/id_alu_op 
+ntrace select -o on -n /datapath_tb/id_alu_src 
+ntrace select -o on -n /datapath_tb/id_branch 
+ntrace select -o on -n /datapath_tb/id_jump 
+ntrace select -o on -n /datapath_tb/id_mem_read 
+ntrace select -o on -n /datapath_tb/id_mem_write 
+ntrace select -o on -n /datapath_tb/id_reg_write 
+ntrace select -o on -n /datapath_tb/id_mem_to_reg 
+ntrace select -o on -n /datapath_tb/id_WMemEn 
+ntrace select -o on -n /datapath_tb/id_WRegEn 
+ntrace select -o on -n /datapath_tb/id_rs1 
+ntrace select -o on -n /datapath_tb/id_rs2 
+ntrace select -o on -n /datapath_tb/id_rd 
+ntrace select -o on -n /datapath_tb/id_rsData1 
+ntrace select -o on -n /datapath_tb/id_rsData2 
+ntrace select -o on -n /datapath_tb/intermediate_12 
+ntrace select -o on -n /datapath_tb/intermediate_21 
+ntrace select -o on -n /datapath_tb/id_branch_offset 
+ntrace select -o on -n /datapath_tb/jump_offset 
+ntrace select -o on -n /datapath_tb/id_stall 
+ntrace select -o on -n /datapath_tb/ex_rd 
+ntrace select -o on -n /datapath_tb/ex_rsData1 
+ntrace select -o on -n /datapath_tb/ex_rsData2 
+ntrace select -o on -n /datapath_tb/alu_B 
+ntrace select -o on -n /datapath_tb/ex_alu_out 
+ntrace select -o on -n /datapath_tb/ex_alu_op 
+ntrace select -o on -n /datapath_tb/ex_alu_src 
+ntrace select -o on -n /datapath_tb/ex_branch 
+ntrace select -o on -n /datapath_tb/ex_mem_read 
+ntrace select -o on -n /datapath_tb/ex_mem_write 
+ntrace select -o on -n /datapath_tb/ex_reg_write 
+ntrace select -o on -n /datapath_tb/ex_mem_to_reg 
+ntrace select -o on -n /datapath_tb/ex_overflow 
+ntrace select -o on -n /datapath_tb/branch_flag 
+ntrace select -o on -n /datapath_tb/ex_equal 
+ntrace select -o on -n /datapath_tb/ex_not_equal 
+ntrace select -o on -n /datapath_tb/ex_less_than 
+ntrace select -o on -n /datapath_tb/ex_greater_than_equal 
+ntrace select -o on -n /datapath_tb/ex_intermediate_12 
+ntrace select -o on -n /datapath_tb/signed_intermediate 
+ntrace select -o on -n /datapath_tb/ex_branch_offset 
+ntrace select -o on -n /datapath_tb/mem_WMemEn 
+ntrace select -o on -n /datapath_tb/mem_rd 
+ntrace select -o on -n /datapath_tb/mem_rsData2 
+ntrace select -o on -n /datapath_tb/mem_mem_out 
+ntrace select -o on -n /datapath_tb/mem_overflow 
+ntrace select -o on -n /datapath_tb/mem_branch 
+ntrace select -o on -n /datapath_tb/mem_read 
+ntrace select -o on -n /datapath_tb/mem_write 
+ntrace select -o on -n /datapath_tb/mem_reg_write 
+ntrace select -o on -n /datapath_tb/mem_mem_to_reg 
+ntrace select -o on -n /datapath_tb/mem_alu_out 
+ntrace select -o on -n /datapath_tb/wb_RegWrite 
+ntrace select -o on -n /datapath_tb/wb_mem_to_reg 
+ntrace select -o on -n /datapath_tb/wb_rd 
+ntrace select -o on -n /datapath_tb/wb_mem_out 
+ntrace select -o on -n /datapath_tb/wb_alu_out 
+ntrace select -o on -n /datapath_tb/wb_rdData 
+ntrace select -o on -n /datapath_tb/register 
+ntrace select -o on -n /datapath_tb/cycle_count 
+ntrace select -o on -n /datapath_tb/ex_inst_check 
+ntrace select -o on -n /datapath_tb/mem_inst_check 
+ntrace select -o on -n /datapath_tb/wb_inst_check 
+ntrace select -o on -n /datapath_tb/memInData 
+ntrace select -o on -n /datapath_tb/clk 
+ntrace select -o on -n /datapath_tb/FIFO_state 
+ntrace select -o on -n /datapath_tb/rst 
+ntrace select -o on -n /datapath_tb/memWE 
+ntrace select -o on -n /datapath_tb/memAddr 
+ntrace select -o on -n /datapath_tb/memOutData 
+ntrace select -o on -n /datapath_tb/in_ctrl 
+ntrace select -o on -n /datapath_tb/packet_data 
+ntrace select -o on -n /datapath_tb/uut/fifo_full 
+ntrace select -o on -n /datapath_tb/fifo_write 
+ntrace select -o on -n /datapath_tb/FIFO_count 
+ntrace select -o on -n /datapath_tb/uut/fifo_empty 
+ntrace select -o on -n /datapath_tb/uut/fifo_busy 
+ntrace select -o on -n /datapath_tb/uut/fifo_rdy 
+ntrace select -o on -n /datapath_tb/fifo_mem_select 
+ntrace select -o on -n /datapath_tb/uut/fifo_out 
+ntrace start 
+isimrun 1000 ns 
+Simulator is doing circuit initialization process.
+Finished circuit initialization process.
+isimrun 1000 ns 
+isimrun 1000 ns 
+
+ Total Simulation Time: 0.16023 sec
+
+ Current Memory Usage: 261.546 Meg
+
+Sat Mar 04 19:02:40 2023
+
