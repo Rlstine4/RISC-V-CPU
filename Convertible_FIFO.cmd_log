@@ -1,3 +1,0 @@
-xst -ise "C:/Documents and Settings/Archive/My Documents/Lab10/Lab10.ise" -intstyle ise -ifn "C:/Documents and Settings/Archive/My Documents/Lab10/Convertible_FIFO.xst" -ofn "C:/Documents and Settings/Archive/My Documents/Lab10/Convertible_FIFO.syr"
-ngdbuild -ise "C:/Documents and Settings/Archive/My Documents/Lab10/Lab10.ise" -intstyle ise -dd _ngo   -sd "Z:/Lab10/IP Cores" -nt timestamp -i -p xc2vp30-ff896-6 "Convertible_FIFO.ngc" Convertible_FIFO.ngd
-map -ise "C:/Documents and Settings/Archive/My Documents/Lab10/Lab10.ise" -intstyle ise -p xc2vp30-ff896-6 -cm area -pr off -k 4 -c 100 -tx off -o Convertible_FIFO_map.ncd Convertible_FIFO.ngd Convertible_FIFO.pcf
