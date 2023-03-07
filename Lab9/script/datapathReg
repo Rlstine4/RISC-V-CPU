@@ -115,7 +115,9 @@ elsif ($cmd eq "dmem") {
    my $dmemHigh = hex(regread( $DATAPATH_DMEM_VALUE_HIGH_REG ));
    my $dmemLow = hex(regread( $DATAPATH_DMEM_VALUE_LOW_REG ));
 
-   print "Data at index  " , $ARGV[1], " is: ", ($dmemHigh<<32)|$dmemLow, "\n";
+   my $data = $dmemHigh<<32|$dmemLow;
+
+   print "Data at index  " , $ARGV[1], " is: ", sprintf("0x%X", $data ) , " ($data) \n";
 } 
 elsif($cmd eq "dmemW"){
    if ($numargs < 3) {

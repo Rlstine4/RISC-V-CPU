@@ -91,6 +91,7 @@ module datapath(
     wire mem_fifo_select;
     wire fifo_full, fifo_empty, fifo_busy, fifo_rdy;
     wire [63:0] fifo_out;
+	 wire [8:0] fifo_count;
 	
 	//WriteBack stage wires
 	wire wb_RegWrite, wb_mem_to_reg;
@@ -98,6 +99,10 @@ module datapath(
 	wire [63:0]wb_mem_out, wb_alu_out;
 	wire [63:0]wb_rdData;
 	reg [63:0]wb_rdData_reg;
+	wire wb_fifo_select;
+	
+	wire reset;
+	assign reset = rst || ~fifo_rdy;
 	
 	//misc
 	reg [31:0]cycle_count_reg= 0, ex_inst_check_reg, mem_inst_check_reg, wb_inst_check_reg;
@@ -113,8 +118,8 @@ module datapath(
 	assign wb_inst_check = wb_inst_check_reg;
 	
 	//Instruction Fetch stage datapath
-	pcCounter pcc(.en(~(id_stall)), .clk(clk), .rst(rst || ~fifo_rdy), .pc(pc), .PCSrc(PCSrc), .jumpAddr(jumpAddr_reg), .branchAddr(branchAddr));
-	inst_mem iMem(.ena(~(id_stall || rst || ~fifo_rdy)), .sinita(id_jump || branch_flag), .addra(pc), .clka(clk), .douta(id_inst), 
+	pcCounter pcc(.en(~(id_stall)), .clk(clk), .rst(reset), .pc(pc), .PCSrc(PCSrc), .jumpAddr(jumpAddr_reg), .branchAddr(branchAddr));
+	inst_mem iMem(.ena(~(id_stall || reset)), .sinita(id_jump || branch_flag), .addra(pc), .clka(clk), .douta(id_inst), 
 					.web(iMemWE), .addrb(iMemAddr), .dinb(iMemInData), .clkb(clk));
     
     //pipe_reg_if_id if_id_pipe_reg(.en(~(id_stall || rst)), .clk(clk), .clr(id_jump || branch_flag), .instruction_in(if_inst), .instruction_out(id_inst));
@@ -170,12 +175,12 @@ module datapath(
 	//assign PCSrc = PCSrc_reg;
     
     control_unit control(.opcode(opcode), .rd(id_rd), .funct7(funct7), .funct3(funct3), .alu_op(id_alu_op), .alu_src(id_alu_src), .branch(id_branch), 
-        .jump(id_jump), .mem_read(id_mem_read), .mem_write(id_mem_write), .reg_write(id_reg_write), .mem_to_reg(id_mem_to_reg), .fifo_select(mem_fifo_select));
+        .jump(id_jump), .mem_read(id_mem_read), .mem_write(id_mem_write), .reg_write(id_reg_write), .mem_to_reg(id_mem_to_reg), .fifo_select(id_fifo_select));
 		
-	RegFile register(.clk(clk), .rst(rst || ~fifo_rdy), .raddr1(id_rs1), .raddr2(id_rs2), .waddr(wb_rd), .wen(wb_RegWrite), .wdata(wb_rdData), 
+	RegFile register(.clk(clk), .rst(reset), .raddr1(id_rs1), .raddr2(id_rs2), .waddr(wb_rd), .wen(wb_RegWrite), .wdata(wb_rdData), 
                     .rdata1(id_rsData1), .rdata2(id_rsData2));
 	
-	pipe_reg_id_ex id_ex_pipe_reg(.en(~(id_stall || rst || ~fifo_rdy)), .clk(clk), .clr(branch_flag), .id_fifo_select(id_fifo_select), .rsData1In(id_rsData1), .rsData2In(id_rsData2), 
+	pipe_reg_id_ex id_ex_pipe_reg(.en(~(id_stall || reset)), .clk(clk), .clr(branch_flag), .id_fifo_select(id_fifo_select), .rsData1In(id_rsData1), .rsData2In(id_rsData2), 
                                     .rdAddrIn(id_rd), .alu_op_in(id_alu_op),
                                     .alu_src_in(id_alu_src), .branch_in(id_branch), .mem_read_in(id_mem_read), .mem_write_in(id_mem_write), .reg_write_in(id_reg_write), 
 									.mem_to_reg_in(id_mem_to_reg), .intermediate_in(intermediate_12_reg), .branch_offset_in(id_branch_offset_reg), .alu_op_out(ex_alu_op), 
@@ -207,7 +212,7 @@ module datapath(
 	ALU_64 alu(.A(ex_rsData1), .B(alu_B), .aluctrl(ex_alu_op), .Z(ex_alu_out), .overflow(ex_overflow), //.equal(ex_equal), .not_equal(ex_not_equal), 
 				.less_than(ex_less_than), .greater_than_equal(ex_greater_than_equal));
 	
-	pipe_reg_ex_mem ex_mem_pipe_reg(.en(~(rst || ~fifo_rdy)), .clr(branch_flag), .clk(clk), .rdAddrIn(ex_rd), .rsData2In(ex_rsData2), .ex_alu_output(ex_alu_out), .ex_overflow(ex_overflow),
+	pipe_reg_ex_mem ex_mem_pipe_reg(.en(~(reset)), .clr(branch_flag), .clk(clk), .rdAddrIn(ex_rd), .rsData2In(ex_rsData2), .ex_alu_output(ex_alu_out), .ex_overflow(ex_overflow),
 									.ex_mem_read(ex_mem_read), .ex_mem_write(ex_mem_write), .ex_reg_write(ex_reg_write), .ex_mem_to_reg(ex_mem_to_reg), .ex_branch(ex_branch),
                                     .ex_fifo_select(ex_fifo_select),
 									//.ex_equal(ex_equal), .ex_not_equal(ex_not_equal), 
@@ -276,16 +281,15 @@ module datapath(
 	assign branch_flag = branch_flag_reg;
 	assign branchAddr = branchAddr_reg;
 				
-	data_mem dMem(.addra(memAddr), .addrb(mem_alu_out), .clka(clk), .clkb(clk), .dina(memInData), .dinb(mem_rsData2), .douta(memOutData), .doutb(wb_mem_out), .wea(memWE), 
+	data_mem dMem(.addra(memAddr), .addrb(mem_alu_out[7:0]), .clka(clk), .clkb(clk), .dina(memInData), .dinb(mem_rsData2), .douta(memOutData), .doutb(wb_mem_out), .wea(memWE), 
 					.web(mem_write));
 	
 	
-	pipe_reg_mem_wb mem_wb_pipe_reg(.en(~rst || fifo_rdy), .clk(clk), .mem_reg_write_in(mem_reg_write), .mem_to_reg_in(mem_mem_to_reg), .rdAddrIn(mem_rd), .mem_mem_out(mem_mem_out), 
+	pipe_reg_mem_wb mem_wb_pipe_reg(.en(~reset), .mem_fifo_select(mem_fifo_select), .clk(clk), .mem_reg_write_in(mem_reg_write), .mem_to_reg_in(mem_mem_to_reg), .rdAddrIn(mem_rd), .mem_mem_out(mem_mem_out), .wb_fifo_select(wb_fifo_select),
 									.mem_alu_out(mem_alu_out), .wb_reg_write(wb_RegWrite), .wb_mem_to_reg(wb_mem_to_reg), .rdAddrOut(wb_rd), .wb_alu_out(wb_alu_out));
     
-    special_fifo FIFO(.clk(clk), .rst(rst), .in_ctrl(in_ctrl[0]), .data_in({in_ctrl, packet_data_in}), .FIFO_FULL(fifo_full), .FIFO_EMPTY(fifo_empty), .busy(fifo_busy), .FIFO_ready(fifo_rdy), .data_out(fifo_out));
-
-
+    special_fifo FIFO(.clk(clk), .rst(rst), .fifo_rd(mem_fifo_select), .count(fifo_count), .in_ctrl(in_ctrl), .data_in({in_ctrl, packet_data_in}), .FIFO_FULL(fifo_full), .FIFO_EMPTY(fifo_empty), .busy(fifo_busy), .FIFO_ready(fifo_rdy), .data_out(fifo_out));
+	
     
 	
 	//Write back Stage Datapath
@@ -294,7 +298,18 @@ module datapath(
 	begin
 		if (wb_mem_to_reg == 1'b1) 
 		begin
-			wb_rdData_reg = wb_mem_out;
+			
+			
+			if(wb_fifo_select == 1'b1)
+			begin
+				wb_rdData_reg = fifo_out;
+			end
+			
+			else
+			begin
+				wb_rdData_reg = wb_mem_out;
+			end
+			
 		end
 		else
 		begin

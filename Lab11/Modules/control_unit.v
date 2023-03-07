@@ -44,13 +44,13 @@ module control_unit (
         case (opcode)
 			NOP:
 			begin
-				{alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b0000000;
+				{alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg,fifo_select} = 8'b00000000;
                 alu_op = 4'b0000; // ADD
 			end
 
             R_TYPE:
 			begin
-              {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b0000010;
+              {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg,fifo_select} = 8'b00000100;
 
                 if ( (funct7 == 7'b0000000) && (funct3 == 3'b000)) // ADD   
 				begin
@@ -68,7 +68,7 @@ module control_unit (
 
             I_TYPE:
 			begin
-				{alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b1000010;
+				{alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg,fifo_select} = 8'b10000100;
                 if ( funct3 == 3'b000 ) // ADDI
 				begin		
 					alu_op = 4'b0001;
@@ -89,30 +89,29 @@ module control_unit (
            
             LOAD:
 			begin
-                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b1001011;
                 alu_op = 4'b0001; // ADD
     
                 if (funct3 == 3'b011)
                 begin
-                    fifo_select = 1'b1;
+                    {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg,fifo_select} = 8'b10010111;
                 end
 
                 else // if NOT LD, then make sure D-MEM is selected and fifo_select is 0
                 begin
-                    fifo_select = 1'b0;
+                    {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg,fifo_select} = 8'b10010110;
                 end
 
 			end
             
             STORE:
 			begin
-                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b1000100;
+                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg,fifo_select} = 8'b10001000;
                 alu_op = 4'b0001;
 			end
             
             BRANCH:
 			begin
-                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b0100000;
+                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg,fifo_select} = 8'b01000000;
 
 //                if ( funct3 == 3'b000) // BEQ
 //				begin
@@ -136,13 +135,13 @@ module control_unit (
             
             JAL: 
 			begin
-                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b1010000;
+                {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg,fifo_select} = 8'b10100000;
                 alu_op = 4'b0001; // ADD
 			end
 			
 			default:
 			begin
-				{alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg} = 7'b0000000;
+				{alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg,fifo_select} = 8'b00000000;
                 alu_op = 4'b0000; 
 			end
 

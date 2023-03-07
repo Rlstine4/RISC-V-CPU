@@ -1,0 +1,42 @@
+
+00b200a2714310000000000000000000062000000000000000000
+00b200a26143100000000000000000000000c0000000000000005
+1fd48484710320c4a000000000000005900000000000000000000
+1fd48484710320000000000000000000051000000000000000000
+1fd484846103200000000000000000000004a0000000000000000
+005000a2714310c88ffffffffffffffe800000000000000000000
+
+pc                      :   [217:209]
+id_inst                 :   [208:177]
+id_stall                :   176  
+id_jump                 ;   175 
+branch_flag             :   174
+id_rd                   :   [173:169]
+id_alu_op               :   [168:165]
+id_alu_src              :   164
+id_branch               :   163
+id_mem_read             :   162
+id_mem_write            :   161
+id_reg_write            :   160
+id_mem_to_reg           :   159
+ex_alu_op               :   [158:155]
+ex_alu_src              :   154
+ex_branch               :   153
+ex_mem_read             :   152
+ex_mem_write            :   151
+ex_reg_write            :   150
+ex_mem_to_reg           :   149
+ex_rd                   :   [148:144]
+ex_alu_out              :   [143:80]
+mem_rd                  :   [79:75]
+mem_read                :   74
+mem_write               :   73
+mem_reg_write			:   72  	
+mem_mem_to_reg          :   71
+wb_RegWrite             :   70
+wb_mem_to_reg           :   69
+wb_rd                   :   [68:64]
+wb_mem_out              :   [63:0]
+
+
+

@@ -42,16 +42,19 @@
 */
 
 module special_fifo #(parameter FIFO_WIDTH      = 72,
+						  
                       parameter DEPTH           = 256,
                       parameter PROCESSOR_WIDTH = 64,
                       parameter CTRL_WIDTH      = 8)
-                      (input clk, 
+                     (input clk, 
                       input rst,
                       input [CTRL_WIDTH-1:0] in_ctrl,
                       input [PROCESSOR_WIDTH-1:0] data_in,
+							 input fifo_rd,
                       output FIFO_FULL,
                       output FIFO_EMPTY,
                       output busy,
+							 output [8:0] count,
                       output reg FIFO_ready,
                       output [PROCESSOR_WIDTH-1:0] data_out
                     );     
@@ -60,18 +63,20 @@ module special_fifo #(parameter FIFO_WIDTH      = 72,
 reg [1:0] state;
 reg [8:0] counter; // 9-bit counter allows us to distinguish whether we are full or empty (Read pointer = Write Pointer)
 reg [7:0] write_ptr, read_ptr, packet_head_ptr; // Keep track of where we are writing, reading, and the head of the packet being buffered
-reg fifo_rd, fifo_wr;
+reg  fifo_wr;
 
 assign FIFO_FULL   = (counter == DEPTH)      ? 1 : 0; // Set FIFO_FULL to 1 if counter reaches maximum depth
 assign FIFO_EMPTY  = (counter == 9'b0)       ? 1 : 0; // Set FIFO_EMPTY to 1 if counter is 0
 assign busy = (fifo_rd || fifo_wr)           ? 1 : 0;
+assign count = counter;
 
 assign read_en    = (~FIFO_EMPTY && fifo_rd) ? 1 : 0; // Read only if FIFO not empty and fifo_rd signal
 assign write_en   = (~FIFO_FULL  && fifo_wr) ? 1 : 0; // Write only if FIFO not full and fifo_wr signal
 
+
 // 4 possible states
 
-parameter IDLE           = 2'b00,
+localparam IDLE           = 2'b00,
           HEADER         = 2'b01,
           PAYLOAD        = 2'b10,
           PROCESSOR_MODE = 2'b11;
@@ -79,14 +84,15 @@ parameter IDLE           = 2'b00,
 
 //Control Logic
 
-always @(*)
+always @(posedge clk)
 begin
 
     if (rst)
     begin
-        state   <= IDLE;
-        fifo_rd = 0;
-        fifo_wr = 0;
+        state  	<= IDLE;
+        //fifo_rd	<= 0;
+        fifo_wr 	<= 0;
+		  FIFO_ready  <= 0;
     end
 
     else
@@ -96,21 +102,21 @@ begin
 
             IDLE:
             begin
-                fifo_rd   = 0;
-                fifo_wr   = 0;
+                //fifo_rd   <= 0;
+                fifo_wr   <= 0;
 
                 if (in_ctrl != 0)
                 begin  
-                    state  = HEADER;
+                    state  <= HEADER;
                 end
             end
 
             HEADER:
             begin
-                fifo_wr = 1'b1;
+                fifo_wr <= 1'b1;
                 if (in_ctrl == 0)
                 begin
-                    state = PAYLOAD;
+                    state <= PAYLOAD;
                 end
 
             end
@@ -120,8 +126,8 @@ begin
 
                 if ((in_ctrl == 1) || FIFO_FULL) // Done buffering so allow processor to consume data
                 begin
-                    state = PROCESSOR_MODE;
-                    FIFO_ready = 1'b1;
+                    state <= PROCESSOR_MODE;
+                    FIFO_ready <= 1'b1;
                 end
 
 
@@ -130,18 +136,18 @@ begin
             PROCESSOR_MODE:
             begin
 
-                fifo_wr = 0;
-                fifo_rd = 1'b1;
+                fifo_wr <= 0;
+                //fifo_rd <= 1'b1;
                 //prev_ctrl = in_ctrl;
 
                 if (counter == 0 && in_ctrl ) // READ ALL of the FIFO
                 begin
-                    state = IDLE;
+                    state <= IDLE;
                 end
 
                 else if (counter == 0) // Need better logic to detect if a packet is raedy
                 begin
-                    state = HEADER;
+                    state <= HEADER;
                 end
 
                 // SHOULD NEVER JUST WRITE DATA WITHOUT HEADER
@@ -169,8 +175,7 @@ begin
         read_ptr        <= 0;
         write_ptr       <= 0;
         packet_head_ptr <= 0;
-       // ready_rd        <= 0;
-       // ready_wr        <= 1; // FIFO will be "empty", so write requests can be accepted
+		  
     end
 
     else if (write_en && ~FIFO_FULL) // We are assuming that read_req cannot be HIGH at the same time as dictated by control unit
@@ -188,9 +193,9 @@ begin
     
 end
 
-reg [71:0] fifo_mem_out;
+wire [71:0] fifo_mem_out;
 assign data_out = fifo_mem_out[63:0];
 
-Convertible_FIFO fifo_memory(.clka(clk), .dina(data_in), .addra(write_ptr), .wea(write_en), .clkb(clk), .addrb(read_ptr), .doutb(fifo_mem_out) );
+Convertible_FIFO fifo_memory(.clka(clk), .dina({in_ctrl, data_in}), .addra(write_ptr), .wea(write_en), .clkb(clk), .addrb(read_ptr), .doutb(fifo_mem_out) );
 
 endmodule
