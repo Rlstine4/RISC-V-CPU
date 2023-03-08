@@ -27,6 +27,7 @@ module datapath(
 	input [13:0]logicAddr,
     input [7:0] in_ctrl,
     input [63:0] packet_data_in,
+    output processor_rdy,
 	output [63:0]memOutData,
 	output [217:0]logicData
 	);
@@ -89,9 +90,11 @@ module datapath(
 	wire [12:0] mem_branch_offset;
 	wire [3:0]mem_alu_op;
     wire mem_fifo_select;
-    wire fifo_full, fifo_empty, fifo_busy, fifo_rdy;
+    wire fifo_full, fifo_empty, fifo_busy, fifo_rdy_rd;
     wire [63:0] fifo_out;
 	 wire [8:0] fifo_count;
+
+    assign processor_rdy = ~fifo_rdy_rd; // When FIFO is NOT being read, signal will go HIGH telling the Output Queues to send new packet
 	
 	//WriteBack stage wires
 	wire wb_RegWrite, wb_mem_to_reg;
@@ -102,7 +105,7 @@ module datapath(
 	wire wb_fifo_select;
 	
 	wire reset;
-	assign reset = rst || ~fifo_rdy;
+	assign reset = rst || ~fifo_rdy_rd;
 	
 	//misc
 	reg [31:0]cycle_count_reg= 0, ex_inst_check_reg, mem_inst_check_reg, wb_inst_check_reg;
@@ -288,7 +291,7 @@ module datapath(
 	pipe_reg_mem_wb mem_wb_pipe_reg(.en(~reset), .mem_fifo_select(mem_fifo_select), .clk(clk), .mem_reg_write_in(mem_reg_write), .mem_to_reg_in(mem_mem_to_reg), .rdAddrIn(mem_rd), .mem_mem_out(mem_mem_out), .wb_fifo_select(wb_fifo_select),
 									.mem_alu_out(mem_alu_out), .wb_reg_write(wb_RegWrite), .wb_mem_to_reg(wb_mem_to_reg), .rdAddrOut(wb_rd), .wb_alu_out(wb_alu_out));
     
-    special_fifo FIFO(.clk(clk), .rst(rst), .fifo_rd(mem_fifo_select), .count(fifo_count), .in_ctrl(in_ctrl), .data_in({in_ctrl, packet_data_in}), .FIFO_FULL(fifo_full), .FIFO_EMPTY(fifo_empty), .busy(fifo_busy), .FIFO_ready(fifo_rdy), .data_out(fifo_out));
+    special_fifo FIFO(.clk(clk), .rst(rst), .fifo_rd(mem_fifo_select), .count(fifo_count), .in_ctrl(in_ctrl), .data_in({in_ctrl, packet_data_in}), .FIFO_FULL(fifo_full), .FIFO_EMPTY(fifo_empty), .busy(fifo_busy), .fifo_rdy_rd(fifo_rdy_rd), .data_out(fifo_out));
 	
     
 	
