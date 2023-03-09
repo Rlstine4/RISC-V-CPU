@@ -58,7 +58,7 @@ module datapath_deter
    wire [CTRL_WIDTH-1:0] in_ctrl_wire;
    wire in_wr_wire;
    wire out_rdy_wire;
-   wire processor_rdy;
+   wire packet_accept;
    
    
    assign in_data_wire = in_data;
@@ -70,14 +70,14 @@ module datapath_deter
    assign out_ctrl = in_ctrl_wire;
    assign out_wr = in_wr_wire;
    //assign in_rdy = out_rdy_wire;
-   assign in_rdy    = processor_rdy;
+   assign in_rdy    = packet_accept;
    
    assign processer_reset = (reset || input_cmd[0]);
    
    datapath data_path(.clk(clk), .rst(processer_reset), .logicEn(input_cmd[3]), .logicWe(input_cmd[2]), .iMemWE(input_cmd[4]), 
                         .memWE(input_cmd[1]), .memAddr(dmem_index), .logicAddr(logic_analyser_index), .memInData({dmem_data_high,dmem_data_low}), 
                         .memOutData(dmem_out), .logicData(logic_analyser_out), .iMemAddr(imem_index), .iMemInData(imem_data),
-                        .packet_data_in(in_data), .in_ctrl(in_ctrl), .processor_rdy(processor_rdy));
+                        .packet_data_in(in_data), .in_ctrl(in_ctrl), .packet_accept(packet_accept));
 
    always@(*)
    begin

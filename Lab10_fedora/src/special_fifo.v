@@ -144,13 +144,14 @@ begin
                 begin
                     state <= IDLE;
                 end
+                /*
 
-                else if (counter == 0) // Need better logic to detect if a packet is raedy
+                else if (counter == 0) 
                 begin
                     state <= HEADER;
                 end
+*/
 
-                // SHOULD NEVER JUST WRITE DATA WITHOUT HEADER
 
             end
 

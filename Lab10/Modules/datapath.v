@@ -27,7 +27,7 @@ module datapath(
 	input [13:0]logicAddr,
     input [7:0] in_ctrl,
     input [63:0] packet_data_in,
-    output processor_rdy,
+    output packet_accept,
 	output [63:0]memOutData,
 	output [217:0]logicData
 	);
@@ -47,7 +47,7 @@ module datapath(
     wire [6:0] funct7;
     wire [2:0] funct3;
     wire [3:0]id_alu_op;
-	wire id_alu_src, id_branch, id_jump, id_mem_read, id_mem_write, id_reg_write, id_mem_to_reg;
+	wire id_alu_src, id_branch, id_jump, id_mem_read, id_mem_write, id_reg_write, id_mem_to_reg, id_process_end;
     wire id_fifo_select;
 	wire id_WMemEn, id_WRegEn;
 	wire [4:0]id_rs1, id_rs2, id_rd;
@@ -94,7 +94,7 @@ module datapath(
     wire [63:0] fifo_out;
 	 wire [8:0] fifo_count;
 
-    assign processor_rdy = ~fifo_rdy_rd; // When FIFO is NOT being read, signal will go HIGH telling the Output Queues to send new packet
+    assign packet_accept = ~fifo_rdy_rd; // When FIFO is NOT being read, signal will go HIGH telling the Output Queues to send new packet
 	
 	//WriteBack stage wires
 	wire wb_RegWrite, wb_mem_to_reg;
@@ -103,9 +103,27 @@ module datapath(
 	wire [63:0]wb_rdData;
 	reg [63:0]wb_rdData_reg;
 	wire wb_fifo_select;
-	
+
+    reg rst_reg;
+
+    always @(*)
+    begin
+
+        if (rst || process_end)
+        begin
+            rst_reg = 1;
+        end
+
+        else if(fifo_rdy_rd)
+        begin
+            rst_reg = 0;
+        end
+
+    end
+
+    
 	wire reset;
-	assign reset = rst || ~fifo_rdy_rd;
+	assign reset = rst || rst_reg;
 	
 	//misc
 	reg [31:0]cycle_count_reg= 0, ex_inst_check_reg, mem_inst_check_reg, wb_inst_check_reg;
@@ -178,7 +196,7 @@ module datapath(
 	//assign PCSrc = PCSrc_reg;
     
     control_unit control(.opcode(opcode), .rd(id_rd), .funct7(funct7), .funct3(funct3), .alu_op(id_alu_op), .alu_src(id_alu_src), .branch(id_branch), 
-        .jump(id_jump), .mem_read(id_mem_read), .mem_write(id_mem_write), .reg_write(id_reg_write), .mem_to_reg(id_mem_to_reg), .fifo_select(id_fifo_select));
+        .jump(id_jump), .mem_read(id_mem_read), .mem_write(id_mem_write), .reg_write(id_reg_write), .mem_to_reg(id_mem_to_reg), .fifo_select(id_fifo_select), .process_end(id_process_end));
 		
 	RegFile register(.clk(clk), .rst(reset), .raddr1(id_rs1), .raddr2(id_rs2), .waddr(wb_rd), .wen(wb_RegWrite), .wdata(wb_rdData), 
                     .rdata1(id_rsData1), .rdata2(id_rsData2));
