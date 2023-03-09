@@ -109,7 +109,7 @@ module datapath(
     always @(*)
     begin
 
-        if (rst || process_end)
+       if (rst || id_process_end)
         begin
             rst_reg = 1;
         end

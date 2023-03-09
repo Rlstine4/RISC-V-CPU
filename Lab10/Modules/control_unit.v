@@ -24,7 +24,7 @@ module control_unit (
 	input [2:0] funct3,
     input [4:0] rd,
 	output reg [3:0] alu_op,
-	output reg alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg, fifo_select, process_end;
+	output reg alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg, fifo_select, process_end
 	);
 
   // Opcodes for different types of instructions
