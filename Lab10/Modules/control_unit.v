@@ -24,7 +24,7 @@ module control_unit (
 	input [2:0] funct3,
     input [4:0] rd,
 	output reg [3:0] alu_op,
-	output reg alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg, fifo_select
+	output reg alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg, fifo_select, process_end
 	);
 
   // Opcodes for different types of instructions
@@ -37,7 +37,7 @@ module control_unit (
             STORE       = 7'b0100011, // SB, SH, SW
             BRANCH      = 7'b1100011, // BEQ, BNE, BLT, BGE, BLTU, BGEU
             JAL         = 7'b1101111, // (J-Type)
-            JALR        = 7'b1100111; // (Special I-Type) 
+            JALR        = 7'b1100111; // (Special I-Type)
 
     always @(*)
     begin
@@ -46,6 +46,11 @@ module control_unit (
 			begin
 				{alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg,fifo_select} = 8'b00000000;
                 alu_op = 4'b0000; // ADD
+
+                if (rd == 5'b01111) // Since it's a NOP, if we detect a rd =0F, we can take this as END of program (This needs to be manually placed at end of instruction flow)
+                begin
+                    process_end = 1;
+                end 
 			end
 
             R_TYPE:

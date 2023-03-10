@@ -23,21 +23,20 @@
 
 
     INPUTS:
-            clk = synchronous negative-edge triggered FIFO
-            rst = synchronous negative-edge triggered reset
-            rd_req = Processor would like to read FIFO
-            wr_req = Reference pipeline would like to write packets to FIFO
-            data_in = 72 bit data in. 8 bits for control signals and 64 bits for data
-            first_word = let fifo know where to set head
-            last_word  = let fifo know that packet is fully buffered
+
+           clk     =
+           rst     =
+           in_ctrl =
+           data_in =
+           fifo_rd = 
+           
 
     OUTPUTS:
-            FIFO_FULL  = FIFO is full and cannot accept additional packets
-            FIFO_EMPTY = FIFO is empty, meaning it cannot receive packets but cannot be read from
-            ready_rd      = signal to processor that FIFO is ready to be read. Also, block additional requests from reference pipeline
-            ready_wr      = signal to reference pipeline that packets can be buffered and block requests from processor
+            FIFO_FULL        = FIFO is full and cannot accept additional packets
+            FIFO_EMPTY       = FIFO is empty, meaning it cannot receive packets but cannot be read from
+            fifo_rdy_rd      = signal to processor that FIFO is ready to be read. Also, block additional requests from reference pipeline
+
             data_out      = Grab 64 bits of data to feed into processor
-            ctrl_out      = 8 bits of control signal (This may be necesary if packet needs to be sent back into output queue) ???
             //counter       = 8 bit counter to keep track of how many packets are in the FIFO. Useful for logic analyzer (prevent rollover)
 */
 
@@ -50,19 +49,19 @@ module special_fifo #(parameter FIFO_WIDTH      = 72,
                       input rst,
                       input [CTRL_WIDTH-1:0] in_ctrl,
                       input [PROCESSOR_WIDTH-1:0] data_in,
-							 input fifo_rd,
+					  input fifo_rd,
                       output FIFO_FULL,
                       output FIFO_EMPTY,
                       output busy,
-							 output [8:0] count,
-                      output reg FIFO_ready,
+					  output [8:0] count,
+                      output reg fifo_rdy_rd,
                       output [PROCESSOR_WIDTH-1:0] data_out
                     );     
                     
 
 reg [1:0] state;
 reg [8:0] counter; // 9-bit counter allows us to distinguish whether we are full or empty (Read pointer = Write Pointer)
-reg [7:0] write_ptr, read_ptr, packet_head_ptr; // Keep track of where we are writing, reading, and the head of the packet being buffered
+reg [7:0] write_ptr, read_ptr; // Keep track of where we are writing, reading, and the head of the packet being buffered
 reg  fifo_wr;
 
 assign FIFO_FULL   = (counter == DEPTH)      ? 1 : 0; // Set FIFO_FULL to 1 if counter reaches maximum depth
@@ -90,9 +89,8 @@ begin
     if (rst)
     begin
         state  	<= IDLE;
-        //fifo_rd	<= 0;
         fifo_wr 	<= 0;
-		  FIFO_ready  <= 0;
+		fifo_rdy_rd  <= 0;
     end
 
     else
@@ -102,7 +100,7 @@ begin
 
             IDLE:
             begin
-                //fifo_rd   <= 0;
+
                 fifo_wr   <= 0;
 
                 if (in_ctrl != 0)
@@ -127,7 +125,7 @@ begin
                 if ((in_ctrl == 1) || FIFO_FULL) // Done buffering so allow processor to consume data
                 begin
                     state <= PROCESSOR_MODE;
-                    FIFO_ready <= 1'b1;
+                    fifo_rdy_rd <= 1'b1;
                 end
 
 
@@ -137,20 +135,13 @@ begin
             begin
 
                 fifo_wr <= 0;
-                //fifo_rd <= 1'b1;
-                //prev_ctrl = in_ctrl;
 
-                if (counter == 0 && in_ctrl ) // READ ALL of the FIFO
+                if (counter == 0) // READ ALL of the FIFO
                 begin
                     state <= IDLE;
+                    fifo_rdy_rd <= 0; // Ready to be written again
                 end
 
-                else if (counter == 0) // Need better logic to detect if a packet is raedy
-                begin
-                    state <= HEADER;
-                end
-
-                // SHOULD NEVER JUST WRITE DATA WITHOUT HEADER
 
             end
 
@@ -174,7 +165,6 @@ begin
         counter         <= 0;
         read_ptr        <= 0;
         write_ptr       <= 0;
-        packet_head_ptr <= 0;
 		  
     end
 

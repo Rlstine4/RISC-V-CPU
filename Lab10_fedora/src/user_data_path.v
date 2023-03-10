@@ -333,7 +333,7 @@ module user_data_path
      (.out_data            (ids_in_data),
      .out_ctrl             (ids_in_ctrl),
      .out_wr               (ids_in_wr),
-     .out_rdy              (ids_in_rdy),
+     .out_rdy              (ids_in_rdy), // NEEDS TO CHANGE: THIS CONTROLS OUTPUT PORT LOOKUP
                            
       // --- Interface to the rx input queues
      .in_data              (op_lut_in_data),
