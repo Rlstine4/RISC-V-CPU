@@ -27,6 +27,7 @@ my $DATAPATH_LOGIC_ANALYSER_DATA_5_REG   =   0x2000338;
 my $DATAPATH_LOGIC_ANALYSER_DATA_6_REG   =   0x200033c;
 
 
+
 sub regwrite {
    my( $addr, $value ) = @_;
    my $cmd = sprintf( "regwrite $addr 0x%08x", $value );
