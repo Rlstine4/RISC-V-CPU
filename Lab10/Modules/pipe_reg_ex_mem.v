@@ -22,10 +22,10 @@ module pipe_reg_ex_mem(
 	input en, clk, clr,
     input [63:0]ex_alu_output, rsData2In,
     input [4:0]rdAddrIn,
-    input ex_overflow, ex_mem_read, ex_mem_write, ex_reg_write, ex_mem_to_reg, ex_branch, ex_equal, ex_not_equal, ex_less_than, ex_greater_than_equal, ex_fifo_select,
+    input ex_overflow, ex_mem_read, ex_mem_write, ex_reg_write, ex_mem_to_reg, ex_branch, ex_equal, ex_not_equal, ex_less_than, ex_greater_than_equal, ex_fifo_select, ex_process_end,
 	input [3:0]ex_alu_op,
 	input [12:0]branch_offset_in,
-    output reg mem_overflow, mem_read, mem_write, mem_reg_write, mem_to_reg, mem_branch, mem_equal, mem_not_equal, mem_less_than, mem_greater_than_equal, mem_fifo_select,
+    output reg mem_overflow, mem_read, mem_write, mem_reg_write, mem_to_reg, mem_branch, mem_equal, mem_not_equal, mem_less_than, mem_greater_than_equal, mem_fifo_select, mem_process_end,
 	output reg [3:0]mem_alu_op,
     output reg [4:0]rdAddrOut,
     output reg [63:0]rsData2Out, mem_alu_output,
@@ -51,6 +51,7 @@ module pipe_reg_ex_mem(
 		mem_alu_op					<= 0;
 		branch_offset_out			<= 0;
         mem_fifo_select             <= 0;
+        mem_process_end             <= 0;
     end
     else
 	begin
@@ -70,6 +71,7 @@ module pipe_reg_ex_mem(
 		mem_alu_op					<= 	ex_alu_op;
 		branch_offset_out			<= 	branch_offset_in;
         mem_fifo_select             <=  ex_fifo_select;
+        mem_process_end             <=  ex_process_end;
 	end
 
 endmodule

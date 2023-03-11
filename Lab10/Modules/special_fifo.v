@@ -49,6 +49,7 @@ module special_fifo #(parameter FIFO_WIDTH      = 72,
                       input rst,
                       input [CTRL_WIDTH-1:0] in_ctrl,
                       input [PROCESSOR_WIDTH-1:0] data_in,
+                      input processor_done,
 					  input fifo_rd,
                       output FIFO_FULL,
                       output FIFO_EMPTY,
@@ -160,7 +161,7 @@ begin
 
     //prev_ctrl <= in_ctrl;
 
-    if (rst)
+    if (rst || processor_done)
     begin
         counter         <= 0;
         read_ptr        <= 0;

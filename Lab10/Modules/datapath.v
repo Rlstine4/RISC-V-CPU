@@ -77,7 +77,7 @@ module datapath(
     wire [11:0] ex_intermediate_12;
     wire [63:0] signed_intermediate;
 	wire [12:0] ex_branch_offset;
-    wire ex_fifo_select;
+    wire ex_fifo_select, ex_process_end;
 	
 	//Memory stage wires
 	wire mem_WMemEn;
@@ -89,7 +89,7 @@ module datapath(
     wire [63:0] mem_alu_out;
 	wire [12:0] mem_branch_offset;
 	wire [3:0]mem_alu_op;
-    wire mem_fifo_select;
+    wire mem_fifo_select, mem_process_end;
     wire fifo_full, fifo_empty, fifo_busy, fifo_rdy_rd;
     wire [63:0] fifo_out;
 	 wire [8:0] fifo_count;
@@ -109,7 +109,7 @@ module datapath(
     always @(*)
     begin
 
-       if (rst || id_process_end)
+       if (rst || mem_process_end)
         begin
             rst_reg = 1;
         end
@@ -202,12 +202,12 @@ module datapath(
                     .rdata1(id_rsData1), .rdata2(id_rsData2));
 	
 	pipe_reg_id_ex id_ex_pipe_reg(.en(~(id_stall || reset)), .clk(clk), .clr(branch_flag), .id_fifo_select(id_fifo_select), .rsData1In(id_rsData1), .rsData2In(id_rsData2), 
-                                    .rdAddrIn(id_rd), .alu_op_in(id_alu_op),
+                                    .rdAddrIn(id_rd), .alu_op_in(id_alu_op), .id_process_end(id_process_end),
                                     .alu_src_in(id_alu_src), .branch_in(id_branch), .mem_read_in(id_mem_read), .mem_write_in(id_mem_write), .reg_write_in(id_reg_write), 
 									.mem_to_reg_in(id_mem_to_reg), .intermediate_in(intermediate_12_reg), .branch_offset_in(id_branch_offset_reg), .alu_op_out(ex_alu_op), 
 									.alu_src_out(ex_alu_src), .branch_out(ex_branch), .mem_read_out(ex_mem_read), .mem_write_out(ex_mem_write), .reg_write_out(ex_reg_write), 
 									.mem_to_reg_out(ex_mem_to_reg), .rsData1Out(ex_rsData1), .rsData2Out(ex_rsData2), .rdAddrOut(ex_rd), .intermediate_out(ex_intermediate_12), 
-									.branch_offset_out(ex_branch_offset), .ex_fifo_select(ex_fifo_select)
+									.branch_offset_out(ex_branch_offset), .ex_fifo_select(ex_fifo_select), .ex_process_end(ex_process_end)
                                     );
 	
 	//Execution stage stage datapath
@@ -235,14 +235,14 @@ module datapath(
 	
 	pipe_reg_ex_mem ex_mem_pipe_reg(.en(~(reset)), .clr(branch_flag), .clk(clk), .rdAddrIn(ex_rd), .rsData2In(ex_rsData2), .ex_alu_output(ex_alu_out), .ex_overflow(ex_overflow),
 									.ex_mem_read(ex_mem_read), .ex_mem_write(ex_mem_write), .ex_reg_write(ex_reg_write), .ex_mem_to_reg(ex_mem_to_reg), .ex_branch(ex_branch),
-                                    .ex_fifo_select(ex_fifo_select),
+                                    .ex_fifo_select(ex_fifo_select), .ex_process_end(ex_process_end),
 									//.ex_equal(ex_equal), .ex_not_equal(ex_not_equal), 
 									.ex_less_than(ex_less_than), .ex_greater_than_equal(ex_greater_than_equal), 
 									.ex_alu_op(ex_alu_op), .branch_offset_in(ex_branch_offset), .rdAddrOut(mem_rd), .mem_overflow(mem_overflow), .mem_read(mem_read), 
 									.mem_write(mem_write), .mem_reg_write(mem_reg_write), .mem_to_reg(mem_mem_to_reg), .mem_alu_output(mem_alu_out), .rsData2Out(mem_rsData2), 
 									.mem_branch(mem_branch), //.mem_equal(mem_equal), .mem_not_equal(mem_not_equal), 
 									.mem_less_than(mem_less_than), .mem_greater_than_equal(mem_greater_than_equal), .mem_alu_op(mem_alu_op), .branch_offset_out(mem_branch_offset),
-                                    .mem_fifo_select(mem_fifo_select)
+                                    .mem_fifo_select(mem_fifo_select), .mem_process_end(mem_process_end)
 									);
 		
 	//Memory stage datapath
@@ -309,7 +309,7 @@ module datapath(
 	pipe_reg_mem_wb mem_wb_pipe_reg(.en(~reset), .mem_fifo_select(mem_fifo_select), .clk(clk), .mem_reg_write_in(mem_reg_write), .mem_to_reg_in(mem_mem_to_reg), .rdAddrIn(mem_rd), .mem_mem_out(mem_mem_out), .wb_fifo_select(wb_fifo_select),
 									.mem_alu_out(mem_alu_out), .wb_reg_write(wb_RegWrite), .wb_mem_to_reg(wb_mem_to_reg), .rdAddrOut(wb_rd), .wb_alu_out(wb_alu_out));
     
-    special_fifo FIFO(.clk(clk), .rst(rst), .fifo_rd(mem_fifo_select), .count(fifo_count), .in_ctrl(in_ctrl), .data_in({in_ctrl, packet_data_in}), .FIFO_FULL(fifo_full), .FIFO_EMPTY(fifo_empty), .busy(fifo_busy), .fifo_rdy_rd(fifo_rdy_rd), .data_out(fifo_out));
+    special_fifo FIFO(.clk(clk), .rst(rst), .fifo_rd(mem_fifo_select), .count(fifo_count), .in_ctrl(in_ctrl), .data_in(packet_data_in), .process_end(mem_process_end) .FIFO_FULL(fifo_full), .FIFO_EMPTY(fifo_empty), .busy(fifo_busy), .fifo_rdy_rd(fifo_rdy_rd), .data_out(fifo_out));
 	
     
 	
