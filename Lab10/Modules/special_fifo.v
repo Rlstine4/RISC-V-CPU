@@ -137,7 +137,7 @@ begin
 
                 fifo_wr <= 0;
 
-                if (counter == 0) // READ ALL of the FIFO
+                if (counter == 0 || processor_done) // READ ALL of the FIFO
                 begin
                     state <= IDLE;
                     fifo_rdy_rd <= 0; // Ready to be written again
@@ -187,6 +187,6 @@ end
 wire [71:0] fifo_mem_out;
 assign data_out = fifo_mem_out[63:0];
 
-Convertible_FIFO fifo_memory(.clka(clk), .dina({in_ctrl, data_in}), .addra(write_ptr), .wea(write_en), .clkb(clk), .addrb(read_ptr), .doutb(fifo_mem_out) );
+Convertible_FIFO fifo_memory(.clka(clk), .dina({in_ctrl, data_in}), .addra(write_ptr), .wea(write_en), .clkb(clk), .addrb(read_ptr), .doutb(data_out) );
 
 endmodule
