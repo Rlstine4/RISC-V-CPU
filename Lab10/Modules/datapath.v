@@ -309,7 +309,7 @@ module datapath(
 	pipe_reg_mem_wb mem_wb_pipe_reg(.en(~reset), .mem_fifo_select(mem_fifo_select), .clk(clk), .mem_reg_write_in(mem_reg_write), .mem_to_reg_in(mem_mem_to_reg), .rdAddrIn(mem_rd), .mem_mem_out(mem_mem_out), .wb_fifo_select(wb_fifo_select),
 									.mem_alu_out(mem_alu_out), .wb_reg_write(wb_RegWrite), .wb_mem_to_reg(wb_mem_to_reg), .rdAddrOut(wb_rd), .wb_alu_out(wb_alu_out));
     
-    special_fifo FIFO(.clk(clk), .rst(rst), .fifo_rd(mem_fifo_select), .count(fifo_count), .in_ctrl(in_ctrl), .data_in(packet_data_in), .process_end(mem_process_end) .FIFO_FULL(fifo_full), .FIFO_EMPTY(fifo_empty), .busy(fifo_busy), .fifo_rdy_rd(fifo_rdy_rd), .data_out(fifo_out));
+    special_fifo FIFO(.clk(clk), .rst(rst), .fifo_rd(mem_fifo_select), .count(fifo_count), .in_ctrl(in_ctrl), .data_in(packet_data_in), .processor_done(mem_process_end), .FIFO_FULL(fifo_full), .FIFO_EMPTY(fifo_empty), .busy(fifo_busy), .fifo_rdy_rd(fifo_rdy_rd), .data_out(fifo_out));
 	
     
 	
