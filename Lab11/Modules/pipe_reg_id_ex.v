@@ -26,48 +26,56 @@ module pipe_reg_id_ex(
     input [3:0]alu_op_in, 
 	input alu_src_in, branch_in, mem_read_in, mem_write_in, reg_write_in, mem_to_reg_in, id_fifo_select,
 	input [12:0] branch_offset_in,
+	input [1:0]id_threadId,
+	input [8:0]id_pc,
     output reg [3:0]alu_op_out, 
 	output reg alu_src_out, branch_out, mem_read_out, mem_write_out, reg_write_out, mem_to_reg_out,
     output reg ex_fifo_select,
     output reg [11:0] intermediate_out,
 	output reg [63:0]rsData1Out, rsData2Out,	
     output reg [4:0]rdAddrOut,
-	output reg [12:0] branch_offset_out
+	output reg [12:0] branch_offset_out,
+	output reg [1:0]ex_threadId,
+	output reg [8:0]ex_pc
     );
     
     always@(posedge clk)
 
     if (en == 1'b0 || clr == 1'b1)
     begin
-        rsData1Out       	<= 0;
-        rsData2Out       	<= 0;
-        rdAddrOut        	<= 0;
-        alu_op_out       	<= 0;
-        alu_src_out      	<= 0;
-        branch_out       	<= 0;
-        mem_read_out     	<= 0;
-        mem_write_out    	<= 0;
-        reg_write_out    	<= 0;
-        mem_to_reg_out   	<= 0;
-        intermediate_out 	<= 0;
-		branch_offset_out 	<= 0;
-        ex_fifo_select      <= 0;
+        rsData1Out       	<= 	0;
+        rsData2Out       	<= 	0;
+        rdAddrOut        	<= 	0;
+        alu_op_out       	<= 	0;
+        alu_src_out      	<= 	0;
+        branch_out       	<= 	0;
+        mem_read_out     	<= 	0;
+        mem_write_out    	<= 	0;
+        reg_write_out    	<= 	0;
+        mem_to_reg_out   	<= 	0;
+        intermediate_out 	<= 	0;
+		branch_offset_out 	<= 	0;
+        ex_fifo_select      <= 	0;
+        ex_threadId      	<= 	0;
+        ex_pc      			<= 	0;
     end
     else
     begin
-        rsData1Out       	<= rsData1In;
-        rsData2Out       	<= rsData2In;
-        rdAddrOut        	<= rdAddrIn;
-        alu_op_out       	<= alu_op_in;
-        alu_src_out      	<= alu_src_in;
-        branch_out       	<= branch_in;
-        mem_read_out     	<= mem_read_in;
-        mem_write_out    	<= mem_write_in;
-        reg_write_out    	<= reg_write_in;
-        mem_to_reg_out   	<= mem_to_reg_in; 
-        intermediate_out 	<= intermediate_in;
-		branch_offset_out 	<= branch_offset_in;
-        ex_fifo_select      <= id_fifo_select;
+        rsData1Out       	<= 	rsData1In;
+        rsData2Out       	<= 	rsData2In;
+        rdAddrOut        	<= 	rdAddrIn;
+        alu_op_out       	<= 	alu_op_in;
+        alu_src_out      	<= 	alu_src_in;
+        branch_out       	<= 	branch_in;
+        mem_read_out     	<= 	mem_read_in;
+        mem_write_out    	<= 	mem_write_in;
+        reg_write_out    	<= 	reg_write_in;
+        mem_to_reg_out   	<= 	mem_to_reg_in; 
+        intermediate_out 	<= 	intermediate_in;
+		branch_offset_out 	<= 	branch_offset_in;
+        ex_fifo_select      <= 	id_fifo_select;
+		ex_threadId      	<= 	id_threadId;
+        ex_pc      			<= 	id_pc;
     end
 
 endmodule

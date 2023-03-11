@@ -83,8 +83,21 @@ module datapath_tb;
 	//misc
 	wire [63:0]register[0:31];
 	wire [31:0]cycle_count, ex_inst_check, mem_inst_check, wb_inst_check;
-    wire [7:0] in_ctrl;
-    wire [63:0] packet_data;
+	
+	//FIFO
+	wire FIFO_full;
+	wire FIFO_empty;
+	wire FIFO_ready;
+	wire FIFO_data_out;
+	wire FIFO_busy;
+	wire [1:0] FIFO_state;
+	wire [8:0] FIFO_count;
+   reg [7:0] in_ctrl;
+   reg [63:0] packet_data;
+	wire fifo_write;
+	wire fifo_read;
+	wire fifo_mem_select;
+	 
 
 	// Instantiate the Unit Under Test (UUT)
 	datapath uut (
@@ -98,6 +111,17 @@ module datapath_tb;
         .packet_data_in(packet_data)
 	);
 	
+	assign FIFO_full = uut.fifo_full;
+	assign FIFO_empty = uut.fifo_empty;
+	assign FIFO_ready = uut.fifo_rdy;
+	assign FIFO_data_out = uut.fifo_out;
+	assign FIFO_busy		= uut.fifo_busy;
+	assign FIFO_count		= uut.fifo_count;
+	assign FIFO_state    = uut.FIFO.state;
+	assign fifo_write		= uut.FIFO.fifo_wr;
+	assign fifo_mem_select = uut.mem_fifo_select;
+
+	
 	//fetch
 	assign pc 			= uut.pc;
 	assign if_inst 		= uut.if_inst;	
@@ -106,6 +130,8 @@ module datapath_tb;
 	assign jumpAddr 	= uut.jumpAddr;
 	
 	//decode
+	
+	
 	assign id_inst 				= uut.id_inst;
 	assign opcode 				= uut.opcode;
 	assign funct7 				= uut.funct7;
@@ -123,7 +149,7 @@ module datapath_tb;
 	assign id_rs1 				= uut.id_rs1;
 	assign id_rs2 				= uut.id_rs2;
 	assign id_rd 				= uut.id_rd;
-	assign id_rsData1 			= uut.id_rsData1;
+   assign id_rsData1 			= uut.id_rsData1;
 	assign id_rsData2 			= uut.id_rsData2;
 	assign intermediate_12 		= uut.intermediate_12;
 	assign intermediate_21 		= uut.intermediate_21;
@@ -223,8 +249,8 @@ module datapath_tb;
 		memWE       = 0;
 		memAddr     = 0;
 		memInData   = 0;
-        in_ctrl     = 0;
-        packet_data = 0;
+      in_ctrl     = 0;
+      packet_data = 0;
 
 		// Wait 100 ns for global reset to finish
 		#100;
@@ -233,13 +259,13 @@ module datapath_tb;
 		rst = 1;
 		#125;
         in_ctrl     = 1;
-        packet_data = 16'h1;
-		rst = 0;
+        packet_data = 64'h1;
+			rst = 0;
 
         #125
         in_ctrl     = 0;
 
-        #800
+        #1200
 
         in_ctrl     = 1;
 		

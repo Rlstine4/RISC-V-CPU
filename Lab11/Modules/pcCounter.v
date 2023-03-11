@@ -19,41 +19,58 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module pcCounter(
-	input en, clk, rst, 
-	input [1:0]PCSrc, 
-	input [8:0]branchAddr, jumpAddr,
-	output reg [8:0]pc	
+	input en, clk, rst, jumpFlag, branchFlag,
+	input [1:0]jumpThread, branchThread,
+	input [8:0]jumpAddr, branchAddr,
+	output reg [8:0]pcOut,
+	output reg [1:0]threadSelect_current,
+	output reg pc_reset
     );
+	
+	reg [8:0]pc[0:3];
+	reg [1:0]threadSelect;
 	
 	always@(posedge clk)
 	begin
 		if(en == 1'b0)
 		begin
-			pc <= pc;
+			pcOut 					<= pc[threadSelect];
+			threadSelect 			<= threadSelect;
+			threadSelect_current	<= threadSelect;
 		end
 		else
 		begin
+			pc_reset					<=	rst;
 			if(rst == 1'b1)
 			begin
-				pc <= 9'd0;
-			end
-			else 
+				pc[0]					<=	9'd0;
+				pc[1]					<=	9'd0;
+				pc[2]					<=	9'd0;
+				pc[3]					<=	9'd0;
+				pcOut	 				<= 	9'd0;
+				threadSelect 			<= 	2'd0;
+				threadSelect_current	<= 	threadSelect;
+			end 
+			else if(pc[threadSelect] == 9'h1FF)
 			begin
-				if(pc == 9'b011111111)
+				pcOut 					<= pc[threadSelect];
+				threadSelect 			<= threadSelect + 1;
+				threadSelect_current	<= threadSelect;
+			end
+			else
+			begin
+				pcOut 					<= pc[threadSelect];
+				pc[threadSelect]		<= pc[threadSelect] + 1;
+				threadSelect 			<= threadSelect + 1;
+				threadSelect_current	<= threadSelect;
+				if(jumpFlag == 1'b1)
 				begin
-					pc <= pc;
+					pc[jumpThread] <= jumpAddr;
 				end
-				else if (PCSrc == 2'b01)
+				if(branchFlag == 1'b1)
 				begin
-					pc <= branchAddr;
-				end
-				else if (PCSrc == 2'b10)
-				begin
-					pc <= jumpAddr;
-				end
-				else
-				begin
-					pc <= pc + 1;
+					pc[branchThread] 	<=	branchAddr;
+					pcOut				<= 	branchAddr;
 				end
 			end
 		end
