@@ -24,11 +24,11 @@ module pipe_reg_id_ex(
     input [4:0]rdAddrIn,
     input [11:0] intermediate_in,
     input [3:0]alu_op_in, 
-	input alu_src_in, branch_in, mem_read_in, mem_write_in, reg_write_in, mem_to_reg_in, id_fifo_select, id_process_end;
+	input alu_src_in, branch_in, mem_read_in, mem_write_in, reg_write_in, mem_to_reg_in, id_fifo_select, id_process_end,
 	input [12:0] branch_offset_in,
     output reg [3:0]alu_op_out, 
-	output reg alu_src_out, branch_out, mem_read_out, mem_write_out, reg_write_out, mem_to_reg_out;
-    output reg ex_fifo_select, ex_process_end;
+	output reg alu_src_out, branch_out, mem_read_out, mem_write_out, reg_write_out, mem_to_reg_out,
+    output reg ex_fifo_select, ex_process_end,
     output reg [11:0] intermediate_out,
 	output reg [63:0]rsData1Out, rsData2Out,	
     output reg [4:0]rdAddrOut,
