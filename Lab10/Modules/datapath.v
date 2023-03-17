@@ -104,6 +104,8 @@ module datapath(
 	reg [63:0]wb_rdData_reg;
 	wire wb_fifo_select;
 
+/*
+
     reg rst_reg;
 
     always @(*)
@@ -120,10 +122,10 @@ module datapath(
         end
 
     end
-
+*/
     
 	wire reset;
-	assign reset = rst || rst_reg;
+	assign reset = (rst || mem_process_end) || (~fifo_rdy_rd);
 	
 	//misc
 	reg [31:0]cycle_count_reg= 0, ex_inst_check_reg, mem_inst_check_reg, wb_inst_check_reg;
@@ -358,3 +360,4 @@ module datapath(
 
 
 endmodule
+
