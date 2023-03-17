@@ -76,7 +76,7 @@ assign write_en   = (~FIFO_FULL  && fifo_wr) ? 1 : 0; // Write only if FIFO not 
 
 // 4 possible states
 
-localparam IDLE           = 2'b00,
+localparam IDLE          = 2'b00,
           HEADER         = 2'b01,
           PAYLOAD        = 2'b10,
           PROCESSOR_MODE = 2'b11;
@@ -90,8 +90,6 @@ begin
     if (rst)
     begin
         state  	<= IDLE;
-        fifo_wr 	<= 0;
-		fifo_rdy_rd  <= 0;
     end
 
     else
@@ -102,8 +100,6 @@ begin
             IDLE:
             begin
 
-                fifo_wr   <= 0;
-
                 if (in_ctrl != 0)
                 begin  
                     state  <= HEADER;
@@ -112,35 +108,28 @@ begin
 
             HEADER:
             begin
-                fifo_wr <= 1'b1;
                 if (in_ctrl == 0)
                 begin
                     state <= PAYLOAD;
                 end
-
             end
 
             PAYLOAD:
             begin
 
-                if ((in_ctrl == 1) || FIFO_FULL) // Done buffering so allow processor to consume data
+                if ((in_ctrl != 0) || FIFO_FULL) // Done buffering so allow processor to consume data
                 begin
                     state <= PROCESSOR_MODE;
-                    fifo_rdy_rd <= 1'b1;
                 end
-
 
             end
 
             PROCESSOR_MODE:
             begin
 
-                fifo_wr <= 0;
-
                 if (counter == 0 || processor_done) // READ ALL of the FIFO
                 begin
                     state <= IDLE;
-                    fifo_rdy_rd <= 0; // Ready to be written again
                 end
 
 
@@ -150,6 +139,50 @@ begin
 
 
     end
+
+end
+
+//Output Function Logic for state machine
+
+always @(*)
+begin
+
+
+case(state)
+
+    IDLE:
+    begin
+        fifo_wr     = 0;    
+        fifo_rdy_rd = 0;
+    end
+
+    HEADER:
+    begin
+        fifo_wr    = 1;
+    end
+
+    PAYLOAD:
+    begin
+        if((in_ctrl != 0) || FIFO_FULL)
+        begin
+            fifo_rdy_rd = 1;
+        end
+    end
+
+    PROCESSOR_MODE:
+    begin
+        fifo_wr = 0;
+
+        if ( FIFO_EMPTY || processor_done )
+        begin
+            fifo_rdy_rd = 0;
+        end
+
+    end
+
+
+endcase
+
 
 end
 
@@ -169,7 +202,7 @@ begin
 		  
     end
 
-    else if (write_en && ~FIFO_FULL) // We are assuming that read_req cannot be HIGH at the same time as dictated by control unit
+    else if (write_en) // We are assuming that read_req cannot be HIGH at the same time as dictated by control unit
     begin
         write_ptr <= write_ptr + 1;
         counter   <= counter   + 1;
