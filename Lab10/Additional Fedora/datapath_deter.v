@@ -70,7 +70,7 @@ module datapath_deter
    assign out_ctrl = in_ctrl_wire;
    assign out_wr = in_wr_wire;
    //assign in_rdy = out_rdy_wire;
-   assign in_rdy    = packet_accept;
+   assign in_rdy    = packet_accept || input_cmd[5];
    
    assign processer_reset = (reset || input_cmd[0]);
    
