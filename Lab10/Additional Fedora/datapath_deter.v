@@ -49,6 +49,8 @@ module datapath_deter
    //hardware register
    reg[31:0] dmem_value_high;
    reg[31:0] dmem_value_low;
+   reg[31:0] fifo_value_high;
+   reg[31:0] fifo_value_low; 
    reg [31:0]logic_analyser_data[6:0];
    wire [63:0]dmem_out;
    wire [217:0]logic_analyser_out;

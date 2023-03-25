@@ -50,6 +50,11 @@ module control_unit (
                 if (rd == 5'b01111) // Since it's a NOP, if we detect a rd =0F, we can take this as END of program (This needs to be manually placed at end of instruction flow)
                 begin
                     process_end = 1;
+                end
+
+                else
+                begin
+                    process_end = 0;
                 end 
 			end
 

@@ -56,6 +56,7 @@ module special_fifo #(parameter FIFO_WIDTH      = 72,
                       output busy,
 					  output [8:0] count,
                       output reg fifo_rdy_rd,
+                      output     fifo_rdy_wr,
                       output [PROCESSOR_WIDTH-1:0] data_out
                     );     
                     
