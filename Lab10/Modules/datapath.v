@@ -94,7 +94,6 @@ module datapath(
     wire mem_fifo_select, mem_process_end;
     wire fifo_full, fifo_empty, fifo_busy, fifo_rdy_rd;
     wire [63:0] fifo_out;
-	 wire [8:0] fifo_count;
 
     assign packet_accept = ~fifo_rdy_rd; // When FIFO is NOT being read, signal will go HIGH telling the Output Queues to send new packet
 	

@@ -97,6 +97,9 @@ module datapath_tb;
 	wire fifo_write;
 	wire fifo_read;
 	wire fifo_mem_select;
+	
+    wire packet_accept;
+	wire reset;
 	 
 
 	// Instantiate the Unit Under Test (UUT)
@@ -108,12 +111,13 @@ module datapath_tb;
 		.memInData(memInData), 
 		.memOutData(memOutData),
         .in_ctrl(in_ctrl),
-        .packet_data_in(packet_data)
+        .packet_data_in(packet_data),
+		.packet_accept(packet_accept)
 	);
 	
 	assign FIFO_full = uut.fifo_full;
 	assign FIFO_empty = uut.fifo_empty;
-	assign FIFO_ready = uut.fifo_rdy;
+	assign FIFO_rdy_rd = uut.fifo_rdy_rd;
 	assign FIFO_data_out = uut.fifo_out;
 	assign FIFO_busy		= uut.fifo_busy;
 	assign FIFO_count		= uut.fifo_count;
@@ -121,6 +125,7 @@ module datapath_tb;
 	assign fifo_write		= uut.FIFO.fifo_wr;
 	assign fifo_mem_select = uut.mem_fifo_select;
 
+	assign reset = uut.reset;
 	
 	//fetch
 	assign pc 			= uut.pc;
@@ -260,7 +265,7 @@ module datapath_tb;
 		#125;
         in_ctrl     = 1;
         packet_data = 64'h1;
-			rst = 0;
+		rst = 0;
 
         #125
         in_ctrl     = 0;
@@ -269,32 +274,32 @@ module datapath_tb;
 
         in_ctrl     = 1;
 		
-		#5000
-		memAddr = -12;
-		#200
-		memAddr = -16;
-		#200
-		memAddr = -20;
-		#200
-		memAddr = -24;
-		#200
-		memAddr = -28;
-		#200
-		memAddr = 0;
-		
-		
-		#165000
-		memAddr = -4;
-		#200
-		memAddr = -8;
-		#200
-		memAddr = -12;
-		#200
-		memAddr = -16;
-		#200
-		memAddr = -20;
-		#200
-		memAddr = 0;
+//		#5000
+//		memAddr = -12;
+//		#200
+//		memAddr = -16;
+//		#200
+//		memAddr = -20;
+//		#200
+//		memAddr = -24;
+//		#200
+//		memAddr = -28;
+//		#200
+//		memAddr = 0;
+//		
+//		
+//		#165000
+//		memAddr = -4;
+//		#200
+//		memAddr = -8;
+//		#200
+//		memAddr = -12;
+//		#200
+//		memAddr = -16;
+//		#200
+//		memAddr = -20;
+//		#200
+//		memAddr = 0;
 		
 		
 		
@@ -311,6 +316,26 @@ module datapath_tb;
 	end
 	
 	always #50 clk = ~clk;
+	
+	always #100
+	begin
+		if(in_ctrl == 1'b0)
+		begin
+			packet_data = packet_data+1;
+		end
+		
+	end
+	
+	integer i =0;
+	always #5000
+	begin
+		memAddr = 0;
+		for(i = 0; i<256; i= i+1)
+		begin
+			memAddr = memAddr +1;
+			#200;			
+		end
+	end
       
 endmodule
 

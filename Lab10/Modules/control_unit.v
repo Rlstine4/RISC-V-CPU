@@ -41,6 +41,7 @@ module control_unit (
 
     always @(*)
     begin
+		process_end = 0;
         case (opcode)
 			NOP:
 			begin
@@ -51,11 +52,6 @@ module control_unit (
                 begin
                     process_end = 1;
                 end
-
-                else
-                begin
-                    process_end = 0;
-                end 
 			end
 
             R_TYPE:
