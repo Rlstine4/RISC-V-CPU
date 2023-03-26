@@ -103,7 +103,7 @@ module datapath_deter
       .REG_ADDR_WIDTH      (`DATAPATH_REG_ADDR_WIDTH),     // Width of block addresses -- eg. MODULE_REG_ADDR_WIDTH
       .NUM_COUNTERS        (0),                 // Number of counters(
       .NUM_SOFTWARE_REGS   (7),                 // Number of sw regs
-      .NUM_HARDWARE_REGS   (11)                  // Number of hw regs
+      .NUM_HARDWARE_REGS   (12)                  // Number of hw regs
    ) module_regs (
       .reg_req_in       (reg_req_in),
       .reg_ack_in       (reg_ack_in),
@@ -127,7 +127,7 @@ module datapath_deter
       .software_regs    ({imem_data,imem_index,logic_analyser_index,dmem_data_low,dmem_data_high,dmem_index,input_cmd}),
 
       // --- HW regs interface
-      .hardware_regs    ({logic_analyser_data[6],logic_analyser_data[5],logic_analyser_data[4],logic_analyser_data[3],
+      .hardware_regs    ({fifo_count, logic_analyser_data[6],logic_analyser_data[5],logic_analyser_data[4],logic_analyser_data[3],
                            logic_analyser_data[2],logic_analyser_data[1],logic_analyser_data[0],dmem_value_low,dmem_value_high}),
 
       .clk              (clk),
