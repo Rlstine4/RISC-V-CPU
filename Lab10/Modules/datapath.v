@@ -30,6 +30,7 @@ module datapath(
     output packet_accept,
 	output [63:0]memOutData,
     output [63:0]fifo_out_data,
+    output [8:0] fifo_count,
 	output [217:0]logicData
 	);
 	

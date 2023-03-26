@@ -54,6 +54,7 @@ module datapath_deter
    reg [31:0]logic_analyser_data[6:0];
    wire [63:0]dmem_out;
    wire [217:0]logic_analyser_out;
+   reg  [31:0] fifo_count;
    
    
    wire [DATA_WIDTH-1:0] in_data_wire;
@@ -61,6 +62,7 @@ module datapath_deter
    wire in_wr_wire;
    wire out_rdy_wire;
    wire packet_accept;
+
    
    
    assign in_data_wire = in_data;
@@ -79,7 +81,7 @@ module datapath_deter
    datapath data_path(.clk(clk), .rst(processer_reset), .logicEn(input_cmd[3]), .logicWe(input_cmd[2]), .iMemWE(input_cmd[4]), 
                         .memWE(input_cmd[1]), .memAddr(dmem_index), .logicAddr(logic_analyser_index), .memInData({dmem_data_high,dmem_data_low}), 
                         .memOutData(dmem_out), .logicData(logic_analyser_out), .iMemAddr(imem_index), .iMemInData(imem_data),
-                        .packet_data_in(in_data), .in_ctrl(in_ctrl), .packet_accept(packet_accept));
+                        .packet_data_in(in_data), .in_ctrl(in_ctrl), .packet_accept(packet_accept), .fifo_count(fifo_count[8:0]));
 
    always@(*)
    begin

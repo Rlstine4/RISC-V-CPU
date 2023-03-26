@@ -86,6 +86,11 @@
 			<nf:description>logic analyser data</nf:description>
 			<nf:type>generic_hardware32</nf:type>
 		</nf:register>
+         <nf:register>
+			<nf:name>fifo_count</nf:name>
+			<nf:description>Number of elements in FIFO</nf:description>
+			<nf:type>generic_hardware32</nf:type>
+		</nf:register>
 	</nf:registers>
 </nf:module>
 
