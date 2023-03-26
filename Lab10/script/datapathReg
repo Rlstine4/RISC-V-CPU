@@ -25,6 +25,7 @@ my $DATAPATH_LOGIC_ANALYSER_DATA_3_REG   =   0x2000330;
 my $DATAPATH_LOGIC_ANALYSER_DATA_4_REG   =   0x2000334;
 my $DATAPATH_LOGIC_ANALYSER_DATA_5_REG   =   0x2000338;
 my $DATAPATH_LOGIC_ANALYSER_DATA_6_REG   =   0x200033c;
+my $DATAPATH_FIFO_COUNT_REG              =   0x2000340;
 
 
 sub regwrite {
@@ -214,10 +215,12 @@ elsif ($cmd eq "allregs") {
    my $dmemHigh = hex(regread( $DATAPATH_DMEM_VALUE_HIGH_REG ));
    my $dmemLow = hex(regread( $DATAPATH_DMEM_VALUE_LOW_REG ));
    my $command = regread( $DATAPATH_INPUT_CMD_REG );
+   my $fifoCount = regread( $DATAPATH_FIFO_COUNT_REG );
 
    print "Data Memory index: ", regread( $DATAPATH_DMEM_INDEX_REG ), "\n";
    print "Data Memory Data : ", ($dmemHigh<<32)|$dmemLow, "\n";
    print "Command          : ", $command, "\n";
+   print "fifo count       : ", $fifoCount, "\n";
 } else {
    print "Unrecognized command $cmd\n";
    usage();
