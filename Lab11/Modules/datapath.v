@@ -28,7 +28,8 @@ module datapath(
     input [7:0] in_ctrl,
     input [63:0] packet_data_in,
 	output [63:0]memOutData,
-	output [217:0]logicData
+	output [217:0]logicData,
+	output accept_packet
 	);
 	
 	//instruction Fetch wires
@@ -102,6 +103,7 @@ module datapath(
 	
 	wire reset;
 	assign reset = rst || ~fifo_rdy;
+	assign accept_packet =  ~fifo_rdy;
 	
 	//misc
 //	reg [31:0]cycle_count_reg= 0, ex_inst_check_reg, mem_inst_check_reg, wb_inst_check_reg;

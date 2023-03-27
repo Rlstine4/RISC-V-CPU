@@ -68,14 +68,18 @@ module datapath_deter
    assign out_data = in_data_wire;
    assign out_ctrl = in_ctrl_wire;
    assign out_wr = in_wr_wire;
-   assign in_rdy = out_rdy_wire;
    
    assign processer_reset = (reset || input_cmd[0]);
    
-   datapath data_path(.clk(clk), .rst(processer_reset), .logicEn(input_cmd[3]), .logicWe(input_cmd[2]), .iMemWE(input_cmd[4]), 
-                        .memWE(input_cmd[1]), .memAddr(dmem_index), .logicAddr(logic_analyser_index), .memInData({dmem_data_high,dmem_data_low}), 
-                        .memOutData(dmem_out), .logicData(logic_analyser_out), .iMemAddr(imem_index), .iMemInData(imem_data),
-                        .packet_data_in(in_data), .in_ctrl(in_ctrl));
+   datapath data_path(.clk(clk),                                     .rst(processer_reset),              
+                        .logicEn(input_cmd[3]),                      .logicWe(input_cmd[2]),                      
+                        .iMemWE(input_cmd[4]),                       .memWE(input_cmd[1]),      
+                        .memAddr(dmem_index),                        .logicAddr(logic_analyser_index), 
+                        .memInData({dmem_data_high,dmem_data_low}),  .memOutData(dmem_out), 
+                        .logicData(logic_analyser_out),              .iMemAddr(imem_index), 
+                        .iMemInData(imem_data),                      .packet_data_in(in_data), 
+                        .in_ctrl(in_ctrl),                           .accept_packet(in_rdy)
+                        );
 
    always@(*)
    begin
@@ -97,7 +101,7 @@ module datapath_deter
       .REG_ADDR_WIDTH      (`DATAPATH_REG_ADDR_WIDTH),     // Width of block addresses -- eg. MODULE_REG_ADDR_WIDTH
       .NUM_COUNTERS        (0),                 // Number of counters(
       .NUM_SOFTWARE_REGS   (7),                 // Number of sw regs
-      .NUM_HARDWARE_REGS   (11)                  // Number of hw regs
+      .NUM_HARDWARE_REGS   (9)                  // Number of hw regs
    ) module_regs (
       .reg_req_in       (reg_req_in),
       .reg_ack_in       (reg_ack_in),
