@@ -27,6 +27,7 @@ module datapath(
 	input [13:0]logicAddr,
     input [7:0] in_ctrl,
     input [63:0] packet_data_in,
+	input in_wr,
 	output [63:0]memOutData,
 	output [217:0]logicData,
 	output accept_packet
@@ -85,7 +86,7 @@ module datapath(
 	wire [12:0] mem_branch_offset;
 	wire [3:0]mem_alu_op;
     wire mem_fifo_select;
-    wire fifo_full, fifo_empty, fifo_busy, fifo_rdy;
+    wire fifo_full, fifo_empty, fifo_busy, fifo_rdy, fifo_nearly_full;
     wire [63:0] fifo_out;
 	wire [8:0] fifo_count;
 	reg [8:0]branchAddr_reg;
@@ -103,7 +104,7 @@ module datapath(
 	
 	wire reset;
 	assign reset = rst || ~fifo_rdy;
-	assign accept_packet =  ~fifo_rdy;
+	assign accept_packet =  ~fifo_rdy && ~fifo_nearly_full;
 	
 	//misc
 //	reg [31:0]cycle_count_reg= 0, ex_inst_check_reg, mem_inst_check_reg, wb_inst_check_reg;
@@ -266,7 +267,7 @@ module datapath(
 		end
 	end
 				
-	data_mem dMem(.addra(memAddr), 		.addrb({mem_threadId, mem_alu_out[7:2]}), 	.clka(clk), 	.clkb(clk), 	.dina(memInData), 	.dinb(mem_rsData2), 
+	data_mem dMem(.addra(memAddr), 		.addrb({mem_threadId, mem_alu_out[5:0]}), 	.clka(clk), 	.clkb(clk), 	.dina(memInData), 	.dinb(mem_rsData2), 
 					.douta(memOutData), .doutb(wb_mem_out), 						.wea(memWE), 	.web(mem_write)
 					);
 	
@@ -277,10 +278,16 @@ module datapath(
 									.rdAddrOut(wb_rd), 					.wb_alu_out(wb_alu_out),			.wb_threadId(wb_threadId)
 									);
     
-    special_fifo FIFO(.clk(clk), 								.rst(rst), 				.fifo_rd(mem_fifo_select), 	.count(fifo_count), 	.in_ctrl(in_ctrl),	
-						.data_in({in_ctrl, packet_data_in}), 	.FIFO_FULL(fifo_full), 	.FIFO_EMPTY(fifo_empty), 	.busy(fifo_busy), 		.FIFO_ready(fifo_rdy), 		
-						.data_out(fifo_out)
+//    special_fifo FIFO(.clk(clk), 								.rst(rst), 				.fifo_rd(mem_fifo_select), 	.count(fifo_count), 	.in_ctrl(in_ctrl),	
+//						.data_in({in_ctrl, packet_data_in}), 	.FIFO_FULL(fifo_full), 	.FIFO_EMPTY(fifo_empty), 	.busy(fifo_busy), 		.FIFO_ready(fifo_rdy), 		
+//						.data_out(fifo_out)
+//						);
+						
+	special_fifo FIFO(.clk(clk), 				.rst(rst), 				.in_ctrl(in_ctrl), 					.out_ctrl(), 			.in_data(packet_data_in), 
+						.out_data(fifo_out), 	.in_wr(in_wr), 			.fifo_rd(mem_fifo_select), 			.FIFO_FULL(fifo_full), 	.FIFO_EMPTY(fifo_empty), 
+						.counter(fifo_count), 	.FIFO_ready(fifo_rdy),	.FIFO_NEARLY_FULL(fifo_nearly_full)
 						);
+
 	
     
 	

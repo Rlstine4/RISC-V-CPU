@@ -44,25 +44,27 @@ module Convertible_FIFO(
 	clkb,
 	dina,
 	doutb,
+	enb,
 	wea);
 
 
-input [7 : 0] addra;
-input [7 : 0] addrb;
+input [8 : 0] addra;
+input [8 : 0] addrb;
 input clka;
 input clkb;
 input [71 : 0] dina;
 output [71 : 0] doutb;
+input enb;
 input wea;
 
 // synthesis translate_off
 
       BLKMEMDP_V6_3 #(
-		.c_addra_width(8),
-		.c_addrb_width(8),
+		.c_addra_width(9),
+		.c_addrb_width(9),
 		.c_default_data("0"),
-		.c_depth_a(256),
-		.c_depth_b(256),
+		.c_depth_a(512),
+		.c_depth_b(512),
 		.c_enable_rlocs(0),
 		.c_has_default_data(1),
 		.c_has_dina(1),
@@ -70,7 +72,7 @@ input wea;
 		.c_has_douta(0),
 		.c_has_doutb(1),
 		.c_has_ena(0),
-		.c_has_enb(0),
+		.c_has_enb(1),
 		.c_has_limit_data_pitch(0),
 		.c_has_nda(0),
 		.c_has_ndb(0),
@@ -117,11 +119,11 @@ input wea;
 		.CLKB(clkb),
 		.DINA(dina),
 		.DOUTB(doutb),
+		.ENB(enb),
 		.WEA(wea),
 		.DINB(),
 		.DOUTA(),
 		.ENA(),
-		.ENB(),
 		.NDA(),
 		.NDB(),
 		.RFDA(),

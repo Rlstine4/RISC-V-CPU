@@ -133,6 +133,19 @@ elsif($cmd eq "dmemW"){
    regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG ))&0xfffffffd );
 
 }
+elsif($cmd eq "imemW"){
+   if ($numargs < 3) {
+      usage();
+      exit(1);
+   }
+   my($hi, $lo) = pattern_from_ascii($ARGV[2]);
+   regwrite( $DATAPATH_IMEM_INDEX_REG, $ARGV[1] );
+   regwrite( $DATAPATH_IMEM_DATA_REG, $lo );
+   
+   regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG ))|0x10 );
+   regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG ))&0xffffffef );
+
+}
 elsif($cmd eq "allmem"){
    my @ind = (0..255);
    my $i = 0;

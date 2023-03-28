@@ -79,7 +79,8 @@ module datapath_deter
                         .memInData({dmem_data_high,dmem_data_low}),  .memOutData(dmem_out), 
                         .logicData(logic_analyser_out),              .iMemAddr(imem_index), 
                         .iMemInData(imem_data),                      .packet_data_in(in_data), 
-                        .in_ctrl(in_ctrl),                           .accept_packet(accept_packet)
+                        .in_ctrl(in_ctrl),                           .accept_packet(accept_packet),
+                        .in_wr(in_wr)
                         );
 
    always@(*)

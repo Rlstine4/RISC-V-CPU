@@ -18,8 +18,8 @@
 
     The Rx Queues create a module header when they receive a packet and prepend it to the beginning of the packet. 
     The Rx queues store the length of the packet in bytes at the lowest 16 bits of the module header, the source port as a 
-    binary-encoded number (port 0 is MAC port 0 and port 1 is CPU port 0, ...) in bits 16–31, and the packet length in 64-bit 
-    words in bits 32–47. We call this module header the IOQ module header.
+    binary-encoded number (port 0 is MAC port 0 and port 1 is CPU port 0, ...) in bits 16?31, and the packet length in 64-bit 
+    words in bits 32?47. We call this module header the IOQ module header.
 
 
     INPUTS:
@@ -41,37 +41,40 @@
             //counter       = 8 bit counter to keep track of how many packets are in the FIFO. Useful for logic analyzer (prevent rollover)
 */
 
-module special_fifo #(parameter FIFO_WIDTH      = 72,
-						  
-                      parameter DEPTH           = 256,
+module special_fifo #(parameter FIFO_WIDTH      = 72,						  
+                      parameter DEPTH           = 512,
                       parameter PROCESSOR_WIDTH = 64,
                       parameter CTRL_WIDTH      = 8)
-                     (input clk, 
-                      input rst,
-                      input [CTRL_WIDTH-1:0] in_ctrl,
-                      input [PROCESSOR_WIDTH-1:0] data_in,
-							 input fifo_rd,
-                      output FIFO_FULL,
-                      output FIFO_EMPTY,
-                      output busy,
-							 output [8:0] count,
-                      output reg FIFO_ready,
-                      output [PROCESSOR_WIDTH-1:0] data_out
+                     (
+                        input clk, 
+                        input rst,
+                        input [CTRL_WIDTH-1:0] in_ctrl,
+                        input [PROCESSOR_WIDTH-1:0] in_data,
+                        input in_wr, fifo_rd,
+                        output FIFO_FULL,
+						output FIFO_NEARLY_FULL,
+                        output FIFO_EMPTY,
+						output reg [8:0] counter,
+                        output reg FIFO_ready,						
+                        output [CTRL_WIDTH-1:0] out_ctrl,
+                        output [PROCESSOR_WIDTH-1:0] out_data
                     );     
                     
 
 reg [1:0] state;
-reg [8:0] counter; // 9-bit counter allows us to distinguish whether we are full or empty (Read pointer = Write Pointer)
-reg [7:0] write_ptr, read_ptr, packet_head_ptr; // Keep track of where we are writing, reading, and the head of the packet being buffered
-reg  fifo_wr;
+reg [2:0] header_counter;
+// reg [8:0] counter; // 9-bit counter allows us to distinguish whether we are full or empty (Read pointer = Write Pointer)
+reg [7:0] write_ptr, read_ptr; // Keep track of where we are writing, reading, and the head of the packet being buffered
+// reg  fifo_wr;
 
-assign FIFO_FULL   = (counter == DEPTH)      ? 1 : 0; // Set FIFO_FULL to 1 if counter reaches maximum depth
-assign FIFO_EMPTY  = (counter == 9'b0)       ? 1 : 0; // Set FIFO_EMPTY to 1 if counter is 0
-assign busy = (fifo_rd || fifo_wr)           ? 1 : 0;
-assign count = counter;
+assign FIFO_FULL   = ((write_ptr - read_ptr == 256) || (read_ptr - write_ptr == 256)) ? 1 : 0; // Set FIFO_FULL to 1 if counter reaches maximum depth
+assign FIFO_EMPTY  = (write_ptr == read_ptr)       ? 1 : 0; // Set FIFO_EMPTY to 1 if counter is 0
+assign FIFO_NEARLY_FULL   = ((write_ptr >  read_ptr)? ((write_ptr - read_ptr > 250)) : (read_ptr - write_ptr > 250));
+// assign busy = (fifo_rd || fifo_wr)           ? 1 : 0;
+// assign count = counter;
 
-assign read_en    = (~FIFO_EMPTY && fifo_rd) ? 1 : 0; // Read only if FIFO not empty and fifo_rd signal
-assign write_en   = (~FIFO_FULL  && fifo_wr) ? 1 : 0; // Write only if FIFO not full and fifo_wr signal
+// assign read_en    = (~FIFO_EMPTY && fifo_rd) ? 1 : 0; // Read only if FIFO not empty and fifo_rd signal
+// assign write_en   = (~FIFO_FULL  && fifo_wr) ? 1 : 0; // Write only if FIFO not full and fifo_wr signal
 
 
 // 4 possible states
@@ -81,115 +84,181 @@ localparam IDLE           = 2'b00,
           PAYLOAD        = 2'b10,
           PROCESSOR_MODE = 2'b11;
 
-
-//Control Logic
-
-always @(posedge clk)
+always@(posedge clk)
 begin
-
-    if (rst)
+    if(rst)
     begin
-        state  	<= IDLE;
-        //fifo_rd	<= 0;
-        fifo_wr 	<= 0;
-		FIFO_ready  <= 0;
+        write_ptr       <=  0;
+        read_ptr        <=  0;
+        header_counter  <=  0;
+        state           <=  IDLE;
+        FIFO_ready      <=  0;
     end
-
     else
     begin
-
         case(state)
 
             IDLE:
             begin
-                //fifo_rd   <= 0;
-                fifo_wr   <= 0;
-
-                if (in_ctrl != 0)
-                begin  
-                    state  <= HEADER;
+                FIFO_ready  <=  0;
+                if(in_ctrl != 0)
+                begin
+                    state <= HEADER;
                 end
             end
 
             HEADER:
             begin
-                fifo_wr <= 1'b1;
-                if (in_ctrl == 0)
+                if(in_ctrl == 0)
                 begin
-                    state <= PAYLOAD;
+                    header_counter  <= header_counter + 1;
+                    FIFO_ready      <=  0;
+                    if (header_counter == 3) 
+                    begin
+                        state <= PAYLOAD;
+                    end
                 end
-
             end
 
             PAYLOAD:
             begin
-
-                if ((in_ctrl != 0) || FIFO_FULL) // Done buffering so allow processor to consume data
+                header_counter  <= 0;
+                write_ptr       <=  write_ptr + 1; 
+                FIFO_ready      <=  0;
+                if(in_ctrl != 0)
                 begin
-                    state <= PROCESSOR_MODE;
-                    FIFO_ready <= 1'b1;
+                    state       <= PROCESSOR_MODE;
+                    FIFO_ready  <=  1;
                 end
-
-
             end
 
             PROCESSOR_MODE:
             begin
-
-                fifo_wr <= 0;
-                //fifo_rd <= 1'b1;
-                //prev_ctrl = in_ctrl;
-
-                if (counter == 0 ) // READ ALL of the FIFO
+                if(fifo_rd)
                 begin
-                    state <= IDLE;
-					FIFO_ready <= 1'b0;
+                    read_ptr    <=  read_ptr + 1;
                 end
-
-                // SHOULD NEVER JUST WRITE DATA WITHOUT HEADER
-
+                if(FIFO_EMPTY)
+                begin
+                    state       <= IDLE;
+                    FIFO_ready  <=  0;
+                end
             end
-
         endcase
-
-
     end
-
 end
 
+Convertible_FIFO fifo_memory(.clka(clk), .dina({in_ctrl, in_data}), .addra(write_ptr), .wea(in_wr && state==PAYLOAD), .clkb(clk), .addrb(read_ptr), .enb(fifo_rd),
+                                .doutb({out_ctrl,out_data}) );
 
-// FIFO Logic
 
-always @(posedge clk)
-begin
+//Control Logic
 
-    //prev_ctrl <= in_ctrl;
+// always @(posedge clk)
+// begin
 
-    if (rst)
-    begin
-        counter         <= 0;
-        read_ptr        <= 0;
-        write_ptr       <= 0;
-        packet_head_ptr <= 0;
+//     if (rst)
+//     begin
+//         state  	<= IDLE;
+//         //fifo_rd	<= 0;
+//         fifo_wr 	<= 0;
+// 		FIFO_ready  <= 0;
+//     end
+
+//     else
+//     begin
+
+//         case(state)
+
+//             IDLE:
+//             begin
+//                 //fifo_rd   <= 0;
+//                 fifo_wr   <= 0;
+
+//                 if (in_ctrl != 0)
+//                 begin  
+//                     state  <= HEADER;
+//                 end
+//             end
+
+//             HEADER:
+//             begin
+//                 fifo_wr <= 1'b1;
+//                 if (in_ctrl == 0)
+//                 begin
+//                     state <= PAYLOAD;
+//                 end
+
+//             end
+
+//             PAYLOAD:
+//             begin
+
+//                 if ((in_ctrl != 0) || FIFO_FULL) // Done buffering so allow processor to consume data
+//                 begin
+//                     state <= PROCESSOR_MODE;
+//                     FIFO_ready <= 1'b1;
+//                 end
+
+
+//             end
+
+//             PROCESSOR_MODE:
+//             begin
+
+//                 fifo_wr <= 0;
+//                 //fifo_rd <= 1'b1;
+//                 //prev_ctrl = in_ctrl;
+
+//                 if (counter == 0 ) // READ ALL of the FIFO
+//                 begin
+//                     state <= IDLE;
+// 					FIFO_ready <= 1'b0;
+//                 end
+
+//                 // SHOULD NEVER JUST WRITE DATA WITHOUT HEADER
+
+//             end
+
+//         endcase
+
+
+//     end
+
+// end
+
+
+// // FIFO Logic
+
+// always @(posedge clk)
+// begin
+
+//     //prev_ctrl <= in_ctrl;
+
+//     if (rst)
+//     begin
+//         counter         <= 0;
+//         read_ptr        <= 0;
+//         write_ptr       <= 0;
+//         packet_head_ptr <= 0;
 		  
-    end
+//     end
 
-    else if (write_en && ~FIFO_FULL && state == PAYLOAD) // We are assuming that read_req cannot be HIGH at the same time as dictated by control unit
-    begin
-        write_ptr <= write_ptr + 1;
-        counter   <= counter   + 1;
-    end
+//     else if (write_en && ~FIFO_FULL && state == PAYLOAD) // We are assuming that read_req cannot be HIGH at the same time as dictated by control unit
+//     begin
+//         write_ptr <= write_ptr + 1;
+//         counter   <= counter   + 1;
+//     end
 
-    else if (read_en) // FIFO is being requested as READ and it is NOT EMPTY. 
-    begin
-        read_ptr <= read_ptr + 1;
-        counter  <= counter  - 1;
-    end
+//     else if (read_en) // FIFO is being requested as READ and it is NOT EMPTY. 
+//     begin
+//         read_ptr <= read_ptr + 1;
+//         counter  <= counter  - 1;
+//     end
 
     
-end
+// end
 
 
-Convertible_FIFO fifo_memory(.clka(clk), .dina({in_ctrl, data_in}), .addra(write_ptr), .wea(write_en), .clkb(clk), .addrb(read_ptr), .doutb(data_out) );
 
 endmodule
