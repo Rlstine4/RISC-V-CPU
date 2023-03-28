@@ -92,7 +92,7 @@ begin
         state  	<= IDLE;
         //fifo_rd	<= 0;
         fifo_wr 	<= 0;
-		  FIFO_ready  <= 0;
+		FIFO_ready  <= 0;
     end
 
     else
@@ -124,7 +124,7 @@ begin
             PAYLOAD:
             begin
 
-                if ((in_ctrl == 1) || FIFO_FULL) // Done buffering so allow processor to consume data
+                if ((in_ctrl != 0) || FIFO_FULL) // Done buffering so allow processor to consume data
                 begin
                     state <= PROCESSOR_MODE;
                     FIFO_ready <= 1'b1;
@@ -140,14 +140,10 @@ begin
                 //fifo_rd <= 1'b1;
                 //prev_ctrl = in_ctrl;
 
-                if (counter == 0 && in_ctrl ) // READ ALL of the FIFO
+                if (counter == 0 ) // READ ALL of the FIFO
                 begin
                     state <= IDLE;
-                end
-
-                else if (counter == 0) // Need better logic to detect if a packet is raedy
-                begin
-                    state <= HEADER;
+					FIFO_ready <= 1'b0;
                 end
 
                 // SHOULD NEVER JUST WRITE DATA WITHOUT HEADER
@@ -178,7 +174,7 @@ begin
 		  
     end
 
-    else if (write_en && ~FIFO_FULL) // We are assuming that read_req cannot be HIGH at the same time as dictated by control unit
+    else if (write_en && ~FIFO_FULL && state == PAYLOAD) // We are assuming that read_req cannot be HIGH at the same time as dictated by control unit
     begin
         write_ptr <= write_ptr + 1;
         counter   <= counter   + 1;
@@ -193,9 +189,7 @@ begin
     
 end
 
-wire [71:0] fifo_mem_out;
-assign data_out = fifo_mem_out[63:0];
 
-Convertible_FIFO fifo_memory(.clka(clk), .dina({in_ctrl, data_in}), .addra(write_ptr), .wea(write_en), .clkb(clk), .addrb(read_ptr), .doutb(fifo_mem_out) );
+Convertible_FIFO fifo_memory(.clka(clk), .dina({in_ctrl, data_in}), .addra(write_ptr), .wea(write_en), .clkb(clk), .addrb(read_ptr), .doutb(data_out) );
 
 endmodule
