@@ -267,7 +267,7 @@ module datapath(
 		end
 	end
 				
-	data_mem dMem(.addra(memAddr), 		.addrb({mem_threadId, mem_alu_out[5:0]}), 	.clka(clk), 	.clkb(clk), 	.dina(memInData), 	.dinb(mem_rsData2), 
+	data_mem dMem(.addra(memAddr), 		.addrb({mem_threadId, mem_alu_out[7:2]}), 	.clka(clk), 	.clkb(clk), 	.dina(memInData), 	.dinb(mem_rsData2), 
 					.douta(memOutData), .doutb(wb_mem_out), 						.wea(memWE), 	.web(mem_write)
 					);
 	

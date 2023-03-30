@@ -68,7 +68,7 @@ reg [7:0] write_ptr, read_ptr; // Keep track of where we are writing, reading, a
 // reg  fifo_wr;
 
 assign FIFO_FULL   = ((write_ptr - read_ptr == 256) || (read_ptr - write_ptr == 256)) ? 1 : 0; // Set FIFO_FULL to 1 if counter reaches maximum depth
-assign FIFO_EMPTY  = (write_ptr == read_ptr)       ? 1 : 0; // Set FIFO_EMPTY to 1 if counter is 0
+assign FIFO_EMPTY  = (write_ptr - read_ptr == 0)       ? 1 : 0; // Set FIFO_EMPTY to 1 if counter is 0
 assign FIFO_NEARLY_FULL   = ((write_ptr >  read_ptr)? ((write_ptr - read_ptr > 250)) : (read_ptr - write_ptr > 250));
 // assign busy = (fifo_rd || fifo_wr)           ? 1 : 0;
 // assign count = counter;
@@ -125,7 +125,7 @@ begin
                 header_counter  <= 0;
                 write_ptr       <=  write_ptr + 1; 
                 FIFO_ready      <=  0;
-                if(in_ctrl != 0)
+                if(in_ctrl != 0 || FIFO_NEARLY_FULL)
                 begin
                     state       <= PROCESSOR_MODE;
                     FIFO_ready  <=  1;
@@ -134,22 +134,26 @@ begin
 
             PROCESSOR_MODE:
             begin
-                if(fifo_rd)
-                begin
-                    read_ptr    <=  read_ptr + 1;
-                end
-                if(FIFO_EMPTY)
+				//FIFO_ready  <=  1;
+                if(FIFO_EMPTY == 1'b1)
                 begin
                     state       <= IDLE;
                     FIFO_ready  <=  0;
                 end
+				else
+				begin					
+					if(fifo_rd)
+					begin
+						read_ptr    <=  read_ptr + 1;
+					end
+				end
             end
         endcase
     end
 end
 
-Convertible_FIFO fifo_memory(.clka(clk), .dina({in_ctrl, in_data}), .addra(write_ptr), .wea(in_wr && state==PAYLOAD), .clkb(clk), .addrb(read_ptr), .enb(fifo_rd),
-                                .doutb({out_ctrl,out_data}) );
+Convertible_FIFO fifo_memory(.clka(clk), .dina({in_ctrl, in_data}), .addra(write_ptr), .wea(in_wr && state==PAYLOAD), .clkb(clk), .addrb(read_ptr), 
+								.enb(fifo_rd && state == PROCESSOR_MODE), .doutb({out_ctrl,out_data}) );
 
 
 //Control Logic

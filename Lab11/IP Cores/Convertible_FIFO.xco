@@ -1,7 +1,7 @@
 ##############################################################
 #
 # Xilinx Core Generator version K.39
-# Date: Sat Mar 04 22:06:01 2023
+# Date: Tue Mar 28 06:45:47 2023
 #
 ##############################################################
 #
@@ -38,8 +38,8 @@ SELECT Dual_Port_Block_Memory family Xilinx,_Inc. 6.3
 CSET component_name=Convertible_FIFO
 CSET configuration_port_a=Write_Only
 CSET configuration_port_b=Read_Only
-CSET depth_a=256
-CSET depth_b=256
+CSET depth_a=512
+CSET depth_b=512
 CSET disable_warning_messages=true
 CSET global_init_value=0
 CSET load_init_file=false
@@ -55,7 +55,7 @@ CSET port_a_register_inputs=false
 CSET port_a_write_enable_polarity=Active_High
 CSET port_b_active_clock_edge=Rising_Edge_Triggered
 CSET port_b_additional_output_pipe_stages=0
-CSET port_b_enable_pin=false
+CSET port_b_enable_pin=true
 CSET port_b_enable_pin_polarity=Active_High
 CSET port_b_handshaking_pins=false
 CSET port_b_init_pin=false
@@ -71,5 +71,5 @@ CSET write_mode_port_a=Read_After_Write
 CSET write_mode_port_b=Read_After_Write
 # END Parameters
 GENERATE
-# CRC: 26efde6b
+# CRC: 6b1bc33c
 

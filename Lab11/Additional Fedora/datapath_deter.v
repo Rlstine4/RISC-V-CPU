@@ -68,7 +68,7 @@ module datapath_deter
    assign out_data = in_data_wire;
    assign out_ctrl = in_ctrl_wire;
    assign out_wr = in_wr_wire;
-   assign in_rdy = out_rdy_wire; //accept_packet || input_cmd[5];
+   assign in_rdy = accept_packet || (input_cmd[5] && out_rdy);
    
    assign processer_reset = (reset || input_cmd[0]);
    
