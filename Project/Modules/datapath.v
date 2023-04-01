@@ -148,11 +148,13 @@ module datapath(
 		begin
 			intermediate_12_reg = {id_inst[31:25], id_inst[11:7]};
 		end
-        if (opcode == 7'b1100011) // branch
-        begin
-            id_branch_offset_reg = ({id_inst[31], id_inst[31], id_inst[31], id_inst[7], id_inst[30:25], id_inst[11:9]});
-        end
+//        if (opcode == 7'b1100011) // branch
+//        begin
+//            id_branch_offset_reg = ({id_inst[31], id_inst[31], id_inst[31], id_inst[7], id_inst[30:25], id_inst[11:9]});
+//        end
 	end
+	
+	assign id_branch_offset = ({id_inst[31], id_inst[31], id_inst[31], id_inst[7], id_inst[30:25], id_inst[11:9]});
 	
 	assign jumpAddr_reg 	= 	id_pc + (({id_inst[31], id_inst[19:12], id_inst[20], id_inst[30:21]}) >>> 1);
 	assign jumpThread		=	id_threadId;
@@ -187,7 +189,7 @@ module datapath(
 									.rdAddrIn(id_rd), 							.alu_op_in(id_alu_op),					.alu_src_in(id_alu_src), 					
 									.branch_in(id_branch), 						.mem_read_in(id_mem_read), 				.mem_write_in(id_mem_write), 
 									.reg_write_in(id_reg_write),				.mem_to_reg_in(id_mem_to_reg), 			.intermediate_in(intermediate_12_reg), 
-									.branch_offset_in(id_branch_offset_reg), 	.id_pc(id_pc),							.id_threadId(id_threadId),
+									.branch_offset_in(id_branch_offset), 	.id_pc(id_pc),							.id_threadId(id_threadId),
 									.alu_op_out(ex_alu_op), 					.alu_src_out(ex_alu_src), 				.branch_out(ex_branch), 					
 									.mem_read_out(ex_mem_read), 				.mem_write_out(ex_mem_write), 			.reg_write_out(ex_reg_write), 				
 									.mem_to_reg_out(ex_mem_to_reg),				.rsData1Out(ex_rsData1), 				.rsData2Out(ex_rsData2), 					

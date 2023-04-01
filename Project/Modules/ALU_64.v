@@ -5,8 +5,8 @@ module ALU_64(input signed [63:0] A,
               output reg overflow,
               //output reg equal,
               //output reg not_equal,
-              output reg less_than,
-              output reg greater_than_equal);
+              output less_than,
+              output greater_than_equal);
 
 
 parameter IDLE                          = 4'b0000,
@@ -21,7 +21,10 @@ parameter IDLE                          = 4'b0000,
           compare_greater_than_equal    = 4'b1001,
           log_shift_left                = 4'b1010;
 //          xlog_shift_right               = 4'b1011;
-          
+        
+		
+		assign greater_than_equal 	= A >= B;
+		assign less_than 			= A < B;
 
 always @(*) 
 
@@ -48,12 +51,12 @@ always @(*)
         begin
             Z = A - B;
 
-            if (~A[63] && B[63] && Z[63])
-                overflow = 1;
-            else if (A[63] && ~B[63] && ~Z[63])
-                overflow = 1;
-            else
-                overflow = 0;
+//            if (~A[63] && B[63] && Z[63])
+//                overflow = 1;
+//            else if (A[63] && ~B[63] && ~Z[63])
+//                overflow = 1;
+//            else
+//                overflow = 0;
         end
 
 //        bitwise_AND:
@@ -79,25 +82,25 @@ always @(*)
 //            Z = ~(A== B);
 
         
-        compare_greater_than_equal: // NEEDS TESTING
-        begin
-            Z = A >= B;
-			greater_than_equal = Z[0];
+//        compare_greater_than_equal: // NEEDS TESTING
+//        begin
+//            Z = A >= B;
+//			greater_than_equal = Z[0];
 //            if (Z == 1'b1)
 //                greater_than_equal = 1'b1;
 //            else
 //                greater_than_equal = 1'b0;
-        end
+//        end
         
-        compare_less_than:
-        begin
-            Z = A < B;
-			less_than = Z[0];
+//        compare_less_than:
+//        begin
+//            Z = A < B;
+//			less_than = Z[0];
 //            if (Z == 1'b1)
 //                less_than = 1'b1;
 //            else
 //                less_than = 1'b0;
-        end      
+//        end      
                             
         log_shift_left:
             Z = A << B; 
