@@ -85,7 +85,7 @@ module datapath(
     wire mem_fifo_select;
 	wire [8:0]branchAddr_reg;
 	wire [1:0]branchThread;
-	reg branch_flag;
+	wire branch_flag;
 	
 	//WriteBack stage wires
 	wire [1:0]wb_threadId;
@@ -235,15 +235,16 @@ module datapath(
 	
 	assign branchAddr_reg 	= mem_pc + mem_branch_offset;
 	assign branchThread		= mem_threadId;
+	assign branch_flag 		= (mem_branch && ((mem_less_than && (mem_alu_op == 4'b1000)) || (mem_greater_than_equal && (mem_alu_op == 4'b1001))));
 	
-	always@(*)
-	begin
-		branch_flag 	=	0;
-		if (mem_branch && ((mem_less_than && (mem_alu_op == 4'b1000)) || (mem_greater_than_equal && (mem_alu_op == 4'b1001))))
-		begin
-			branch_flag 	=	1;
-		end
-	end
+//	always@(*)
+//	begin
+//		branch_flag 	=	0;
+//		if (mem_branch && ((mem_less_than && (mem_alu_op == 4'b1000)) || (mem_greater_than_equal && (mem_alu_op == 4'b1001))))
+//		begin
+//			branch_flag 	=	1;
+//		end
+//	end
 				
 	data_mem dMem(.addra(memAddr), 		.addrb({mem_threadId, mem_alu_out[7:2]}), 	.clka(clk), 	.clkb(clk), 	.dina(memInData), 	.dinb(mem_rsData2), 
 					.douta(memOutData), .doutb(wb_mem_out), 						.wea(memWE), 	.web(mem_write)
@@ -261,27 +262,19 @@ module datapath(
 	
 	//Write back Stage Datapath
 	
-	always@(*)
-	begin
-		if (wb_mem_to_reg == 1'b1) 
-		begin
-			if(wb_fifo_select == 1'b1)
-			begin
-				//wb_rdData_reg = fifo_out;
-			end
-			
-			else
-			begin
-				wb_rdData_reg = wb_mem_out;
-			end
-			
-		end
-		else
-		begin
-			wb_rdData_reg = wb_alu_out;
-		end
-	end	
-	assign wb_rdData = wb_rdData_reg;
+	assign wb_rdData = wb_mem_to_reg == 1'b1 ? wb_mem_out : wb_alu_out;
+//	always@(*)
+//	begin
+//		if (wb_mem_to_reg == 1'b1) 
+//		begin
+//			wb_rdData_reg = wb_mem_out;
+//		end
+//		else
+//		begin
+//			wb_rdData_reg = wb_alu_out;
+//		end
+//	end	
+//	assign wb_rdData = wb_rdData_reg;
 
 	
 	

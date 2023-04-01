@@ -121,7 +121,7 @@ module datapath_deter
 
    core_manager cm(.clk(clk), .rst(reset), .match(matcher_match), .core_busy(~core_ready), .core_enable(core_enable));
         
-   datapath data_path(.clk(clk),                                        .rst(reset || ~core_enable),              
+   datapath data_path(.clk(clk),                                        .rst(reset),              
                         .logicEn(1'b0),                                 .logicWe(1'b0),                      
                         .iMemWE(1'b0),                                  .memWE(ids_cmd[1]),      
                         .memAddr(dmem_index),                           .logicAddr(14'd0),

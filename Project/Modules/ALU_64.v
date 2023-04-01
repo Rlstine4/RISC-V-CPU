@@ -82,21 +82,21 @@ always @(*)
         compare_greater_than_equal: // NEEDS TESTING
         begin
             Z = A >= B;
- 
-            if (Z == 1'b1)
-                greater_than_equal = 1'b1;
-            else
-                greater_than_equal = 1'b0;
+			greater_than_equal = Z[0];
+//            if (Z == 1'b1)
+//                greater_than_equal = 1'b1;
+//            else
+//                greater_than_equal = 1'b0;
         end
         
         compare_less_than:
         begin
             Z = A < B;
 			less_than = Z[0];
-            if (Z == 1'b1)
-                less_than = 1'b1;
-            else
-                less_than = 1'b0;
+//            if (Z == 1'b1)
+//                less_than = 1'b1;
+//            else
+//                less_than = 1'b0;
         end      
                             
         log_shift_left:
