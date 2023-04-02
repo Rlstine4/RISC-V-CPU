@@ -51,6 +51,7 @@ module control_unit (
             R_TYPE:
 			begin
               {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg,fifo_select} = 8'b00000100;
+			  alu_op = 4'b0000;
 
                 if ( (funct7 == 7'b0000000) && (funct3 == 3'b000)) // ADD   
 				begin
@@ -59,12 +60,7 @@ module control_unit (
                 if ( (funct7 == 7'b0100000) && (funct3 == 3'b000)) // SUB
 				begin
 					alu_op     = 4'b0010;						
-				end
-
-                else
-                begin
-                    alu_op  = 4'b0000;
-                end                
+				end                
 //                else if ( (funct7 == 7'b0000000) && (funct3 == 3'b111)) // AND
 //				begin
 //					alu_op     = 4'b0011;
@@ -74,6 +70,7 @@ module control_unit (
             I_TYPE:
 			begin
 				{alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg,fifo_select} = 8'b10000100;
+				alu_op = 4'b0000;
                 if ( funct3 == 3'b000 ) // ADDI
 				begin		
 					alu_op = 4'b0001;
@@ -90,11 +87,6 @@ module control_unit (
 				begin
                     alu_op = 4'b1010;
 				end
-
-                else
-                begin
-                    alu_op = 4'b0000;
-                end
 			end
            
             LOAD:
@@ -122,6 +114,7 @@ module control_unit (
             BRANCH:
 			begin
                 {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg,fifo_select} = 8'b01000000;
+				alu_op = 4'b0000;
 
 //                if ( funct3 == 3'b000) // BEQ
 //				begin
@@ -141,11 +134,6 @@ module control_unit (
 				begin
                     alu_op = 4'b1001;
 				end
-
-                else
-                begin
-                    alu_op = 4'b0000;
-                end
 			end
             
             JAL: 

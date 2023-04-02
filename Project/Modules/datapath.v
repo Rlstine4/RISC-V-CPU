@@ -163,11 +163,19 @@ module datapath(
 							.alu_src(id_alu_src), 			.branch(id_branch), 		.jump(id_jump),					.mem_read(id_mem_read), 	.mem_write(id_mem_write), 	
 							.reg_write(id_reg_write), 		.mem_to_reg(id_mem_to_reg), .fifo_select(id_fifo_select)
 							);
-		
-	RegFile register0(.clk(clk), 						.rst(reset), 			.raddr1({id_threadId,id_rs1}), 		.raddr2({id_threadId,id_rs2}), 	
-						.waddr({wb_threadId,wb_rd}), 	.wen(wb_RegWrite), 		.wdata(wb_rdData), 					.rdata1(id_rsData1_reg), 
-						.rdata2(id_rsData2_reg)
+							
+	registerFile rf0(.addra({id_threadId,id_rs1}),		.addrb({wb_threadId,wb_rd}), 	.clka(clk),		.clkb(clk),		.dinb(wb_rdData),		.douta(ex_rsData1),
+						.sinita(reset),					.web(wb_RegWrite)
+						);	
+	
+	registerFile rf1(.addra({id_threadId,id_rs2}),		.addrb({wb_threadId,wb_rd}), 	.clka(clk),		.clkb(clk),		.dinb(wb_rdData),		.douta(ex_rsData2),
+						.sinita(reset),					.web(wb_RegWrite)
 						);
+		
+//	RegFile register0(.clk(clk), 						.rst(reset), 			.raddr1({id_threadId,id_rs1}), 		.raddr2({id_threadId,id_rs2}), 	
+//						.waddr({wb_threadId,wb_rd}), 	.wen(wb_RegWrite), 		.wdata(wb_rdData), 					.rdata1(id_rsData1_reg), 
+//						.rdata2(id_rsData2_reg)
+//						);
 						
 //	RegFile register1(.clk(clk), 			.rst(reset), 			.raddr1(id_rs1), 		.raddr2(id_rs2), 	.waddr(wb_rd), 	.wen(wb_RegWrite && (wb_threadId == 2'b01)), 
 //						.wdata(wb_rdData), 	.rdata1(id_rsData1[1]), .rdata2(id_rsData2[1])
@@ -190,10 +198,10 @@ module datapath(
 									.rdAddrIn(id_rd), 							.alu_op_in(id_alu_op),					.alu_src_in(id_alu_src), 					
 									.branch_in(id_branch), 						.mem_read_in(id_mem_read), 				.mem_write_in(id_mem_write), 
 									.reg_write_in(id_reg_write),				.mem_to_reg_in(id_mem_to_reg), 			.intermediate_in(intermediate_12_reg), 
-									.branch_offset_in(id_branch_offset), 	.id_pc(id_pc),							.id_threadId(id_threadId),
+									.branch_offset_in(id_branch_offset), 		.id_pc(id_pc),							.id_threadId(id_threadId),
 									.alu_op_out(ex_alu_op), 					.alu_src_out(ex_alu_src), 				.branch_out(ex_branch), 					
 									.mem_read_out(ex_mem_read), 				.mem_write_out(ex_mem_write), 			.reg_write_out(ex_reg_write), 				
-									.mem_to_reg_out(ex_mem_to_reg),				.rsData1Out(ex_rsData1), 				.rsData2Out(ex_rsData2), 					
+									.mem_to_reg_out(ex_mem_to_reg),				.rsData1Out(), 							.rsData2Out(), 					
 									.rdAddrOut(ex_rd), 							.intermediate_out(ex_intermediate_12), 	.branch_offset_out(ex_branch_offset), 		
 									.ex_fifo_select(ex_fifo_select),			.ex_pc(ex_pc),							.ex_threadId(ex_threadId)
                                     );
