@@ -59,7 +59,12 @@ module control_unit (
                 if ( (funct7 == 7'b0100000) && (funct3 == 3'b000)) // SUB
 				begin
 					alu_op     = 4'b0010;						
-				end                
+				end
+
+                else
+                begin
+                    alu_op  = 4'b0000;
+                end                
 //                else if ( (funct7 == 7'b0000000) && (funct3 == 3'b111)) // AND
 //				begin
 //					alu_op     = 4'b0011;
@@ -85,6 +90,11 @@ module control_unit (
 				begin
                     alu_op = 4'b1010;
 				end
+
+                else
+                begin
+                    alu_op = 4'b0000;
+                end
 			end
            
             LOAD:
@@ -131,6 +141,11 @@ module control_unit (
 				begin
                     alu_op = 4'b1001;
 				end
+
+                else
+                begin
+                    alu_op = 4'b0000;
+                end
 			end
             
             JAL: 
