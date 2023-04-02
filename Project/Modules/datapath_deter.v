@@ -119,7 +119,7 @@ module datapath_deter
 
    simple_matcher matcher(.in_data(in_fifo_data), .pattern({pattern_high, pattern_low}), .match(matcher_match));
 
-   core_manager cm(.clk(clk), .rst(reset), .match(matcher_match), .core_busy(~core_ready), .core_enable(core_enable));
+   core_manager cm(.clk(clk), .rst(reset), .match(matcher_match && state == PAYLOAD), .core_busy(~core_ready), .core_enable(core_enable));
         
    datapath data_path(.clk(clk),                                        .rst(reset),              
                         .logicEn(1'b0),                                 .logicWe(1'b0),                      
