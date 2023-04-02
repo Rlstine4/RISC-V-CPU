@@ -82,10 +82,7 @@ module pcCounter(
 				pc[threadSelect]			<= pc[threadSelect] + 1;
 				threadSelect 				<= threadSelect + 1;
 				threadSelect_current		<= threadSelect;
-				thread_ready[0]			=	1'b0;
-				thread_ready[1]			=	1'b0;
-				thread_ready[2]			=	1'b0;
-				thread_ready[3]			=	1'b0;
+				
 				if(jumpFlag == 1'b1)
 				begin
 					pc[jumpThread] <= jumpAddr;

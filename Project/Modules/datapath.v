@@ -164,24 +164,25 @@ module datapath(
 							.reg_write(id_reg_write), 		.mem_to_reg(id_mem_to_reg), .fifo_select(id_fifo_select)
 							);
 		
-	RegFile register0(.clk(clk), 			.rst(reset), 			.raddr1(id_rs1), 		.raddr2(id_rs2), 	.waddr(wb_rd), 	.wen(wb_RegWrite && (wb_threadId == 2'b00)), 	
-						.wdata(wb_rdData), 	.rdata1(id_rsData1[0]), .rdata2(id_rsData2[0])
+	RegFile register0(.clk(clk), 						.rst(reset), 			.raddr1({id_threadId,id_rs1}), 		.raddr2({id_threadId,id_rs2}), 	
+						.waddr({wb_threadId,wb_rd}), 	.wen(wb_RegWrite), 		.wdata(wb_rdData), 					.rdata1(id_rsData1_reg), 
+						.rdata2(id_rsData2_reg)
 						);
 						
-	RegFile register1(.clk(clk), 			.rst(reset), 			.raddr1(id_rs1), 		.raddr2(id_rs2), 	.waddr(wb_rd), 	.wen(wb_RegWrite && (wb_threadId == 2'b01)), 
-						.wdata(wb_rdData), 	.rdata1(id_rsData1[1]), .rdata2(id_rsData2[1])
-						);
-						
-	RegFile register2(.clk(clk), 			.rst(reset), 			.raddr1(id_rs1), 		.raddr2(id_rs2), 	.waddr(wb_rd), 	.wen(wb_RegWrite && (wb_threadId == 2'b10)), 
-						.wdata(wb_rdData), 	.rdata1(id_rsData1[2]), .rdata2(id_rsData2[2])
-						);
-						
-	RegFile register3(.clk(clk), 			.rst(reset), 			.raddr1(id_rs1), 		.raddr2(id_rs2), 	.waddr(wb_rd), 	.wen(wb_RegWrite && (wb_threadId == 2'b11)), 
-						.wdata(wb_rdData), 	.rdata1(id_rsData1[3]), .rdata2(id_rsData2[3])
-						);
+//	RegFile register1(.clk(clk), 			.rst(reset), 			.raddr1(id_rs1), 		.raddr2(id_rs2), 	.waddr(wb_rd), 	.wen(wb_RegWrite && (wb_threadId == 2'b01)), 
+//						.wdata(wb_rdData), 	.rdata1(id_rsData1[1]), .rdata2(id_rsData2[1])
+//						);
+//						
+//	RegFile register2(.clk(clk), 			.rst(reset), 			.raddr1(id_rs1), 		.raddr2(id_rs2), 	.waddr(wb_rd), 	.wen(wb_RegWrite && (wb_threadId == 2'b10)), 
+//						.wdata(wb_rdData), 	.rdata1(id_rsData1[2]), .rdata2(id_rsData2[2])
+//						);
+//						
+//	RegFile register3(.clk(clk), 			.rst(reset), 			.raddr1(id_rs1), 		.raddr2(id_rs2), 	.waddr(wb_rd), 	.wen(wb_RegWrite && (wb_threadId == 2'b11)), 
+//						.wdata(wb_rdData), 	.rdata1(id_rsData1[3]), .rdata2(id_rsData2[3])
+//						);
 	
-	assign id_rsData1_reg	= 	id_rsData1[id_threadId];
-	assign id_rsData2_reg 	=	id_rsData2[id_threadId];
+//	assign id_rsData1_reg	= 	id_rsData1[id_threadId];
+//	assign id_rsData2_reg 	=	id_rsData2[id_threadId];
 
 	
 	pipe_reg_id_ex id_ex_pipe_reg(.en(~reset),									.clk(clk),								.clr(1'b0),								

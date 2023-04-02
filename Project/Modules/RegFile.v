@@ -22,13 +22,13 @@
 
 module RegFile(
     input clk, rst,
-    input [4:0]raddr1, raddr2, waddr,
+    input [6:0]raddr1, raddr2, waddr,
     input wen,
     input [63:0]wdata,
     output [63:0]rdata1, rdata2
     );
     
-    reg [63:0]registerFile[0:31];
+    reg [63:0]registerFile[0:127];
     integer i=0;
     
 	assign rdata1 = registerFile[raddr1];
@@ -38,7 +38,7 @@ module RegFile(
     begin
         if(rst == 1'b1)
         begin
-            for(i = 0; i<32; i= i+1)
+            for(i = 0; i<128; i= i+1)
             begin
                 registerFile[i] <= 64'h00000000;
             end
