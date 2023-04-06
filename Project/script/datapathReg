@@ -19,15 +19,21 @@ use strict;
 # my $DATAPATH_LOGIC_ANALYSER_DATA_5_REG   =   0x2000338;
 # my $DATAPATH_LOGIC_ANALYSER_DATA_6_REG   =   0x200033c;
 
-my $DATAPATH_PATTERN_HIGH_REG      =   0x2000300;
-my $DATAPATH_PATTERN_LOW_REG       =   0x2000304;
-my $DATAPATH_INPUT_CMD_REG           =   0x2000308;
-my $DATAPATH_DMEM_INDEX_REG        =   0x200030c;
-my $DATAPATH_DMEM_DATA_HIGH_REG    =   0x2000310;
-my $DATAPATH_DMEM_DATA_LOW_REG     =   0x2000314;
-my $DATAPATH_MATCHES_REG           =   0x2000318;
-my $DATAPATH_DMEM_VALUE_HIGH_REG   =   0x200031c;
-my $DATAPATH_DMEM_VALUE_LOW_REG    =   0x2000320;
+my $DATAPATH_PATTERN_HIGH_REG         =   0x2000300;
+my $DATAPATH_PATTERN_LOW_REG          =   0x2000304;
+my $DATAPATH_INPUT_CMD_REG              =   0x2000308;
+my $DATAPATH_DMEM_INDEX_C1_REG        =   0x200030c;
+my $DATAPATH_DMEM_DATA_HIGH_C1_REG    =   0x2000310;
+my $DATAPATH_DMEM_DATA_LOW_C1_REG     =   0x2000314;
+my $DATAPATH_DMEM_INDEX_C2_REG        =   0x2000318;
+my $DATAPATH_DMEM_DATA_HIGH_C2_REG    =   0x200031c;
+my $DATAPATH_DMEM_DATA_LOW_C2_REG     =   0x2000320;
+my $DATAPATH_MATCHES_REG              =   0x2000324;
+my $DATAPATH_DMEM_VALUE_HIGH_C1_REG   =   0x2000328;
+my $DATAPATH_DMEM_VALUE_LOW_C1_REG    =   0x200032c;
+my $DATAPATH_DMEM_VALUE_HIGH_C2_REG   =   0x2000330;
+my $DATAPATH_DMEM_VALUE_LOW_C2_REG    =   0x2000334;
+
 
 
 
@@ -57,8 +63,8 @@ sub idsreset {
 
 sub write_pattern {
    my($hi, $lo) = @_;
-   regwrite($DATAPATH_DMEM_VALUE_HIGH_REG, $hi);
-   regwrite($DATAPATH_DMEM_VALUE_LOW_REG, $lo);
+   regwrite($DATAPATH_DMEM_VALUE_HIGH_C1_REG, $hi);
+   regwrite($DATAPATH_DMEM_VALUE_LOW_C1_REG, $lo);
 }
 
 # Turns an ascii string into a (pattern_hi,pattern_lo) list
@@ -110,130 +116,152 @@ elsif ($cmd eq "command") {
    }
    regwrite( $DATAPATH_INPUT_CMD_REG, $ARGV[1] );
 }
-elsif ($cmd eq "dmem") {
+elsif ($cmd eq "dmem_c1") {
    if ($numargs < 2) {
       usage();
       exit(1);
    }
 
-   regwrite( $DATAPATH_DMEM_INDEX_REG, $ARGV[1] );
-   my $dmemHigh = hex(regread( $DATAPATH_DMEM_VALUE_HIGH_REG ));
-   my $dmemLow = hex(regread( $DATAPATH_DMEM_VALUE_LOW_REG ));
+   regwrite( $DATAPATH_DMEM_INDEX_C1_REG, $ARGV[1] );
+   my $dmemHigh = hex(regread( $DATAPATH_DMEM_VALUE_HIGH_C1_REG ));
+   my $dmemLow = hex(regread( $DATAPATH_DMEM_VALUE_LOW_C1_REG ));
 
    my $data = $dmemHigh<<32|$dmemLow;
 
    print "Data at index  " , $ARGV[1], " is: ", sprintf("0x%X", $data ) , " ($data) \n";
 } 
-elsif($cmd eq "dmemW"){
+elsif($cmd eq "dmemW_c1"){
    if ($numargs < 3) {
       usage();
       exit(1);
    }
-   regwrite( $DATAPATH_DMEM_INDEX_REG, $ARGV[1] );
-   regwrite( $DATAPATH_DMEM_DATA_HIGH_REG, $ARGV[2]>>32 & 0xffffffff );
-   regwrite( $DATAPATH_DMEM_DATA_LOW_REG, $ARGV[2] & 0xffffffff );
+   regwrite( $DATAPATH_DMEM_INDEX_C1_REG, $ARGV[1] );
+   regwrite( $DATAPATH_DMEM_DATA_HIGH_C1_REG, $ARGV[2]>>32 & 0xffffffff );
+   regwrite( $DATAPATH_DMEM_DATA_LOW_C1_REG, $ARGV[2] & 0xffffffff );
    
    regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG ))|0x2 );
    regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG ))&0xfffffffd );
 
 }
-# elsif($cmd eq "imemW"){
-#    if ($numargs < 3) {
-#       usage();
-#       exit(1);
-#    }
-#    my($hi, $lo) = pattern_from_ascii($ARGV[2]);
-#    regwrite( $DATAPATH_IMEM_INDEX_REG, $ARGV[1] );
-#    regwrite( $DATAPATH_IMEM_DATA_REG, $lo );
-   
-#    regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG ))|0x10 );
-#    regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG ))&0xffffffef );
-
-# }
-elsif($cmd eq "allmem"){
+elsif($cmd eq "allmem_c1"){
    my @ind = (0..255);
    my $i = 0;
    my @memData = ();
    for $i (@ind){
-      regwrite( $DATAPATH_DMEM_INDEX_REG, $i );
-      my $dmemHigh = hex(regread( $DATAPATH_DMEM_VALUE_HIGH_REG ));
-      my $dmemLow = hex(regread( $DATAPATH_DMEM_VALUE_LOW_REG ));
+      regwrite( $DATAPATH_DMEM_INDEX_C1_REG, $i );
+      my $dmemHigh = hex(regread( $DATAPATH_DMEM_VALUE_HIGH_C1_REG ));
+      my $dmemLow = hex(regread( $DATAPATH_DMEM_VALUE_LOW_C1_REG ));
       $memData[$i] = ($dmemHigh<<32)|$dmemLow;
    }
    for $i (@ind){
       print "Data at index  " , $i, " is: ", sprintf("0x%X", $memData[$i]), " ($memData[$i]) \n";
    }
 }
-elsif($cmd eq "reset_allmem"){
+elsif($cmd eq "reset_allmem_c1"){
    my @ind = (0..255);
    my $i = 0;
    my @memData = ();
    for $i (@ind){
-      regwrite( $DATAPATH_DMEM_INDEX_REG, $i );
-      regwrite( $DATAPATH_DMEM_DATA_HIGH_REG, 0 );
-      regwrite( $DATAPATH_DMEM_DATA_LOW_REG, 0 );
+      regwrite( $DATAPATH_DMEM_INDEX_C1_REG, $i );
+      regwrite( $DATAPATH_DMEM_DATA_HIGH_C1_REG, 0 );
+      regwrite( $DATAPATH_DMEM_DATA_LOW_C1_REG, 0 );
    
         regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG ))|0x2 );
       regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG ))&0xfffffffd );
    }
    
    for $i (@ind){
-      regwrite( $DATAPATH_DMEM_INDEX_REG, $i );
-      my $dmemHigh = hex(regread( $DATAPATH_DMEM_VALUE_HIGH_REG ));
-      my $dmemLow = hex(regread( $DATAPATH_DMEM_VALUE_LOW_REG ));
+      regwrite( $DATAPATH_DMEM_INDEX_C1_REG, $i );
+      my $dmemHigh = hex(regread( $DATAPATH_DMEM_VALUE_HIGH_C1_REG ));
+      my $dmemLow = hex(regread( $DATAPATH_DMEM_VALUE_LOW_C1_REG ));
       $memData[$i] = ($dmemHigh<<32)|$dmemLow;
    }
    for $i (@ind){
       print "Data at index  " , $i, " is: ", sprintf("0x%X", $memData[$i]), " ($memData[$i]) \n";
    }
 }
-elsif($cmd eq "LA_enable"){
-   regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG )) | 0x8 );
-}
-elsif($cmd eq "LA_disable"){
-   regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG )) & 0xfffffff7 );
-}
-elsif($cmd eq "LA_W_enable"){
-   regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG )) | 0x4 );
-}
-elsif($cmd eq "LA_W_disable"){
-   regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG )) & 0xfffffffb );
-}
-# elsif($cmd eq "LA_data"){
-#    my @ind = (0..999);
-#    my $i = 0;
-#    my @LAData0 = ();
-#    my @LAData1 = ();
-#    my @LAData2 = ();
-#    my @LAData3 = ();
-#    my @LAData4 = ();
-#    my @LAData5 = ();
-#    my @LAData6 = ();
+elsif ($cmd eq "dmem_c2") {
+   if ($numargs < 2) {
+      usage();
+      exit(1);
+   }
+
+   regwrite( $DATAPATH_DMEM_INDEX_C2_REG, $ARGV[1] );
+   my $dmemHigh = hex(regread( $DATAPATH_DMEM_VALUE_HIGH_C2_REG ));
+   my $dmemLow = hex(regread( $DATAPATH_DMEM_VALUE_LOW_C2_REG ));
+
+   my $data = $dmemHigh<<32|$dmemLow;
+
+   print "Data at index  " , $ARGV[1], " is: ", sprintf("0x%X", $data ) , " ($data) \n";
+} 
+elsif($cmd eq "dmemW_c2"){
+   if ($numargs < 3) {
+      usage();
+      exit(1);
+   }
+   regwrite( $DATAPATH_DMEM_INDEX_C2_REG, $ARGV[1] );
+   regwrite( $DATAPATH_DMEM_DATA_HIGH_C2_REG, $ARGV[2]>>32 & 0xffffffff );
+   regwrite( $DATAPATH_DMEM_DATA_LOW_C2_REG, $ARGV[2] & 0xffffffff );
    
-#    for $i (@ind){
-#       regwrite( $DATAPATH_LOGIC_ANALYSER_INDEX_REG, $i );
-#       $LAData0[$i] = hex(regread( $DATAPATH_LOGIC_ANALYSER_DATA_0_REG ));
-#       $LAData1[$i] = hex(regread( $DATAPATH_LOGIC_ANALYSER_DATA_1_REG ));
-#       $LAData2[$i] = hex(regread( $DATAPATH_LOGIC_ANALYSER_DATA_2_REG ));
-#       $LAData3[$i] = hex(regread( $DATAPATH_LOGIC_ANALYSER_DATA_3_REG ));
-#       $LAData4[$i] = hex(regread( $DATAPATH_LOGIC_ANALYSER_DATA_4_REG ));
-#       $LAData5[$i] = hex(regread( $DATAPATH_LOGIC_ANALYSER_DATA_5_REG ));
-#       $LAData6[$i] = hex(regread( $DATAPATH_LOGIC_ANALYSER_DATA_6_REG ));
-#       # $LAData[$i] = ($LAData6 << 192) | ($LAData5 << 160) | ($LAData4 << 128) | ($LAData3 << 96) | ($LAData2 << 64) | 
-#       #                ($LAData1 << 32) | $LAData0;
-#    }
-#    for $i (@ind){
-#       print "Data at index  " , $i, " is: ", sprintf('%08.6x', $LAData6[$i]), sprintf('%08.6x', $LAData5[$i]), 
-#             sprintf('%08.6x', $LAData4[$i]), sprintf('%08.6x', $LAData3[$i]), sprintf('%08.6x', $LAData2[$i]), 
-#             sprintf('%08.6x', $LAData1[$i]), sprintf('%08.6x', $LAData0[$i]), "\n";
-#    }
+   regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG ))|0x4 );
+   regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG ))&0xfffffffb );
+
+}
+elsif($cmd eq "allmem_c2"){
+   my @ind = (0..255);
+   my $i = 0;
+   my @memData = ();
+   for $i (@ind){
+      regwrite( $DATAPATH_DMEM_INDEX_C2_REG, $i );
+      my $dmemHigh = hex(regread( $DATAPATH_DMEM_VALUE_HIGH_C2_REG ));
+      my $dmemLow = hex(regread( $DATAPATH_DMEM_VALUE_LOW_C2_REG ));
+      $memData[$i] = ($dmemHigh<<32)|$dmemLow;
+   }
+   for $i (@ind){
+      print "Data at index  " , $i, " is: ", sprintf("0x%X", $memData[$i]), " ($memData[$i]) \n";
+   }
+}
+elsif($cmd eq "reset_allmem_c2"){
+   my @ind = (0..255);
+   my $i = 0;
+   my @memData = ();
+   for $i (@ind){
+      regwrite( $DATAPATH_DMEM_INDEX_C2_REG, $i );
+      regwrite( $DATAPATH_DMEM_DATA_HIGH_C2_REG, 0 );
+      regwrite( $DATAPATH_DMEM_DATA_LOW_C2_REG, 0 );
+   
+        regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG ))|0x4 );
+      regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG ))&0xfffffffb );
+   }
+   
+   for $i (@ind){
+      regwrite( $DATAPATH_DMEM_INDEX_C2_REG, $i );
+      my $dmemHigh = hex(regread( $DATAPATH_DMEM_VALUE_HIGH_C2_REG ));
+      my $dmemLow = hex(regread( $DATAPATH_DMEM_VALUE_LOW_C2_REG ));
+      $memData[$i] = ($dmemHigh<<32)|$dmemLow;
+   }
+   for $i (@ind){
+      print "Data at index  " , $i, " is: ", sprintf("0x%X", $memData[$i]), " ($memData[$i]) \n";
+   }
+}
+# elsif($cmd eq "LA_enable"){
+#    regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG )) | 0x8 );
+# }
+# elsif($cmd eq "LA_disable"){
+#    regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG )) & 0xfffffff7 );
+# }
+# elsif($cmd eq "LA_W_enable"){
+#    regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG )) | 0x4 );
+# }
+# elsif($cmd eq "LA_W_disable"){
+#    regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG )) & 0xfffffffb );
 # }
 elsif ($cmd eq "allregs") {
-   my $dmemHigh = hex(regread( $DATAPATH_DMEM_VALUE_HIGH_REG ));
-   my $dmemLow = hex(regread( $DATAPATH_DMEM_VALUE_LOW_REG ));
+   my $dmemHigh = hex(regread( $DATAPATH_DMEM_VALUE_HIGH_C1_REG ));
+   my $dmemLow = hex(regread( $DATAPATH_DMEM_VALUE_LOW_C1_REG ));
    my $command = regread( $DATAPATH_INPUT_CMD_REG );
 
-   print "Data Memory index: ", regread( $DATAPATH_DMEM_INDEX_REG ), "\n";
+   print "Data Memory index: ", regread( $DATAPATH_DMEM_INDEX_C1_REG ), "\n";
    print "Data Memory Data : ", ($dmemHigh<<32)|$dmemLow, "\n";
    print "Command          : ", $command, "\n";
 } else {

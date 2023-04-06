@@ -19,20 +19,23 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module core_manager(
-		input clk, rst, match, core_busy,
-		output reg core_enable
+		input clk, rst, match, core1_busy, core2_busy,
+		output reg core1_enable, core2_enable
     );
 	
-	parameter 	IDLE = 1'b0,
-				BUSY = 1'b1;
+	parameter 	IDLE 		= 2'b00,
+				BUSY_CORE1 	= 2'b01,
+				BUSY_CORE2 	= 2'b10,
+				BUSY_ALL	= 2'b11;
 				
-	reg state;
+	reg [1:0]state;
 	always @(posedge clk)
 	begin
 		if(rst)
 		begin
 			state <= IDLE;
-			core_enable <= 1'b0;
+			core1_enable <= 1'b0;
+			core2_enable <= 1'b0;
 		end
 		else
 		begin
@@ -41,28 +44,100 @@ module core_manager(
 				begin
 					if(match == 1'b1)
 					begin
-						state <= BUSY;
-						core_enable <= 1'b1;
+						state <= BUSY_CORE1;
+						core1_enable <= 1'b1;
+						core2_enable <= 1'b0;
 					end
 					else
 					begin
 						state <= IDLE;
-						core_enable <= 1'b0;
+						core1_enable <= 1'b0;
+						core2_enable <= 1'b0;
 					end
 				end
 				
-				BUSY:
+				BUSY_CORE1:
 				begin
-					if(core_busy == 1'b1)
+					if(core1_busy == 1'b1 && match == 1'b1)
 					begin
-						state <= BUSY;
-						core_enable <= 1'b1;
+						state <= BUSY_ALL;
+						core1_enable <= 1'b1;
+						core2_enable <= 1'b1;
+					end
+					else if(core1_busy == 1'b1 && match == 1'b0)
+					begin
+						state <= BUSY_CORE1;
+						core1_enable <= 1'b1;
+						core2_enable <= 1'b0;
+					end
+					else if(core1_busy == 1'b0 && match == 1'b1)
+					begin
+						state <= BUSY_CORE2;
+						core1_enable <= 1'b0;
+						core2_enable <= 1'b1;
 					end
 					else
 					begin
 						state <= IDLE;
-						core_enable <= 1'b0;
+						core1_enable <= 1'b0;
+						core2_enable <= 1'b0;
 					end
+				end
+
+				BUSY_CORE2:
+				begin
+					if(core2_busy == 1'b1 && match == 1'b1)
+					begin
+						state <= BUSY_ALL;
+						core1_enable <= 1'b1;
+						core2_enable <= 1'b1;
+					end
+					else if(core2_busy == 1'b1 && match == 1'b0)
+					begin
+						state <= BUSY_CORE2;
+						core1_enable <= 1'b0;
+						core2_enable <= 1'b1;
+					end
+					else if(core2_busy == 1'b0 && match == 1'b1)
+					begin
+						state <= BUSY_CORE1;
+						core1_enable <= 1'b1;
+						core2_enable <= 1'b0;
+					end
+					else
+					begin
+						state <= IDLE;
+						core1_enable <= 1'b0;
+						core2_enable <= 1'b0;
+					end
+				end
+
+				BUSY_ALL:
+				begin
+					if(core1_busy == 1'b1 && core2_busy == 1'b1)
+					begin
+						state <= BUSY_ALL;
+						core1_enable <= 1'b1;
+						core2_enable <= 1'b1;
+					end		
+					else if(core1_busy == 1'b1 && core2_busy == 1'b0)
+					begin
+						state <= BUSY_CORE1;
+						core1_enable <= 1'b1;
+						core2_enable <= 1'b0;
+					end	
+					else if(core1_busy == 1'b0 && core2_busy == 1'b1)
+					begin
+						state <= BUSY_CORE2;
+						core1_enable <= 1'b0;
+						core2_enable <= 1'b1;
+					end		
+					else
+					begin
+						state <= IDLE;
+						core1_enable <= 1'b0;
+						core2_enable <= 1'b0;
+					end			
 				end
 			endcase
 		end

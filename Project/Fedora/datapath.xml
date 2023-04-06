@@ -22,17 +22,32 @@
 			<nf:type>generic_software32</nf:type>
 		</nf:register>
 		<nf:register>
-		  	<nf:name>dmem_index</nf:name>
+		  	<nf:name>dmem_index_c1</nf:name>
 			<nf:description>Index of data memory to serach or write</nf:description>
 			<nf:type>generic_software32</nf:type>
 		</nf:register>
 		<nf:register>
-		  	<nf:name>dmem_data_high</nf:name>
+		  	<nf:name>dmem_data_high_c1</nf:name>
 			<nf:description>Value high to write into data memory</nf:description>
 			<nf:type>generic_software32</nf:type>
 		</nf:register>
 		<nf:register>
-		  	<nf:name>dmem_data_low</nf:name>
+		  	<nf:name>dmem_data_low_c1</nf:name>
+			<nf:description>Value low to write into data memory</nf:description>
+			<nf:type>generic_software32</nf:type>
+		</nf:register>
+		<nf:register>
+		  	<nf:name>dmem_index_c2</nf:name>
+			<nf:description>Index of data memory to serach or write</nf:description>
+			<nf:type>generic_software32</nf:type>
+		</nf:register>
+		<nf:register>
+		  	<nf:name>dmem_data_high_c2</nf:name>
+			<nf:description>Value high to write into data memory</nf:description>
+			<nf:type>generic_software32</nf:type>
+		</nf:register>
+		<nf:register>
+		  	<nf:name>dmem_data_low_c2</nf:name>
 			<nf:description>Value low to write into data memory</nf:description>
 			<nf:type>generic_software32</nf:type>
 		</nf:register>
@@ -42,12 +57,22 @@
 		  	<nf:type>generic_hardware32</nf:type>
 		</nf:register>
 		<nf:register>
-		  	<nf:name>dmem_value_high</nf:name>
+		  	<nf:name>dmem_value_high_c1</nf:name>
 			<nf:description>upper 32 bits of data memory value</nf:description>
 			<nf:type>generic_hardware32</nf:type>
 		</nf:register>
         <nf:register>
-			<nf:name>dmem_value_low</nf:name>
+			<nf:name>dmem_value_low_c1</nf:name>
+			<nf:description>Lower 32 bits of data memory value</nf:description>
+			<nf:type>generic_hardware32</nf:type>
+		</nf:register>
+		<nf:register>
+		  	<nf:name>dmem_value_high_c2</nf:name>
+			<nf:description>upper 32 bits of data memory value</nf:description>
+			<nf:type>generic_hardware32</nf:type>
+		</nf:register>
+        <nf:register>
+			<nf:name>dmem_value_low_c2</nf:name>
 			<nf:description>Lower 32 bits of data memory value</nf:description>
 			<nf:type>generic_hardware32</nf:type>
 		</nf:register>

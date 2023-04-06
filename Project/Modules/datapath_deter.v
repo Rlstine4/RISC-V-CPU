@@ -55,16 +55,21 @@ module datapath_deter
    wire [31:0]                   pattern_high;
    wire [31:0]                   pattern_low;
    wire [31:0]                   ids_cmd;
-   wire [31:0]                   dmem_index;
-   wire [31:0]                   dmem_data_high;
-   wire [31:0]                   dmem_data_low;
+   wire [31:0]                   dmem_index_c1;
+   wire [31:0]                   dmem_data_high_c1;
+   wire [31:0]                   dmem_data_low_c1;
+   wire [31:0]                   dmem_index_c2;
+   wire [31:0]                   dmem_data_high_c2;
+   wire [31:0]                   dmem_data_low_c2;
 
    // hardware registers
    reg [31:0]                    matches;
-   reg [31:0]                    dmem_value_high;
-   reg [31:0]                    dmem_value_low;
+   reg [31:0]                    dmem_value_high_c1;
+   reg [31:0]                    dmem_value_low_c1;
+   reg [31:0]                    dmem_value_high_c2;
+   reg [31:0]                    dmem_value_low_c2;
 
-   wire [63:0]dmem_out;
+   wire [63:0]dmem_out_c1, dmem_out_c2;
 
    // internal state
    reg [1:0]                     state, state_next;
@@ -75,7 +80,7 @@ module datapath_deter
    reg [2:0]                     header_counter, header_counter_next;
    reg                           counter;
 
-   wire matcher_match, core_busy, core_enable, core_ready;
+   wire matcher_match, core1_busy, core2_busy, core1_enable, core2_enable, core1_ready, core2_ready;
 
    // local parameter
    parameter                     START = 2'b00;
@@ -121,26 +126,29 @@ module datapath_deter
 
    bloom_filter filter (.clk(clk), .rst(rst), .data_in(in_fifo_data), .match(matcher_match));
 
-   core_manager cm(.clk(clk), .rst(reset), .match(matcher_match && state == PAYLOAD), .core_busy(~core_ready), .core_enable(core_enable));
+   core_manager cm(.clk(clk),                      .rst(reset),                  .match(matcher_match && state == PAYLOAD), 
+                     .core1_busy(~core1_ready),    .core2_busy(~core2_ready),    .core1_enable(core1_enable),
+                     .core2_enable(core2_enable)
+                     );
         
-   datapath data_path_1(.clk(clk),                                        .rst(reset),              
-                        .logicEn(1'b0),                                 .logicWe(1'b0),                      
-                        .iMemWE(1'b0),                                  .memWE(ids_cmd[1]),      
-                        .memAddr(dmem_index),                           .logicAddr(14'd0),
-                        .memInData({dmem_data_high,dmem_data_low}),     .memOutData(dmem_out),
-                        .logicData(),                                .iMemAddr(9'd0),
-                        .iMemInData(32'd0),                         .core_ready(core_ready),
-                        .core_enable(core_enable)
+   datapath data_path_1(.clk(clk),                                         .rst(reset),              
+                        .logicEn(1'b0),                                    .logicWe(1'b0),                      
+                        .iMemWE(1'b0),                                     .memWE(ids_cmd[1]),      
+                        .memAddr(dmem_index_c1),                           .logicAddr(14'd0),
+                        .memInData({dmem_data_high_c1,dmem_data_low_c2}),  .memOutData(dmem_out_c1),
+                        .logicData(),                                      .iMemAddr(9'd0),
+                        .iMemInData(32'd0),                                .core_ready(core1_ready),
+                        .core_enable(core1_enable)
                   );
 
-   datapath data_path_2(.clk(clk),                                        .rst(reset),              
-                        .logicEn(1'b0),                                 .logicWe(1'b0),                      
-                        .iMemWE(1'b0),                                  .memWE(ids_cmd[1]),      
-                        .memAddr(dmem_index),                           .logicAddr(14'd0),
-                        .memInData({dmem_data_high,dmem_data_low}),     .memOutData(dmem_out),
-                        .logicData(),                                .iMemAddr(9'd0),
-                        .iMemInData(32'd0),                         .core_ready(core_ready),
-                        .core_enable(core_enable)
+   datapath data_path_2(.clk(clk),                                         .rst(reset),              
+                        .logicEn(1'b0),                                    .logicWe(1'b0),                      
+                        .iMemWE(1'b0),                                     .memWE(ids_cmd[2]),      
+                        .memAddr(dmem_index_c2),                           .logicAddr(14'd0),
+                        .memInData({dmem_data_high_c2,dmem_data_low_c2}),  .memOutData(dmem_out_c2),
+                        .logicData(),                                      .iMemAddr(9'd0),
+                        .iMemInData(32'd0),                                .core_ready(core2_ready),
+                        .core_enable(core2_enable)
                   );
 
    dropfifo drop_fifo (
@@ -158,8 +166,10 @@ module datapath_deter
    
    always@(*)
    begin
-      dmem_value_high         <= dmem_out[63:32];
-      dmem_value_low          <= dmem_out[31:0];
+      dmem_value_high_c1         <= dmem_out_c1[63:32];
+      dmem_value_low_c1          <= dmem_out_c1[31:0];
+      dmem_value_high_c2         <= dmem_out_c2[63:32];
+      dmem_value_low_c2          <= dmem_out_c2[31:0];
    end
 
    generic_regs
@@ -168,8 +178,8 @@ module datapath_deter
       .TAG                 (`DATAPATH_BLOCK_ADDR),          // Tag -- eg. MODULE_TAG
       .REG_ADDR_WIDTH      (`DATAPATH_REG_ADDR_WIDTH),     // Width of block addresses -- eg. MODULE_REG_ADDR_WIDTH
       .NUM_COUNTERS        (0),                 // Number of counters
-      .NUM_SOFTWARE_REGS   (6),                 // Number of sw regs
-      .NUM_HARDWARE_REGS   (3)                  // Number of hw regs
+      .NUM_SOFTWARE_REGS   (9),                 // Number of sw regs
+      .NUM_HARDWARE_REGS   (5)                  // Number of hw regs
    ) module_regs (
       .reg_req_in       (reg_req_in),
       .reg_ack_in       (reg_ack_in),
@@ -190,10 +200,11 @@ module datapath_deter
       .counter_decrement(),
 
       // --- SW regs interface
-      .software_regs    ({dmem_data_low,dmem_data_high,dmem_index,ids_cmd,pattern_low,pattern_high}),
+      .software_regs    ({dmem_data_low_c2,dmem_data_high_c2,dmem_index_c2,dmem_data_low_c1,dmem_data_high_c1,dmem_index_c1,
+                           ids_cmd,pattern_low,pattern_high}),
 
       // --- HW regs interface
-      .hardware_regs    ({dmem_value_low,dmem_value_high,matches}),
+      .hardware_regs    ({dmem_value_low_c2,dmem_value_high_c2,dmem_value_low_c1,dmem_value_high_c1,matches}),
 
       .clk              (clk),
       .reset            (reset)
