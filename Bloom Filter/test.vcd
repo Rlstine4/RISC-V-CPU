@@ -1,0 +1,41 @@
+$date
+	Mon Apr  3 13:29:44 2023
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1s
+$end
+$scope module mod_hash_tb $end
+$var wire 64 ! hashed_value [63:0] $end
+$var reg 64 " data_in [63:0] $end
+$scope module mod_hash_dut $end
+$var wire 64 # data_in [63:0] $end
+$var wire 64 $ hashed_value [63:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+#0
+$dumpvars
+b0 $
+b0 #
+b0 "
+b0 !
+$end
+#10
+b1 !
+b1 $
+b1 "
+b1 #
+#20
+b1100100 !
+b1100100 $
+b1100100 "
+b1100100 #
+#30
+b1 !
+b1 $
+b1 "
+b1 #
+#40

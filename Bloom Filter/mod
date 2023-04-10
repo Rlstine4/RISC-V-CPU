@@ -1,0 +1,48 @@
+#! /opt/homebrew/Cellar/icarus-verilog/11.0/bin/vvp
+:ivl_version "11.0 (stable)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision + 0;
+:vpi_module "/opt/homebrew/Cellar/icarus-verilog/11.0/lib/ivl/system.vpi";
+:vpi_module "/opt/homebrew/Cellar/icarus-verilog/11.0/lib/ivl/vhdl_sys.vpi";
+:vpi_module "/opt/homebrew/Cellar/icarus-verilog/11.0/lib/ivl/vhdl_textio.vpi";
+:vpi_module "/opt/homebrew/Cellar/icarus-verilog/11.0/lib/ivl/v2005_math.vpi";
+:vpi_module "/opt/homebrew/Cellar/icarus-verilog/11.0/lib/ivl/va_math.vpi";
+S_0x141f06680 .scope module, "mod_hash_tb" "mod_hash_tb" 2 1;
+ .timescale 0 0;
+v0x141f19b20_0 .var "data_in", 63 0;
+v0x141f19bd0_0 .net "hashed_value", 63 0, L_0x141f19cf0;  1 drivers
+S_0x141f067f0 .scope module, "mod_hash_dut" "mod_hash" 2 6, 3 1 0, S_0x141f06680;
+ .timescale 0 0;
+    .port_info 0 /INPUT 64 "data_in";
+    .port_info 1 /OUTPUT 64 "hashed_value";
+P_0x141f06c50 .param/l "NUM_OF_ADDRESSES" 0 3 5, +C4<00000000000000000000011111010001>;
+L_0x148050010 .functor BUFT 1, C4<0000000000000000000000000000000000000000000000000000011111010001>, C4<0>, C4<0>, C4<0>;
+v0x141f09b80_0 .net/2u *"_ivl_0", 63 0, L_0x148050010;  1 drivers
+v0x141f199f0_0 .net "data_in", 63 0, v0x141f19b20_0;  1 drivers
+v0x141f19a90_0 .net "hashed_value", 63 0, L_0x141f19cf0;  alias, 1 drivers
+L_0x141f19cf0 .arith/mod 64, v0x141f19b20_0, L_0x148050010;
+    .scope S_0x141f06680;
+T_0 ;
+    %pushi/vec4 0, 0, 64;
+    %store/vec4 v0x141f19b20_0, 0, 64;
+    %vpi_call 2 11 "$dumpfile", "test.vcd" {0 0 0};
+    %vpi_call 2 12 "$dumpvars", 32'sb00000000000000000000000000000000, S_0x141f06680 {0 0 0};
+    %delay 10, 0;
+    %pushi/vec4 1, 0, 64;
+    %store/vec4 v0x141f19b20_0, 0, 64;
+    %delay 10, 0;
+    %pushi/vec4 100, 0, 64;
+    %store/vec4 v0x141f19b20_0, 0, 64;
+    %delay 10, 0;
+    %pushi/vec4 1, 0, 64;
+    %store/vec4 v0x141f19b20_0, 0, 64;
+    %delay 10, 0;
+    %vpi_call 2 28 "$finish" {0 0 0};
+    %end;
+    .thread T_0;
+# The file index is used to find the file name in the following table.
+:file_names 4;
+    "N/A";
+    "<interactive>";
+    "mod_hash_tb.v";
+    "mod_hash.v";
