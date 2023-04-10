@@ -50,14 +50,10 @@ wire bloom_value_0, bloom_value_1, bloom_value_2, bloom_value_3;
 
 // Instantiate our Hash functions
 
-mod_hash#(.NUM_OF_ADDRESSES(NUM_OF_ADDRESSES)) 
-
-hash_0 (.data_in(packet_data[15:0]), .hashed_value(bloom_index_0));
+mod_hash hash_0 (.data_in(packet_data[15:0]), .hashed_value(bloom_index_0));
 
 
-knuth_hash#(.NUM_OF_ADDRESSES(NUM_OF_ADDRESSES)) 
-
-hash_1 (.data_in(packet_data[31:16]), .hashed_value(bloom_index_1));
+knuth_hash  hash_1 (.data_in(packet_data[31:16]), .hashed_value(bloom_index_1));
 
 
 invert_hash hash_2 (.data_in(packet_data[47:32]), .hashed_value(bloom_index_2));
@@ -77,7 +73,7 @@ bloom_buffer bloom_buffer_0(
 
 // bloom_buffer_1 handles invert hash and XOR hash
 
-bloom_buffer_1 bloom_buffer_1(
+bloom_buffer bloom_buffer_1(
 	.clka(clk),
 	.addra(bloom_index_2[INDEX_BITS-1:0]),
 	.douta(bloom_value_2),

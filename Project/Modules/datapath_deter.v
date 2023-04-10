@@ -124,7 +124,7 @@ module datapath_deter
 
    //simple_matcher matcher(.in_data(in_fifo_data), .pattern({pattern_high, pattern_low}), .match(matcher_match));
 
-   bloom_filter filter (.clk(clk), .rst(rst), .data_in(in_fifo_data), .match(matcher_match));
+   bloom_filter filter (.clk(clk), .rst(rst), .packet_data(in_fifo_data), .match(matcher_match));
 
    core_manager cm(.clk(clk),                      .rst(reset),                  .match(matcher_match && state == PAYLOAD), 
                      .core1_busy(~core1_ready),    .core2_busy(~core2_ready),    .core1_enable(core1_enable),
