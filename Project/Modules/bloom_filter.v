@@ -1,44 +1,93 @@
-module bloom_filter (input clk, rst, 
-                     input  [63:0] data_in,
-                     output reg match);
+/*
+    TODO:
+
+        https://hur.st/bloomfilter/?n=1000&p=1.0E-7&m=&k=2 (To determine paramters)
+
+        OPTION 1:
+
+        For 1 in 1,000,000 chance of false detection, we need ~250KB of BRAM
+        FOr 1 in 100,000 chance of false detection, we need ~80KB of BRAM
+
+        This assumes 2 Hash functions and 1,000 patterns 
+
+        OPTION 2:
+
+        For 1 in 1,000,000 chance of false detection, we need ~16KB of BRAM
+        FOr 1 in 100,000 chance of false detection, we need ~9KB of BRAM
+
+        This assumes 4 Hash functions and 1,000 patterns
+
+        SAMPLE PATTERNS:
+
+        PATTERN 1: 0 (decimal)
+
+        IDX: 0, 0, 1023, 0
+
+        PATTERN 2: 100 (decimal)
+
+        IDX: 100, 0, 1023, 100
+
+        PATTERN 3: 500
+
+        IDX: 500, 500, 0, 1023
+
+        PATTERN 4: 8096
+        IDX: 928, 0, 1023, 928
 
 
-reg bloom_buffer [2000:0]; // Convert this to BLOCK RAM LATER
+*/
 
-wire[63:0] hashed_value;
+module bloom_filter(input clk, rst,
+                    input [63:0] packet_data,
+                    output match );
 
-mod_hash hash_function(.data_in(data_in), .hashed_value(hashed_value));
+localparam NUM_OF_ADDRESSES = 1024;
+localparam INDEX_BITS       = 10;
 
-integer idx;
+wire [15:0] bloom_index_0, bloom_index_1, bloom_index_2, bloom_index_3;
 
-always @(posedge clk)
-begin
+wire bloom_value_0, bloom_value_1, bloom_value_2, bloom_value_3;
 
-    if (rst)
-    begin
-        match = 0;
+// Instantiate our Hash functions
 
-        for (idx = 0; idx < 2001; idx = idx + 1)
-        begin
-            bloom_buffer[idx] = 0;
-        end
+mod_hash#(.NUM_OF_ADDRESSES(NUM_OF_ADDRESSES)) 
 
-        bloom_buffer [1]  = 1;
-        bloom_buffer [100] = 1;
-    end
-
-    else if (bloom_buffer [hashed_value] == 1)
-    begin
-        match = 1;
-    end
-
-    else
-    begin
-        match = 0;
-    end
+hash_0 (.data_in(packet_data[15:0]), .hashed_value(bloom_index_0));
 
 
-end
+knuth_hash#(.NUM_OF_ADDRESSES(NUM_OF_ADDRESSES)) 
+
+hash_1 (.data_in(packet_data[31:16]), .hashed_value(bloom_index_1));
+
+
+invert_hash hash_2 (.data_in(packet_data[47:32]), .hashed_value(bloom_index_2));
+
+
+XOR_hash hash_3 (.data_in_0(packet_data[63:48]), .data_in_1(packet_data[15:0]), .hashed_value(bloom_index_3));
+
+// bloom_buffer_0 handles mod_hash and knuth_hash
+
+bloom_buffer bloom_buffer_0(
+	.clka(clk),
+	.addra(bloom_index_0[INDEX_BITS-1:0]),
+	.douta(bloom_value_0),
+	.clkb(clk),
+	.addrb(bloom_index_1[INDEX_BITS-1:0]),
+	.doutb(bloom_value_1));
+
+// bloom_buffer_1 handles invert hash and XOR hash
+
+bloom_buffer_1 bloom_buffer_1(
+	.clka(clk),
+	.addra(bloom_index_2[INDEX_BITS-1:0]),
+	.douta(bloom_value_2),
+	.clkb(clk),
+	.addrb(bloom_index_3[INDEX_BITS-1:0]),
+	.doutb(bloom_value_3)   );
+
+
+assign match = (bloom_value_0 & bloom_value_1 & bloom_value_2 & bloom_value_3);
+
 
 
 endmodule

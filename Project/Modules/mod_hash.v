@@ -1,10 +1,12 @@
-module mod_hash(
-                input [63:0] data_in ,
-                output [63:0] hashed_value);
+// Assume bloom buffer is 16KB large, so 131,072 bits
 
-    parameter NUM_OF_ADDRESSES = 2001;
+module mod_hash #(parameter NUM_OF_ADDRESSES)
+                (
+                input [15:0] data_in ,
+                output [15:0] hashed_value);
 
     assign hashed_value = data_in % NUM_OF_ADDRESSES;
 
 
 endmodule
+
