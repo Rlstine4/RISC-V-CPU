@@ -48,7 +48,7 @@ module datapath_deter
    wire                          in_fifo_nearly_full;
    wire                          in_fifo_empty;
 
-   reg                           in_fifo_rd_en;
+   wire                           in_fifo_rd_en;
    reg                           out_wr_int;
 
    // software registers 
@@ -72,7 +72,7 @@ module datapath_deter
    wire [63:0]dmem_out_c1, dmem_out_c2;
 
    // internal state
-   reg [1:0]                     state, state_next;
+   wire [1:0]                     state, state_next;
    reg [31:0]                    matches_next;
    reg                           in_pkt_body, in_pkt_body_next;
    reg                           end_of_pkt, end_of_pkt_next;
@@ -151,18 +151,32 @@ module datapath_deter
                         .core_enable(core2_enable)
                   );
 
-   dropfifo drop_fifo (
-      .clk           (clk), 
-      .drop_pkt      (1'b0 && end_of_pkt), 
-      .fiforead      (out_rdy), 
-      .fifowrite     (out_wr_int), 
-      .firstword     (begin_pkt), 
-      .in_fifo       ({in_fifo_ctrl,in_fifo_data}), 
-      .lastword      (end_of_pkt), 
-      .rst           (reset), 
-      .out_fifo      ({out_ctrl,out_data}), 
-      .valid_data    (out_wr)
-   );
+   // dropfifo drop_fifo (
+   //    .clk           (clk), 
+   //    .drop_pkt      (1'b0 && end_of_pkt), 
+   //    .fiforead      (out_rdy), 
+   //    .fifowrite     (out_wr_int), 
+   //    .firstword     (begin_pkt), 
+   //    .in_fifo       ({in_fifo_ctrl,in_fifo_data}), 
+   //    .lastword      (end_of_pkt), 
+   //    .rst           (reset), 
+   //    .out_fifo      ({out_ctrl,out_data}), 
+   //    .valid_data    (out_wr)
+   // );
+
+   special_fifo sp_fifo(
+		.clk(clk),
+		.drop_pkt(1'b0 && end_of_pkt),
+		.fiforead(out_rdy),
+		.in_fifo_empty(in_fifo_empty),
+		.in_fifo_ctrl(in_fifo_ctrl),
+		.in_fifo_data(in_fifo_data),
+		.rst(reset),
+		.out_fifo({out_ctrl,out_data}),
+		.valid_data(out_wr),
+		.in_fifo_rd_en(in_fifo_rd_en),      
+		.fifo_state(state)
+	);
    
    always@(*)
    begin
@@ -212,77 +226,77 @@ module datapath_deter
 
    //------------------------- Logic-------------------------------
    
-   always @(*) begin
-      state_next = state;
-      matches_next = matches;
-      header_counter_next = header_counter;
-      in_fifo_rd_en = 0;
-      out_wr_int = 0;
-      //out_data = 0;
-      end_of_pkt_next = end_of_pkt;
-      in_pkt_body_next = in_pkt_body;
-      begin_pkt_next = begin_pkt;
+   // always @(*) begin
+   //    state_next = state;
+   //    matches_next = matches;
+   //    header_counter_next = header_counter;
+   //    in_fifo_rd_en = 0;
+   //    out_wr_int = 0;
+   //    //out_data = 0;
+   //    end_of_pkt_next = end_of_pkt;
+   //    in_pkt_body_next = in_pkt_body;
+   //    begin_pkt_next = begin_pkt;
       
-      if (!in_fifo_empty && out_rdy) begin
-         out_wr_int = 1;
-         in_fifo_rd_en = 1;
-         //out_data = in_fifo_data;
+   //    if (!in_fifo_empty && out_rdy) begin
+   //       out_wr_int = 1;
+   //       in_fifo_rd_en = 1;
+   //       //out_data = in_fifo_data;
          
-         case(state)
-            START: begin
-               if (in_fifo_ctrl != 0) begin
-                  state_next = HEADER;
-                  begin_pkt_next = 1;
-                  end_of_pkt_next = 0;   // takes matcher out of reset
-               end
-            end
-            HEADER: begin
-               begin_pkt_next = 0;
-               if (in_fifo_ctrl == 0) begin
-                  header_counter_next = header_counter + 1'b1;
-                  if (header_counter_next == 3) begin
-                    state_next = PAYLOAD;
-                  end
-               end
-            end
-            PAYLOAD: begin
-               if (in_fifo_ctrl != 0) begin
-                  state_next = START;
-                  header_counter_next = 0;
-                  if (matcher_match) begin
-                     matches_next = matches + 1;
-                  end
-                  end_of_pkt_next = 1;   // will reset matcher
-                  in_pkt_body_next = 0;
-               end
-               else begin
-                  in_pkt_body_next = 1;
-               end
-            end
-         endcase // case(state)
-      end
-   end // always @ (*)
+   //       case(state)
+   //          START: begin
+   //             if (in_fifo_ctrl != 0) begin
+   //                state_next = HEADER;
+   //                begin_pkt_next = 1;
+   //                end_of_pkt_next = 0;   // takes matcher out of reset
+   //             end
+   //          end
+   //          HEADER: begin
+   //             begin_pkt_next = 0;
+   //             if (in_fifo_ctrl == 0) begin
+   //                header_counter_next = header_counter + 1'b1;
+   //                if (header_counter_next == 3) begin
+   //                  state_next = PAYLOAD;
+   //                end
+   //             end
+   //          end
+   //          PAYLOAD: begin
+   //             if (in_fifo_ctrl != 0) begin
+   //                state_next = START;
+   //                header_counter_next = 0;
+   //                if (matcher_match) begin
+   //                   matches_next = matches + 1;
+   //                end
+   //                end_of_pkt_next = 1;   // will reset matcher
+   //                in_pkt_body_next = 0;
+   //             end
+   //             else begin
+   //                in_pkt_body_next = 1;
+   //             end
+   //          end
+   //       endcase // case(state)
+   //    end
+   // end // always @ (*)
    
-   always @(posedge clk) begin
-      if(reset) begin
-         matches <= 0;
-         header_counter <= 0;
-         state <= START;
-         begin_pkt <= 0;
-         end_of_pkt <= 0;
-         in_pkt_body <= 0;
-      end
-      else begin
-         if (ids_cmd[0]) matches <= 0;
-         else matches <= matches_next;
-         header_counter <= header_counter_next;
-         state <= state_next;
-         begin_pkt <= begin_pkt_next;
-         end_of_pkt <= end_of_pkt_next;
-         in_pkt_body <= in_pkt_body_next;
-         counter <= 0;
-      end // else: !if(reset)
-   end // always @ (posedge clk)   
+   // always @(posedge clk) begin
+   //    if(reset) begin
+   //       matches <= 0;
+   //       header_counter <= 0;
+   //       state <= START;
+   //       begin_pkt <= 0;
+   //       end_of_pkt <= 0;
+   //       in_pkt_body <= 0;
+   //    end
+   //    else begin
+   //       if (ids_cmd[0]) matches <= 0;
+   //       else matches <= matches_next;
+   //       header_counter <= header_counter_next;
+   //       state <= state_next;
+   //       begin_pkt <= begin_pkt_next;
+   //       end_of_pkt <= end_of_pkt_next;
+   //       in_pkt_body <= in_pkt_body_next;
+   //       counter <= 0;
+   //    end // else: !if(reset)
+   // end // always @ (posedge clk)   
 
 
 endmodule 
