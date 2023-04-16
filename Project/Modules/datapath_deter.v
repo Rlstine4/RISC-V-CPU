@@ -80,7 +80,8 @@ module datapath_deter
    reg [2:0]                     header_counter, header_counter_next;
    reg                           counter;
 
-   wire matcher_match, core1_busy, core2_busy, core1_enable, core2_enable, core1_ready, core2_ready;
+   wire matcher_match, core1_busy, core2_busy, core1_enable, core2_enable, core1_ready, core2_ready, core1_match, core2_match;
+   wire [63:0]matched_data, core1_data, core2_data;
 
    // local parameter
    parameter                     START = 2'b00;
@@ -112,7 +113,7 @@ module datapath_deter
       .clk           (clk)
    );
 
-   wire [63:0] first_packet, next_packet;
+wire [63:0] first_packet, next_packet;
    reg [127:0] packet_buffer;
    reg [1:0]   packet_buffer_count;
    wire        packet_buffer_rdy;
@@ -151,7 +152,7 @@ module datapath_deter
         end
 
    end
-
+   
    // detect7B matcher (
    //    .ce            (matcher_ce),           // data enable
    //    .match_en      (matcher_en),           // match enable
@@ -162,24 +163,26 @@ module datapath_deter
    //    .mrst          (matcher_reset)         // reset in
    // );
 
-   //simple_matcher matcher(.in_data(in_fifo_data), .pattern({pattern_high, pattern_low}), .match(matcher_match));
+   simple_matcher matcher(.clk(clk), .in_data(in_fifo_data), .pattern({pattern_high, pattern_low}), .match(matcher_match), .matched_data(matched_data));
 
-   bloom_filter filter (.clk(clk), .rst(rst), .packet_data(in_fifo_data), .match(matcher_match));
+   //bloom_filter filter (.clk(clk), .rst(rst), .packet_data(in_fifo_data), .match(matcher_match));
 
-   core_manager cm(.clk(clk),                      .rst(reset),                  .match(matcher_match && state == PAYLOAD), 
-                     .core1_busy(~core1_ready),    .core2_busy(~core2_ready),    .core1_enable(core1_enable),
-                     .core2_enable(core2_enable)
+   core_manager cm(.clk(clk),                      .rst(reset),                  .match(matcher_match && state == (PAYLOAD)), 	
+                     .matched_data(matched_data),	.core1_busy(~core1_ready),   	.core2_busy(~core2_ready),    
+                     .core1_enable(core1_enable),	.core2_enable(core2_enable),	.core1_data(core1_data),		
+                     .core2_data(core2_data)
                      );
         
    datapath data_path_1(.clk(clk),                                         .rst(reset),              
                         .logicEn(1'b0),                                    .logicWe(1'b0),                      
                         .iMemWE(1'b0),                                     .memWE(ids_cmd[1]),      
                         .memAddr(dmem_index_c1),                           .logicAddr(14'd0),
-                        .memInData({dmem_data_high_c1,dmem_data_low_c2}),  .memOutData(dmem_out_c1),
+                        .memInData({dmem_data_high_c1,dmem_data_low_c1}),  .memOutData(dmem_out_c1),
                         .logicData(),                                      .iMemAddr(9'd0),
                         .iMemInData(32'd0),                                .core_ready(core1_ready),
-                        .core_enable(core1_enable)
-                  );
+                        .core_enable(core1_enable),                        .in_data(core1_data),
+						      .match(core1_match)
+                        );
 
    datapath data_path_2(.clk(clk),                                         .rst(reset),              
                         .logicEn(1'b0),                                    .logicWe(1'b0),                      
@@ -188,8 +191,9 @@ module datapath_deter
                         .memInData({dmem_data_high_c2,dmem_data_low_c2}),  .memOutData(dmem_out_c2),
                         .logicData(),                                      .iMemAddr(9'd0),
                         .iMemInData(32'd0),                                .core_ready(core2_ready),
-                        .core_enable(core2_enable)
-                  );
+                        .core_enable(core2_enable),                        .in_data(core2_data),
+						      .match(core2_match)
+                        );
 
    // dropfifo drop_fifo (
    //    .clk           (clk), 
@@ -218,6 +222,13 @@ module datapath_deter
 		.fifo_state(state)
 	);
    
+   always@(posedge clk)
+   begin
+      if(core1_match || core2_match)
+      begin
+         matches <= matches + 1;
+      end
+   end
    always@(*)
    begin
       dmem_value_high_c1         <= dmem_out_c1[63:32];
