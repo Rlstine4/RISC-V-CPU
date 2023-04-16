@@ -63,8 +63,8 @@ sub idsreset {
 
 sub write_pattern {
    my($hi, $lo) = @_;
-   regwrite($DATAPATH_DMEM_VALUE_HIGH_C1_REG, $hi);
-   regwrite($DATAPATH_DMEM_VALUE_LOW_C1_REG, $lo);
+   regwrite($DATAPATH_PATTERN_HIGH_REG, $hi);
+   regwrite($DATAPATH_PATTERN_LOW_REG, $lo);
 }
 
 # Turns an ascii string into a (pattern_hi,pattern_lo) list
@@ -109,6 +109,16 @@ my $cmd = $ARGV[0];
 if ($cmd eq "reset") {
    idsreset();
 }
+elsif ($cmd eq "pattern") {
+   if ($numargs < 2) {
+      usage();
+      exit(1);
+   }
+   my $str = $ARGV[1];
+   my($hi, $lo) = pattern_from_ascii($str);
+   printf("Setting pattern hi=0x%08x, lo=0x%08x\n", $hi, $lo);
+   write_pattern($hi, $lo);   
+}
 elsif ($cmd eq "command") {
    if ($numargs < 2) {
       usage();
@@ -128,7 +138,7 @@ elsif ($cmd eq "dmem_c1") {
 
    my $data = $dmemHigh<<32|$dmemLow;
 
-   print "Data at index  " , $ARGV[1], " is: ", sprintf("0x%X", $data ) , " ($data) \n";
+   print "Data at index  " , $ARGV[1], " is: ", sprintf("0x%X%X", $dmemHigh, $dmemLow ) , " ($data) \n";
 } 
 elsif($cmd eq "dmemW_c1"){
    if ($numargs < 3) {
@@ -136,8 +146,8 @@ elsif($cmd eq "dmemW_c1"){
       exit(1);
    }
    regwrite( $DATAPATH_DMEM_INDEX_C1_REG, $ARGV[1] );
-   regwrite( $DATAPATH_DMEM_DATA_HIGH_C1_REG, $ARGV[2]>>32 & 0xffffffff );
-   regwrite( $DATAPATH_DMEM_DATA_LOW_C1_REG, $ARGV[2] & 0xffffffff );
+   regwrite( $DATAPATH_DMEM_DATA_HIGH_C1_REG, $ARGV[2]);
+   regwrite( $DATAPATH_DMEM_DATA_LOW_C1_REG, $ARGV[3]);
    
    regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG ))|0x2 );
    regwrite( $DATAPATH_INPUT_CMD_REG, hex(regread( $DATAPATH_INPUT_CMD_REG ))&0xfffffffd );

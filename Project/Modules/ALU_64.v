@@ -3,7 +3,7 @@ module ALU_64(input signed [63:0] A,
               input [3:0] aluctrl,
               output reg signed [63:0] Z,
               output reg overflow,
-              //output reg equal,
+              output equal,
               //output reg not_equal,
               output less_than,
               output greater_than_equal);
@@ -15,8 +15,8 @@ parameter IDLE                          = 4'b0000,
           //bitwise_AND                   = 4'b0011,
           //bitwise_OR                    = 4'b0100,
           //bitwise_XNOR                  = 4'b0101,
-//          compare_equal                 = 4'b0110,
-//          compare_not_equal             = 4'b0111,
+          compare_equal                 = 4'b0110,
+          //compare_not_equal             = 4'b0111,
           compare_less_than             = 4'b1000,
           compare_greater_than_equal    = 4'b1001,
           log_shift_left                = 4'b1010;
@@ -25,6 +25,7 @@ parameter IDLE                          = 4'b0000,
 		
 		assign greater_than_equal 	= A >= B;
 		assign less_than 			= A < B;
+		assign equal 				= A == B;
 
 always @(*) 
 
@@ -79,7 +80,9 @@ always @(*)
 //        end
 //
 //        compare_not_equal:
+//		begin
 //            Z = ~(A== B);
+//		end
 
         
 //        compare_greater_than_equal: // NEEDS TESTING

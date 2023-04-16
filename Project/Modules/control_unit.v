@@ -116,15 +116,15 @@ module control_unit (
                 {alu_src, branch, jump, mem_read, mem_write, reg_write, mem_to_reg,fifo_select} = 8'b01000000;
 				alu_op = 4'b0000;
 
-//                if ( funct3 == 3'b000) // BEQ
-//				begin
-//                    alu_op = 4'b0110;
-//				end
-//                
-//                if ( funct3 == 3'b001) // BNEQ
-//				begin
-//                    alu_op = 4'b0111;
-//				end
+                if ( funct3 == 3'b000) // BEQ
+				begin
+                    alu_op = 4'b0110;
+				end
+                
+                if ( funct3 == 3'b001) // BNEQ
+				begin
+                    alu_op = 4'b0111;
+				end
 
                 if ( funct3 == 3'b100) // BLT
 				begin
