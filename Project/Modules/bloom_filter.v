@@ -38,15 +38,34 @@
 */
 
 module bloom_filter(input clk, rst,
-                    input [63:0] packet_data,
-                    output match );
+                    input [63:0] in_data,
+                    output match,
+                    output [63:0] matched_data
+                    );
 
 localparam NUM_OF_ADDRESSES = 1024;
 localparam INDEX_BITS       = 10;
 
+reg [63:0] prev_data;
+
 wire [15:0] bloom_index_0, bloom_index_1, bloom_index_2, bloom_index_3;
 
 wire bloom_value_0, bloom_value_1, bloom_value_2, bloom_value_3;
+
+// NEEDS TESTING
+
+always @(posedge clk)
+begin
+
+    if (rst)
+    begin
+        prev_data <= 64'b0;
+    end
+
+    prev_data <= in_data;
+end
+
+
 
 // Instantiate our Hash functions
 
@@ -84,6 +103,7 @@ bloom_buffer bloom_buffer_1(
 
 assign match = (bloom_value_0 & bloom_value_1 & bloom_value_2 & bloom_value_3);
 
+assign matched_data = (match) ? prev_data : 64'b0;
 
 
 endmodule

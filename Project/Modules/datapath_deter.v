@@ -80,8 +80,12 @@ module datapath_deter
    reg [2:0]                     header_counter, header_counter_next;
    reg                           counter;
 
-   wire matcher_match, core1_busy, core2_busy, core1_enable, core2_enable, core1_ready, core2_ready, core1_match, core2_match;
-   wire [63:0]matched_data, core1_data, core2_data;
+   wire  core1_busy, core2_busy, core1_enable, core2_enable, core1_ready, core2_ready, core1_match, core2_match;
+   wire matcher_match;
+   wire match_0, match_1, match_2, match_3, match_4, match_5, match_6, match_7;
+   //wire [63:0] matched_data 
+   wire [63:0] core1_data, core2_data;
+   reg [63:0] matched_data, matched_data_0, matched_data_1, matched_data_2, matched_data_3, matched_data_4, matched_data_5, matched_data_6, matched_data_7;
 
    // local parameter
    parameter                     START = 2'b00;
@@ -95,6 +99,8 @@ module datapath_deter
    assign matcher_en = in_pkt_body;
    assign matcher_ce = (!in_fifo_empty && out_rdy);
    assign matcher_reset = (reset || ids_cmd[0] || end_of_pkt);
+
+   assign matcher_match = match_0 | match_1 | match_2 | match_3 | match_4 | match_5 | match_6 | match_7; // Bitwise OR all the match signals
 
    //------------------------- Modules-------------------------------
 
@@ -113,6 +119,66 @@ module datapath_deter
       .clk           (clk)
    );
 
+// Logic for byte alignment
+
+reg  [63:0]in_data_p;
+wire [119:0]packet;
+
+assign packet = {in_data[55:0], in_data_p[63:0]};
+
+always @(posedge clk)
+begin
+    in_data_p <= in_data;
+end
+
+// What if multiple patterns in packet.. What if 1 pattern is false positive, other is true positive.. 
+
+always @(*)
+begin
+
+    if(match_0)
+    begin 
+    matched_data = matched_data_0;
+    end
+
+    else if (match_1)
+    begin
+        matched_data = matched_data_1;
+    end
+
+    else if (match_2)
+    begin
+        matched_data = matched_data_2;
+    end
+
+    else if (match_3)
+    begin
+        matched_data = matched_data_3;
+    end
+
+    else if (match_4)
+    begin
+        matched_data = matched_data_4;
+    end
+
+    else if (match_5)
+    begin
+        matched_data = matched_data_5;
+    end
+
+    else if (match_6)
+    begin
+        matched_data = matched_data_6;
+    end
+
+    else if (match_7)
+    begin
+        matched_data = matched_data_7;
+    end
+
+
+end
+
    
    // detect7B matcher (
    //    .ce            (matcher_ce),           // data enable
@@ -124,9 +190,25 @@ module datapath_deter
    //    .mrst          (matcher_reset)         // reset in
    // );
 
-   simple_matcher matcher(.clk(clk), .in_data(in_fifo_data), .pattern({pattern_high, pattern_low}), .match(matcher_match), .matched_data(matched_data));
+   //simple_matcher matcher(.clk(clk), .in_data(in_fifo_data), .pattern({pattern_high, pattern_low}), .match(matcher_match), .matched_data(matched_data));
 
-   //bloom_filter filter (.clk(clk), .rst(rst), .packet_data(in_fifo_data), .match(matcher_match));
+   /****************************************************** BLOOM FILTERS ****************************************************************/
+
+   bloom_filter filter_0 (.clk(clk), .rst(rst), .in_data(packet[63:0]), .match(match_0), .matched_data());
+
+   bloom_filter filter_1 (.clk(clk), .rst(rst), .in_data(packet[71:8]), .match(match_1), .matched_data());
+
+   bloom_filter filter_2 (.clk(clk), .rst(rst), .in_data(packet[79:16]), .match(match_2), .matched_data());
+
+   bloom_filter filter_3 (.clk(clk), .rst(rst), .in_data(packet[87:24]), .match(match_3), .matched_data());
+
+   bloom_filter filter_4 (.clk(clk), .rst(rst), .in_data(packet[95:32]), .match(match_4), .matched_data());
+
+   bloom_filter filter_5 (.clk(clk), .rst(rst), .in_data(packet[103:40]), .match(match_5), .matched_data());
+
+   bloom_filter filter_6 (.clk(clk), .rst(rst), .in_data(packet[111:48]), .match(match_6), .matched_data());
+
+   bloom_filter filter_7 (.clk(clk), .rst(rst), .in_data(packet[119:56]), .match(match_7), .matched_data());
 
    core_manager cm(.clk(clk),                      .rst(reset),                  .match(matcher_match && state == (PAYLOAD)), 	
                      .matched_data(matched_data),	.core1_busy(~core1_ready),   	.core2_busy(~core2_ready),    
