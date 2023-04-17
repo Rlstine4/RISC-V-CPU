@@ -194,21 +194,21 @@ end
 
    /****************************************************** BLOOM FILTERS ****************************************************************/
 
-   bloom_filter filter_0 (.clk(clk), .rst(rst), .in_data(packet[63:0]), .match(match_0), .matched_data());
+   bloom_filter filter_0 (.clk(clk), .rst(rst), .in_data(packet[63:0]), .match(match_0), .matched_data(matched_data_0));
 
-   bloom_filter filter_1 (.clk(clk), .rst(rst), .in_data(packet[71:8]), .match(match_1), .matched_data());
+   bloom_filter filter_1 (.clk(clk), .rst(rst), .in_data(packet[71:8]), .match(match_1), .matched_data(matched_data_1));
 
-   bloom_filter filter_2 (.clk(clk), .rst(rst), .in_data(packet[79:16]), .match(match_2), .matched_data());
+   bloom_filter filter_2 (.clk(clk), .rst(rst), .in_data(packet[79:16]), .match(match_2), .matched_data(matched_data_2));
 
-   bloom_filter filter_3 (.clk(clk), .rst(rst), .in_data(packet[87:24]), .match(match_3), .matched_data());
+   bloom_filter filter_3 (.clk(clk), .rst(rst), .in_data(packet[87:24]), .match(match_3), .matched_data(matched_data_3));
 
-   bloom_filter filter_4 (.clk(clk), .rst(rst), .in_data(packet[95:32]), .match(match_4), .matched_data());
+   bloom_filter filter_4 (.clk(clk), .rst(rst), .in_data(packet[95:32]), .match(match_4), .matched_data(matched_data_4));
 
-   bloom_filter filter_5 (.clk(clk), .rst(rst), .in_data(packet[103:40]), .match(match_5), .matched_data());
+   bloom_filter filter_5 (.clk(clk), .rst(rst), .in_data(packet[103:40]), .match(match_5), .matched_data(matched_data_5));
 
-   bloom_filter filter_6 (.clk(clk), .rst(rst), .in_data(packet[111:48]), .match(match_6), .matched_data());
+   bloom_filter filter_6 (.clk(clk), .rst(rst), .in_data(packet[111:48]), .match(match_6), .matched_data(matched_data_6));
 
-   bloom_filter filter_7 (.clk(clk), .rst(rst), .in_data(packet[119:56]), .match(match_7), .matched_data());
+   bloom_filter filter_7 (.clk(clk), .rst(rst), .in_data(packet[119:56]), .match(match_7), .matched_data(matched_data_7));
 
    core_manager cm(.clk(clk),                      .rst(reset),                  .match(matcher_match && state == (PAYLOAD)), 	
                      .matched_data(matched_data),	.core1_busy(~core1_ready),   	.core2_busy(~core2_ready),    

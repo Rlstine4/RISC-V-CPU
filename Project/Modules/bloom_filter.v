@@ -69,16 +69,16 @@ end
 
 // Instantiate our Hash functions
 
-mod_hash hash_0 (.data_in(packet_data[15:0]), .hashed_value(bloom_index_0));
+mod_hash hash_0 (.data_in(in_data[15:0]), .hashed_value(bloom_index_0));
 
 
-knuth_hash  hash_1 (.data_in(packet_data[31:16]), .hashed_value(bloom_index_1));
+knuth_hash  hash_1 (.data_in(in_data[31:16]), .hashed_value(bloom_index_1));
 
 
-invert_hash hash_2 (.data_in(packet_data[47:32]), .hashed_value(bloom_index_2));
+invert_hash hash_2 (.data_in(in_data[47:32]), .hashed_value(bloom_index_2));
 
 
-XOR_hash hash_3 (.data_in_0(packet_data[63:48]), .data_in_1(packet_data[15:0]), .hashed_value(bloom_index_3));
+XOR_hash hash_3 (.data_in_0(in_data[63:48]), .data_in_1(in_data[15:0]), .hashed_value(bloom_index_3));
 
 // bloom_buffer_0 handles mod_hash and knuth_hash
 
