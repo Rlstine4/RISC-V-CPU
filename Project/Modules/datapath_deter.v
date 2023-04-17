@@ -113,45 +113,6 @@ module datapath_deter
       .clk           (clk)
    );
 
-wire [63:0] first_packet, next_packet;
-   reg [127:0] packet_buffer;
-   reg [1:0]   packet_buffer_count;
-   wire        packet_buffer_rdy;
-
-   assign packet_buffer_rdy = (packet_buffer_count == 2)    ? 1: 0;
-
-   always @(posedge clk)
-   begin
-
-        if(rst) // Clear buffer
-        begin
-            packet_buffer        <= 0;
-            packet_buffer_count  <= 0;
-        end
-
-        else
-        begin
-
-            if (packet_buffer_count == 0)
-            begin
-                packet_buffer [63:0] <= in_fifo_data;
-                packet_buffer_count  <= packet_buffer_count + 1;
-            end
-
-            else if (packet_buffer_count == 1)
-            begin
-                packet_buffer[127:64] <= in_fifo_data;
-                packet_buffer_count  <= packet_buffer_count + 1;
-            end
-
-            else // Buffer has 2 packets
-            begin
-                packet_buffer_count  <= packet_buffer_count + 1;
-            end
-
-        end
-
-   end
    
    // detect7B matcher (
    //    .ce            (matcher_ce),           // data enable
