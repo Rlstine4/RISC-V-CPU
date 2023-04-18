@@ -20,7 +20,9 @@
 //////////////////////////////////////////////////////////////////////////////////
 module core_manager(
 		input clk, rst, match, core1_busy, core2_busy,
-		output reg core1_enable, core2_enable
+		input [63:0]matched_data,
+		output reg core1_enable, core2_enable,
+		output reg [63:0]core1_data, core2_data
     );
 	
 	parameter 	IDLE 		= 2'b00,
@@ -33,9 +35,12 @@ module core_manager(
 	begin
 		if(rst)
 		begin
-			state <= IDLE;
-			core1_enable <= 1'b0;
-			core2_enable <= 1'b0;
+			state 			<= IDLE;
+			core1_enable 	<= 1'b0;
+			core2_enable 	<= 1'b0;
+			core1_data		<= 64'd0;
+			core2_data		<= 64'd0;
+			
 		end
 		else
 		begin
@@ -44,101 +49,149 @@ module core_manager(
 				begin
 					if(match == 1'b1)
 					begin
-						state <= BUSY_CORE1;
-						core1_enable <= 1'b1;
-						core2_enable <= 1'b0;
+						state 			<= BUSY_ALL;
+						core1_enable 	<= 1'b1;
+						core2_enable 	<= 1'b1;
+						core1_data		<= matched_data;
+						core2_data		<= matched_data;
 					end
 					else
 					begin
-						state <= IDLE;
-						core1_enable <= 1'b0;
-						core2_enable <= 1'b0;
+						state 			<= IDLE;
+						core1_enable 	<= 1'b0;
+						core2_enable 	<= 1'b0;
+						core1_data		<= 64'd0;
+						core2_data		<= 64'd0;
 					end
 				end
 				
-				BUSY_CORE1:
-				begin
-					if(core1_busy == 1'b1 && match == 1'b1)
-					begin
-						state <= BUSY_ALL;
-						core1_enable <= 1'b1;
-						core2_enable <= 1'b1;
-					end
-					else if(core1_busy == 1'b1 && match == 1'b0)
-					begin
-						state <= BUSY_CORE1;
-						core1_enable <= 1'b1;
-						core2_enable <= 1'b0;
-					end
-					else if(core1_busy == 1'b0 && match == 1'b1)
-					begin
-						state <= BUSY_CORE2;
-						core1_enable <= 1'b0;
-						core2_enable <= 1'b1;
-					end
-					else
-					begin
-						state <= IDLE;
-						core1_enable <= 1'b0;
-						core2_enable <= 1'b0;
-					end
-				end
-
-				BUSY_CORE2:
-				begin
-					if(core2_busy == 1'b1 && match == 1'b1)
-					begin
-						state <= BUSY_ALL;
-						core1_enable <= 1'b1;
-						core2_enable <= 1'b1;
-					end
-					else if(core2_busy == 1'b1 && match == 1'b0)
-					begin
-						state <= BUSY_CORE2;
-						core1_enable <= 1'b0;
-						core2_enable <= 1'b1;
-					end
-					else if(core2_busy == 1'b0 && match == 1'b1)
-					begin
-						state <= BUSY_CORE1;
-						core1_enable <= 1'b1;
-						core2_enable <= 1'b0;
-					end
-					else
-					begin
-						state <= IDLE;
-						core1_enable <= 1'b0;
-						core2_enable <= 1'b0;
-					end
-				end
-
 				BUSY_ALL:
 				begin
-					if(core1_busy == 1'b1 && core2_busy == 1'b1)
+					if(core1_busy == 1'b1 || core2_busy == 1'b1)
 					begin
-						state <= BUSY_ALL;
-						core1_enable <= 1'b1;
-						core2_enable <= 1'b1;
-					end		
-					else if(core1_busy == 1'b1 && core2_busy == 1'b0)
-					begin
-						state <= BUSY_CORE1;
-						core1_enable <= 1'b1;
-						core2_enable <= 1'b0;
-					end	
-					else if(core1_busy == 1'b0 && core2_busy == 1'b1)
-					begin
-						state <= BUSY_CORE2;
-						core1_enable <= 1'b0;
-						core2_enable <= 1'b1;
+						state 			<= BUSY_ALL;
+						core1_enable 	<= 1'b1;
+						core2_enable 	<= 1'b1;
+						core1_data		<= core1_data;
+						core2_data		<= core2_data;
 					end		
 					else
 					begin
 						state <= IDLE;
-						core1_enable <= 1'b0;
-						core2_enable <= 1'b0;
+						core1_enable 	<= 1'b0;
+						core2_enable 	<= 1'b0;
+						core1_data		<= 64'd0;
+						core2_data		<= 64'd0;
 					end			
 				end
+				
+//				BUSY_CORE1:
+//				begin
+//					if(core1_busy == 1'b1 && match == 1'b1)
+//					begin
+//						state 			<= BUSY_ALL;
+//						core1_enable 	<= 1'b1;
+//						core2_enable 	<= 1'b1;
+//						core1_data		<= core1_data;
+//						core2_data		<= matched_data;
+//					end
+//					else if(core1_busy == 1'b1 && match == 1'b0)
+//					begin
+//						state 			<= BUSY_CORE1;
+//						core1_enable 	<= 1'b1;
+//						core2_enable 	<= 1'b0;
+//						core1_data		<= core1_data;
+//						core2_data		<= 64'd0;
+//					end
+//					else if(core1_busy == 1'b0 && match == 1'b1)
+//					begin
+//						state 			<= BUSY_CORE2;
+//						core1_enable 	<= 1'b0;
+//						core2_enable 	<= 1'b1;
+//						core1_data		<= 64'd0;
+//						core2_data		<= matched_data;
+//					end
+//					else
+//					begin
+//						state 			<= IDLE;
+//						core1_enable 	<= 1'b0;
+//						core2_enable 	<= 1'b0;
+//						core1_data		<= 64'd0;
+//						core2_data		<= 64'd0;
+//					end
+//				end
+//
+//				BUSY_CORE2:
+//				begin
+//					if(core2_busy == 1'b1 && match == 1'b1)
+//					begin
+//						state 			<= BUSY_ALL;
+//						core1_enable 	<= 1'b1;
+//						core2_enable 	<= 1'b1;
+//						core1_data		<= matched_data;
+//						core2_data		<= core2_data;
+//					end
+//					else if(core2_busy == 1'b1 && match == 1'b0)
+//					begin
+//						state 			<= BUSY_CORE2;
+//						core1_enable 	<= 1'b0;
+//						core2_enable 	<= 1'b1;
+//						core1_data		<= 64'd0;
+//						core2_data		<= core2_data;
+//					end
+//					else if(core2_busy == 1'b0 && match == 1'b1)
+//					begin
+//						state 			<= BUSY_CORE1;
+//						core1_enable 	<= 1'b1;
+//						core2_enable 	<= 1'b0;
+//						core1_data		<= matched_data;
+//						core2_data		<= 64'd0;
+//					end
+//					else
+//					begin
+//						state 			<= IDLE;
+//						core1_enable 	<= 1'b0;
+//						core2_enable 	<= 1'b0;
+//						core1_data		<= 64'd0;
+//						core2_data		<= 64'd0;
+//					end
+//				end
+
+//				BUSY_ALL:
+//				begin
+//					if(core1_busy == 1'b1 && core2_busy == 1'b1)
+//					begin
+//						state 			<= BUSY_ALL;
+//						core1_enable 	<= 1'b1;
+//						core2_enable 	<= 1'b1;
+//						core1_data		<= core1_data;
+//						core2_data		<= core2_data;
+//					end		
+//					else if(core1_busy == 1'b1 && core2_busy == 1'b0)
+//					begin
+//						state 			<= BUSY_CORE1;
+//						core1_enable 	<= 1'b1;
+//						core2_enable 	<= 1'b0;
+//						core1_data		<= core1_data;
+//						core2_data		<= 64'd0;
+//					end	
+//					else if(core1_busy == 1'b0 && core2_busy == 1'b1)
+//					begin
+//						state 			<= BUSY_CORE2;
+//						core1_enable 	<= 1'b0;
+//						core2_enable 	<= 1'b1;
+//						core1_data		<= 64'd0;
+//						core2_data		<= core2_data;
+//					end		
+//					else
+//					begin
+//						state <= IDLE;
+//						core1_enable 	<= 1'b0;
+//						core2_enable 	<= 1'b0;
+//						core1_data		<= 64'd0;
+//						core2_data		<= 64'd0;
+//					end			
+//				end
 			endcase
 		end
 	end

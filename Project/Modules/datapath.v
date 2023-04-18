@@ -95,8 +95,9 @@ module datapath(
 	wire [63:0]wb_rdData;
 	reg [63:0]wb_rdData_reg;
 	
-	wire reset;
-	assign reset = rst || ~core_enable || match;
+	wire reset, proc_ready;
+	assign reset = rst || ~core_enable;
+	assign core_ready = proc_ready || match;
 
 	
 	//Instruction Fetch stage datapath	--------------------------------------------------------------------------------------------------------------------
@@ -104,7 +105,7 @@ module datapath(
 	pcCounter pcc(.en(1'b1), 										.clk(clk), 						.rst(reset), 					.pcOut(pc_reg), 			
 					.threadSelect_current(threadSelect_current), 	.jumpFlag(id_jump), 			.jumpThread(jumpThread), 		.jumpAddr(jumpAddr_reg),	
 					.branchFlag(branch_flag), 						.branchThread(branchThread), 	.branchAddr(branchAddr_reg),	.pc_reset(pc_reset),
-					.core_ready(core_ready),						.core_enable(core_enable)
+					.core_ready(proc_ready),						.core_enable(core_enable)
 					);
 	
 	inst_mem iMem(.ena(~reset), .sinita(pc_reset), .addra(pc_reg), .clka(clk), .douta(id_inst), .web(iMemWE), .addrb(iMemAddr), 
