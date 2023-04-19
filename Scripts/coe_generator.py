@@ -23,11 +23,7 @@ if FILENAME[len(FILENAME) - 5] != '.coe':
 
 INITIAL_VECTOR = [0] * DEPTH
 
-INITIAL_VECTOR[0]      = 1
 INITIAL_VECTOR[1023]   = 1
-INITIAL_VECTOR[100]    = 1
-INITIAL_VECTOR[500]    = 1
-INITIAL_VECTOR[928]    = 1
 
 
 with open(FILENAME, "w") as file:
