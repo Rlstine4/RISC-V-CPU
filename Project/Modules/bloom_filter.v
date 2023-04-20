@@ -48,7 +48,8 @@ localparam INDEX_BITS       = 10;
 
 reg [63:0] prev_data;
 
-wire [15:0] bloom_index_0, bloom_index_1, bloom_index_2, bloom_index_3;
+//wire bloom_index_1;
+wire [15:0] bloom_index_0, bloom_index_2, bloom_index_3;
 
 wire bloom_value_0, bloom_value_1, bloom_value_2, bloom_value_3;
 
@@ -72,7 +73,7 @@ end
 mod_hash hash_0 (.data_in(in_data[15:0]), .hashed_value(bloom_index_0));
 
 
-knuth_hash  hash_1 (.data_in(in_data[31:16]), .hashed_value(bloom_index_1));
+//knuth_hash  hash_1 (.data_in(in_data[31:16]), .hashed_value(bloom_index_1));
 
 
 invert_hash hash_2 (.data_in(in_data[47:32]), .hashed_value(bloom_index_2));
@@ -87,8 +88,8 @@ bloom_buffer bloom_buffer_0(
 	.addra(bloom_index_0[INDEX_BITS-1:0]),
 	.douta(bloom_value_0),
 	.clkb(clk),
-	.addrb(bloom_index_1[INDEX_BITS-1:0]),
-	.doutb(bloom_value_1));
+	.addrb(),
+	.doutb());
 
 // bloom_buffer_1 handles invert hash and XOR hash
 
@@ -101,7 +102,7 @@ bloom_buffer bloom_buffer_1(
 	.doutb(bloom_value_3)   );
 
 
-assign match = (bloom_value_0 & bloom_value_1 & bloom_value_2 & bloom_value_3);
+assign match = (bloom_value_0  & bloom_value_2 & bloom_value_3);
 
 assign matched_data = (match) ? prev_data : 64'b0;
 
