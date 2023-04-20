@@ -45,17 +45,16 @@ module special_fifo(
 					input clk,
 					input drop_pkt,
 					input fiforead,
-					//input firstword,
 					input in_fifo_empty,
 					input [7:0] in_fifo_ctrl,
 					input [63:0] in_fifo_data,
-					//input out_rdy,
-					//input lastword,
 					input rst,
+					input core_enable,
 					output [71:0] out_fifo,
 					output reg valid_data,
 					output reg in_fifo_rd_en,
-					output [1:0]fifo_state
+					output [1:0]fifo_state,
+					output reg end_of_pkt
                     ); 
 					
 	parameter	START = 2'b00;
@@ -65,7 +64,7 @@ module special_fifo(
 
 	reg [1:0] state;
 	reg [31:0] matches;
-	reg begin_pkt, end_of_pkt;
+	reg begin_pkt;
 	reg [2:0] header_counter;
 	reg out_wr_int;
 	
@@ -101,7 +100,7 @@ module special_fifo(
 		end
 		else
 		begin
-			if(out_wr_int == 1'b1)
+			if(out_wr_int == 1'b1 && state != PROCESSOR)
 			begin
 				write_ptr <= write_ptr + 1'b1;
 			end
@@ -115,6 +114,11 @@ module special_fifo(
 			begin
 				read_ptr <= read_ptr + 1'b1;
 				valid_data	<= 1;
+			end
+			else if(drop_pkt == 1'b1)
+			begin
+				read_ptr <= write_ptr_end_of_pkt;
+				valid_data	<= 0;
 			end
 			else
 			begin
@@ -132,6 +136,12 @@ module special_fifo(
 						begin_pkt 	<= 	1'b1;
 						end_of_pkt 	<= 	1'b0;
 					end
+					if(core_enable)
+					begin
+						state 		<= 	PROCESSOR;
+						begin_pkt 	<= 	1'b0;
+						end_of_pkt 	<= 	1'b0;
+					end
 				end
 				
 				HEADER:
@@ -146,6 +156,12 @@ module special_fifo(
 							state <= PAYLOAD;
 						end
 					end
+					if(core_enable)
+					begin
+						state 		<= 	PROCESSOR;
+						begin_pkt 	<= 	1'b0;
+						end_of_pkt 	<= 	1'b0;
+					end
 				end
 				
 				PAYLOAD:
@@ -157,10 +173,22 @@ module special_fifo(
 						begin_pkt 		<= 	1'b0;
 						end_of_pkt 		<= 	1'b1;
 					end
+					if(core_enable)
+					begin
+						state 		<= 	PROCESSOR;
+						begin_pkt 	<= 	1'b0;
+						end_of_pkt 	<= 	1'b0;
+					end
 				end
 				
 				PROCESSOR:
 				begin
+					if(~core_enable)
+					begin
+						state 		<= 	START;
+						begin_pkt 	<= 	1'b0;
+						end_of_pkt 	<= 	1'b0;
+					end
 				end
 				
 			endcase
