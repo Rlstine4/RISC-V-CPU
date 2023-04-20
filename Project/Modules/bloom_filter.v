@@ -88,8 +88,8 @@ bloom_buffer bloom_buffer_0(
 	.addra(bloom_index_0[INDEX_BITS-1:0]),
 	.douta(bloom_value_0),
 	.clkb(clk),
-	.addrb(),
-	.doutb());
+	.addrb(321),
+	.doutb(bloom_value_1));
 
 // bloom_buffer_1 handles invert hash and XOR hash
 
@@ -102,7 +102,7 @@ bloom_buffer bloom_buffer_1(
 	.doutb(bloom_value_3)   );
 
 
-assign match = (bloom_value_0  & bloom_value_2 & bloom_value_3);
+assign match = (bloom_value_0  & bloom_value_1 & bloom_value_2 & bloom_value_3);
 
 assign matched_data = (match) ? prev_data : 64'b0;
 
