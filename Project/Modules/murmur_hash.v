@@ -18,11 +18,11 @@ module murmur_hash
 
     assign step_1 = data_in ^ (data_in >> 16);
 
-    assign step_2 = step_1 * 0x85ebca6b;
+    assign step_2 = step_1 * 32'h0x85ebca6b;
 
     assign step_3 = step_2 ^ (step_2 >> 13);
 
-    assign step_4 = step_3 * 0xc2b2ae35;
+    assign step_4 = step_3 * 32'h0xc2b2ae35;
 
     assign hashed_value = step_4 ^ (step_4 >> 16);
     
