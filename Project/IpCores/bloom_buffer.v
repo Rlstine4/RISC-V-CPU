@@ -47,17 +47,17 @@ module bloom_buffer(
 
 
 input clka;
-input [9 : 0] addra;
+input [15 : 0] addra;
 output [0 : 0] douta;
 input clkb;
-input [9 : 0] addrb;
+input [15 : 0] addrb;
 output [0 : 0] doutb;
 
 // synthesis translate_off
 
       BLK_MEM_GEN_V2_8 #(
-		.C_ADDRA_WIDTH(10),
-		.C_ADDRB_WIDTH(10),
+		.C_ADDRA_WIDTH(16),
+		.C_ADDRB_WIDTH(16),
 		.C_ALGORITHM(1),
 		.C_BYTE_SIZE(9),
 		.C_COMMON_CLK(0),
@@ -80,8 +80,8 @@ output [0 : 0] doutb;
 		.C_MEM_TYPE(4),
 		.C_MUX_PIPELINE_STAGES(0),
 		.C_PRIM_TYPE(1),
-		.C_READ_DEPTH_A(1024),
-		.C_READ_DEPTH_B(1024),
+		.C_READ_DEPTH_A(65536),
+		.C_READ_DEPTH_B(65536),
 		.C_READ_WIDTH_A(1),
 		.C_READ_WIDTH_B(1),
 		.C_SIM_COLLISION_CHECK("ALL"),
@@ -94,8 +94,8 @@ output [0 : 0] doutb;
 		.C_USE_RAMB16BWER_RST_BHV(0),
 		.C_WEA_WIDTH(1),
 		.C_WEB_WIDTH(1),
-		.C_WRITE_DEPTH_A(1024),
-		.C_WRITE_DEPTH_B(1024),
+		.C_WRITE_DEPTH_A(65536),
+		.C_WRITE_DEPTH_B(65536),
 		.C_WRITE_MODE_A("WRITE_FIRST"),
 		.C_WRITE_MODE_B("WRITE_FIRST"),
 		.C_WRITE_WIDTH_A(1),
