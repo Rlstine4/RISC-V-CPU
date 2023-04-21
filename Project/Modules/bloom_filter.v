@@ -1,6 +1,10 @@
 /*
     Description: Bloom Filter v3 
 
+        64'h574F524D484F4C45; // WORMHOLE
+        64'h4445414442454546; // DEADBEEF
+        64'h464C41504A41434B; // FLAPJACK
+
 
 */
 
