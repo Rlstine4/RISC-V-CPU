@@ -19,14 +19,14 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module core_manager(
-		input clk, rst, match, core1_busy, core2_busy,
+		input clk, rst, match, core1_busy, core2_busy, end_of_pkt,
 		input [63:0]matched_data,
 		output reg core1_enable, core2_enable,
 		output reg [63:0]core1_data, core2_data
     );
 	
 	parameter 	IDLE 		= 2'b00,
-				BUSY_CORE1 	= 2'b01,
+				MATCHED 	= 2'b01,
 				BUSY_CORE2 	= 2'b10,
 				BUSY_ALL	= 2'b11;
 				
@@ -47,11 +47,19 @@ module core_manager(
 			case(state)
 				IDLE:
 				begin
-					if(match == 1'b1)
+					if(match == 1'b1 && end_of_pkt == 1'b1)
 					begin
 						state 			<= BUSY_ALL;
 						core1_enable 	<= 1'b1;
 						core2_enable 	<= 1'b1;
+						core1_data		<= matched_data;
+						core2_data		<= matched_data;
+					end
+					else if(match == 1'b1 && end_of_pkt == 1'b0)
+					begin
+						state 			<= MATCHED;
+						core1_enable 	<= 1'b0;
+						core2_enable 	<= 1'b0;
 						core1_data		<= matched_data;
 						core2_data		<= matched_data;
 					end
@@ -62,6 +70,26 @@ module core_manager(
 						core2_enable 	<= 1'b0;
 						core1_data		<= 64'd0;
 						core2_data		<= 64'd0;
+					end
+				end
+				
+				MATCHED:
+				begin
+					if(end_of_pkt == 1'b1)
+					begin
+						state 			<= BUSY_ALL;
+						core1_enable 	<= 1'b1;
+						core2_enable 	<= 1'b1;
+						core1_data		<= core1_data;
+						core2_data		<= core2_data;
+					end
+					else
+					begin
+						state 			<= MATCHED;
+						core1_enable 	<= 1'b0;
+						core2_enable 	<= 1'b0;
+						core1_data		<= core1_data;
+						core2_data		<= core2_data;
 					end
 				end
 				

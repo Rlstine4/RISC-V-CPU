@@ -75,17 +75,16 @@ module datapath_deter
    wire [1:0]                     state, state_next;
    reg [31:0]                    matches_next;
    reg                           in_pkt_body, in_pkt_body_next;
-   reg                           end_of_pkt, end_of_pkt_next;
+   wire                           end_of_pkt, end_of_pkt_next;
    reg                           begin_pkt, begin_pkt_next;
    reg [2:0]                     header_counter, header_counter_next;
    reg                           counter;
 
-   wire  core1_busy, core2_busy, core1_enable, core2_enable, core1_ready, core2_ready, core1_match, core2_match;
-   wire matcher_match;
+   wire  matcher_match, core1_busy, core2_busy, core1_enable, core2_enable, core1_ready, core2_ready, core1_match, core2_match;
    wire match_0, match_1, match_2, match_3, match_4, match_5, match_6, match_7;
-   //wire [63:0] matched_data 
-   wire [63:0] core1_data, core2_data;
-   reg [63:0] matched_data, matched_data_0, matched_data_1, matched_data_2, matched_data_3, matched_data_4, matched_data_5, matched_data_6, matched_data_7;
+   wire [63:0]core1_data, core2_data;
+   reg [63:0] matched_data;
+   wire [63:0]matched_data_0, matched_data_1, matched_data_2, matched_data_3, matched_data_4, matched_data_5, matched_data_6, matched_data_7;
 
    // local parameter
    parameter                     START = 2'b00;
@@ -109,7 +108,7 @@ module datapath_deter
       .MAX_DEPTH_BITS(2)
    ) input_fifo (
       .din           ({in_ctrl, in_data}),   // Data in
-      .wr_en         (in_wr),                // Write enable
+      .wr_en         (in_wr && ~(core1_enable || core2_enable)),                // Write enable
       .rd_en         (in_fifo_rd_en),        // Read the next word 
       .dout          ({in_fifo_ctrl, in_fifo_data}),
       .full          (),
@@ -124,11 +123,11 @@ module datapath_deter
 reg  [63:0]in_data_p;
 wire [119:0]packet;
 
-assign packet = {in_data[55:0], in_data_p[63:0]};
+assign packet = {in_fifo_data[55:0], in_data_p[63:0]};
 
 always @(posedge clk)
 begin
-    in_data_p <= in_data;
+    in_data_p <= in_fifo_data;
 end
 
 // What if multiple patterns in packet.. What if 1 pattern is false positive, other is true positive.. 
@@ -175,6 +174,10 @@ begin
     begin
         matched_data = matched_data_7;
     end
+    else
+    begin
+        matched_data = 0;
+    end
 
 
 end
@@ -210,31 +213,54 @@ end
 
    bloom_filter filter_7 (.clk(clk), .rst(rst), .in_data(packet[119:56]), .match(match_7), .matched_data(matched_data_7));
 
-   core_manager cm(.clk(clk),                      .rst(reset),                  .match(matcher_match && state == (PAYLOAD)), 	
-                     .matched_data(matched_data),	.core1_busy(~core1_ready),   	.core2_busy(~core2_ready),    
-                     .core1_enable(core1_enable),	.core2_enable(core2_enable),	.core1_data(core1_data),		
+   core_manager cm(.clk(clk),                      
+                     .rst(reset),                  
+                     .match(matcher_match && state == (PAYLOAD)), 	
+                     .matched_data(matched_data),
+                     .end_of_pkt(end_of_pkt),	
+                     .core1_busy(~core1_ready),   	
+                     .core2_busy(~core2_ready),    
+                     .core1_enable(core1_enable),	
+                     .core2_enable(core2_enable),	
+                     .core1_data(core1_data),		
                      .core2_data(core2_data)
                      );
         
-   datapath data_path_1(.clk(clk),                                         .rst(reset),              
-                        .logicEn(1'b0),                                    .logicWe(1'b0),                      
-                        .iMemWE(1'b0),                                     .memWE(ids_cmd[1]),      
-                        .memAddr(dmem_index_c1),                           .logicAddr(14'd0),
-                        .memInData({dmem_data_high_c1,dmem_data_low_c1}),  .memOutData(dmem_out_c1),
-                        .logicData(),                                      .iMemAddr(9'd0),
-                        .iMemInData(32'd0),                                .core_ready(core1_ready),
-                        .core_enable(core1_enable),                        .in_data(core1_data),
+   datapath data_path_1(.clk(clk),                                         
+                        .rst(reset),              
+                        .logicEn(1'b0),                                    
+                        .logicWe(1'b0),                      
+                        .iMemWE(1'b0),                                     
+                        .memWE(ids_cmd[1]),      
+                        .memAddr(dmem_index_c1),                           
+                        .logicAddr(14'd0),
+                        .memInData({dmem_data_high_c1,dmem_data_low_c1}),  
+                        .memOutData(dmem_out_c1),
+                        .logicData(),                                      
+                        .iMemAddr(9'd0),
+                        .iMemInData(32'd0),                                
+                        .core_ready(core1_ready),
+                        .core_enable(core1_enable),                        
+                        .in_data(core1_data),
 						      .match(core1_match)
                         );
 
-   datapath data_path_2(.clk(clk),                                         .rst(reset),              
-                        .logicEn(1'b0),                                    .logicWe(1'b0),                      
-                        .iMemWE(1'b0),                                     .memWE(ids_cmd[2]),      
-                        .memAddr(dmem_index_c2),                           .logicAddr(14'd0),
-                        .memInData({dmem_data_high_c2,dmem_data_low_c2}),  .memOutData(dmem_out_c2),
-                        .logicData(),                                      .iMemAddr(9'd0),
-                        .iMemInData(32'd0),                                .core_ready(core2_ready),
-                        .core_enable(core2_enable),                        .in_data(core2_data),
+   datapath data_path_2(.clk(clk),                                         
+                        .rst(reset),              
+                        .logicEn(1'b0),                                    
+                        .logicWe(1'b0),                      
+                        .iMemWE(1'b0),                                     
+                        .memWE(ids_cmd[2]),      
+                        .memAddr(dmem_index_c2),                           
+                        .logicAddr(14'd0),
+                        .memInData({dmem_data_high_c2,dmem_data_low_c2}),  
+                        .memOutData(dmem_out_c2),
+                        .logicData(),                                      
+                        .iMemAddr(9'd0),
+                        .iMemInData(32'd0),                                
+                        .core_ready(core2_ready),
+                        .core_enable(core2_enable),                        
+                        .in_data(core2_data),
 						      .match(core2_match)
                         );
 
@@ -254,7 +280,8 @@ end
    special_fifo sp_fifo(
 		.clk(clk),
 		.drop_pkt(1'b0 && end_of_pkt),
-		.fiforead(out_rdy),
+      .core_enable(core1_enable || core2_enable),
+      .fiforead(out_rdy && ~(core1_enable || core2_enable)),
 		.in_fifo_empty(in_fifo_empty),
 		.in_fifo_ctrl(in_fifo_ctrl),
 		.in_fifo_data(in_fifo_data),
@@ -262,12 +289,13 @@ end
 		.out_fifo({out_ctrl,out_data}),
 		.valid_data(out_wr),
 		.in_fifo_rd_en(in_fifo_rd_en),      
-		.fifo_state(state)
+		.fifo_state(state),
+      .end_of_pkt(end_of_pkt)
 	);
    
    always@(posedge clk)
    begin
-      if(core1_match || core2_match)
+      if(core1_match == 1'b1)
       begin
          matches <= matches + 1;
       end
