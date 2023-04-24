@@ -1,8 +1,4 @@
-/*
-    Description: Bloom Filter v3 
 
-
-*/
 
 module bloom_filter(input clk, rst,
                     input [63:0] in_data,
