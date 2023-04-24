@@ -1,13 +1,3 @@
-/*
-    Description: Bloom Filter v3 
-
-        64'h574F524D484F4C45; // WORMHOLE
-        64'h4445414442454546; // DEADBEEF
-        64'h464C41504A41434B; // FLAPJACK
-
-
-*/
-
 module bloom_filter(input clk, rst,
                     input [63:0] in_data,
                     output match,
@@ -20,7 +10,8 @@ localparam INDEX_BITS       = 16;
 reg [63:0] prev_data;
 
 //wire bloom_index_1;
-wire [31:0] bloom_index_0, bloom_index_2, bloom_index_3;
+wire [31:0] bloom_index_0, bloom_index_1;
+wire [15:0] bloom_index_2, bloom_index_3;
 
 wire bloom_value_0, bloom_value_1, bloom_value_2, bloom_value_3;
 
