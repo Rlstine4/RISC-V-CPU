@@ -7,125 +7,133 @@
 :vpi_module "/opt/homebrew/Cellar/icarus-verilog/11.0/lib/ivl/vhdl_textio.vpi";
 :vpi_module "/opt/homebrew/Cellar/icarus-verilog/11.0/lib/ivl/v2005_math.vpi";
 :vpi_module "/opt/homebrew/Cellar/icarus-verilog/11.0/lib/ivl/va_math.vpi";
-S_0x1447152e0 .scope module, "tb_hash" "tb_hash" 2 1;
+S_0x129704d80 .scope module, "tb_hash" "tb_hash" 2 1;
  .timescale 0 0;
-L_0x14472b060 .functor BUFZ 16, L_0x14472a5f0, C4<0000000000000000>, C4<0000000000000000>, C4<0000000000000000>;
-L_0x14472b0d0 .functor BUFZ 16, L_0x14472ace0, C4<0000000000000000>, C4<0000000000000000>, C4<0000000000000000>;
-v0x144729450_0 .net "bloom_index_0", 15 0, L_0x14472af20;  1 drivers
-v0x144729500_0 .net "bloom_index_1", 15 0, L_0x14472afc0;  1 drivers
-v0x1447295b0_0 .net "bloom_index_2", 15 0, L_0x14472b060;  1 drivers
-v0x144729670_0 .net "bloom_index_3", 15 0, L_0x14472b0d0;  1 drivers
-v0x144729720_0 .var "data_in", 63 0;
-v0x144729810_0 .net "mod_output", 31 0, L_0x144729b60;  1 drivers
-v0x1447298b0_0 .net "murmur_high_output", 15 0, L_0x14472ace0;  1 drivers
-v0x144729960_0 .net "murmur_low_output", 15 0, L_0x14472a5f0;  1 drivers
-v0x144729a10_0 .net "shift_output", 31 0, L_0x144729e40;  1 drivers
-L_0x144729c80 .part v0x144729720_0, 0, 32;
-L_0x144729fc0 .part v0x144729720_0, 0, 32;
-L_0x14472a6d0 .part v0x144729720_0, 0, 32;
-L_0x14472ae00 .part v0x144729720_0, 32, 32;
-L_0x14472af20 .part L_0x144729b60, 0, 16;
-L_0x14472afc0 .part L_0x144729e40, 0, 16;
-S_0x144717460 .scope module, "mod_hash_DUT" "mod_hash" 2 10, 3 3 0, S_0x1447152e0;
- .timescale 0 0;
-    .port_info 0 /INPUT 32 "data_in";
-    .port_info 1 /OUTPUT 32 "hashed_value";
-L_0x148078010 .functor BUFT 1, C4<00000000000000010000000000000000>, C4<0>, C4<0>, C4<0>;
-v0x144719d20_0 .net/2u *"_ivl_0", 31 0, L_0x148078010;  1 drivers
-v0x144727ac0_0 .net "data_in", 31 0, L_0x144729c80;  1 drivers
-v0x144727b60_0 .net "hashed_value", 31 0, L_0x144729b60;  alias, 1 drivers
-L_0x144729b60 .arith/mod 32, L_0x144729c80, L_0x148078010;
-S_0x144727c40 .scope module, "murmur_high_DUT" "murmur_hash" 2 14, 4 13 0, S_0x1447152e0;
- .timescale 0 0;
-    .port_info 0 /INPUT 32 "data_in";
-    .port_info 1 /OUTPUT 16 "hashed_value";
-L_0x148078178 .functor BUFT 1, C4<00000000000000001111111111111111>, C4<0>, C4<0>, C4<0>;
-L_0x14472a790 .functor AND 32, L_0x14472ae00, L_0x148078178, C4<11111111111111111111111111111111>, C4<11111111111111111111111111111111>;
-L_0x1480781c0 .functor BUFT 1, C4<11111111111111110000000000000000>, C4<0>, C4<0>, C4<0>;
-L_0x14472a8a0 .functor AND 32, L_0x14472ae00, L_0x1480781c0, C4<11111111111111111111111111111111>, C4<11111111111111111111111111111111>;
-L_0x14472abf0 .functor XOR 32, L_0x14472a790, L_0x14472aab0, C4<00000000000000000000000000000000>, C4<00000000000000000000000000000000>;
-v0x144727e30_0 .net/2u *"_ivl_0", 31 0, L_0x148078178;  1 drivers
-v0x144727ef0_0 .net *"_ivl_10", 15 0, L_0x14472a9d0;  1 drivers
-L_0x148078208 .functor BUFT 1, C4<0000000000000000>, C4<0>, C4<0>, C4<0>;
-v0x144727fa0_0 .net *"_ivl_12", 15 0, L_0x148078208;  1 drivers
-v0x144728060_0 .net *"_ivl_14", 31 0, L_0x14472abf0;  1 drivers
-v0x144728110_0 .net *"_ivl_2", 31 0, L_0x14472a790;  1 drivers
-v0x144728200_0 .net/2u *"_ivl_4", 31 0, L_0x1480781c0;  1 drivers
-v0x1447282b0_0 .net *"_ivl_6", 31 0, L_0x14472a8a0;  1 drivers
-v0x144728360_0 .net *"_ivl_8", 31 0, L_0x14472aab0;  1 drivers
-v0x144728410_0 .net "data_in", 31 0, L_0x14472ae00;  1 drivers
-v0x144728520_0 .net "hashed_value", 15 0, L_0x14472ace0;  alias, 1 drivers
-L_0x14472a9d0 .part L_0x14472a8a0, 16, 16;
-L_0x14472aab0 .concat [ 16 16 0 0], L_0x14472a9d0, L_0x148078208;
-L_0x14472ace0 .part L_0x14472abf0, 0, 16;
-S_0x144728600 .scope module, "murmur_low_DUT" "murmur_hash" 2 13, 4 13 0, S_0x1447152e0;
- .timescale 0 0;
-    .port_info 0 /INPUT 32 "data_in";
-    .port_info 1 /OUTPUT 16 "hashed_value";
-L_0x1480780a0 .functor BUFT 1, C4<00000000000000001111111111111111>, C4<0>, C4<0>, C4<0>;
-L_0x14472a0a0 .functor AND 32, L_0x14472a6d0, L_0x1480780a0, C4<11111111111111111111111111111111>, C4<11111111111111111111111111111111>;
-L_0x1480780e8 .functor BUFT 1, C4<11111111111111110000000000000000>, C4<0>, C4<0>, C4<0>;
-L_0x14472a190 .functor AND 32, L_0x14472a6d0, L_0x1480780e8, C4<11111111111111111111111111111111>, C4<11111111111111111111111111111111>;
-L_0x14472a500 .functor XOR 32, L_0x14472a0a0, L_0x14472a3e0, C4<00000000000000000000000000000000>, C4<00000000000000000000000000000000>;
-v0x1447287f0_0 .net/2u *"_ivl_0", 31 0, L_0x1480780a0;  1 drivers
-v0x144728880_0 .net *"_ivl_10", 15 0, L_0x14472a2c0;  1 drivers
-L_0x148078130 .functor BUFT 1, C4<0000000000000000>, C4<0>, C4<0>, C4<0>;
-v0x144728930_0 .net *"_ivl_12", 15 0, L_0x148078130;  1 drivers
-v0x1447289f0_0 .net *"_ivl_14", 31 0, L_0x14472a500;  1 drivers
-v0x144728aa0_0 .net *"_ivl_2", 31 0, L_0x14472a0a0;  1 drivers
-v0x144728b90_0 .net/2u *"_ivl_4", 31 0, L_0x1480780e8;  1 drivers
-v0x144728c40_0 .net *"_ivl_6", 31 0, L_0x14472a190;  1 drivers
-v0x144728cf0_0 .net *"_ivl_8", 31 0, L_0x14472a3e0;  1 drivers
-v0x144728da0_0 .net "data_in", 31 0, L_0x14472a6d0;  1 drivers
-v0x144728eb0_0 .net "hashed_value", 15 0, L_0x14472a5f0;  alias, 1 drivers
-L_0x14472a2c0 .part L_0x14472a190, 16, 16;
-L_0x14472a3e0 .concat [ 16 16 0 0], L_0x14472a2c0, L_0x148078130;
-L_0x14472a5f0 .part L_0x14472a500, 0, 16;
-S_0x144728f90 .scope module, "shift_hash_DUT" "shift_hash" 2 11, 5 1 0, S_0x1447152e0;
+L_0x129718c90 .functor BUFZ 16, L_0x1297180c0, C4<0000000000000000>, C4<0000000000000000>, C4<0000000000000000>;
+L_0x129718d00 .functor BUFZ 16, L_0x129718910, C4<0000000000000000>, C4<0000000000000000>, C4<0000000000000000>;
+v0x129716de0_0 .net "bloom_index_0", 15 0, L_0x129718b50;  1 drivers
+v0x129716e90_0 .net "bloom_index_1", 15 0, L_0x129718bf0;  1 drivers
+v0x129716f40_0 .net "bloom_index_2", 15 0, L_0x129718c90;  1 drivers
+v0x129717000_0 .net "bloom_index_3", 15 0, L_0x129718d00;  1 drivers
+v0x1297170b0_0 .var "data_in", 63 0;
+v0x1297171a0_0 .net "mod_output", 31 0, L_0x1297174f0;  1 drivers
+v0x129717240_0 .net "murmur_high_output", 15 0, L_0x129718910;  1 drivers
+v0x1297172f0_0 .net "murmur_low_output", 15 0, L_0x1297180c0;  1 drivers
+v0x1297173a0_0 .net "shift_output", 31 0, L_0x1297177d0;  1 drivers
+L_0x129717610 .part v0x1297170b0_0, 0, 32;
+L_0x129717950 .part v0x1297170b0_0, 0, 32;
+L_0x1297181e0 .part v0x1297170b0_0, 0, 32;
+L_0x129718a30 .part v0x1297170b0_0, 32, 32;
+L_0x129718b50 .part L_0x1297174f0, 0, 16;
+L_0x129718bf0 .part L_0x1297177d0, 0, 16;
+S_0x129704ef0 .scope module, "mod_hash_DUT" "mod_hash" 2 10, 3 3 0, S_0x129704d80;
  .timescale 0 0;
     .port_info 0 /INPUT 32 "data_in";
     .port_info 1 /OUTPUT 32 "hashed_value";
-v0x144729150_0 .net *"_ivl_2", 30 0, L_0x144729d60;  1 drivers
-L_0x148078058 .functor BUFT 1, C4<0>, C4<0>, C4<0>, C4<0>;
-v0x144729200_0 .net *"_ivl_4", 0 0, L_0x148078058;  1 drivers
-v0x1447292b0_0 .net "data_in", 31 0, L_0x144729fc0;  1 drivers
-v0x144729370_0 .net "hashed_value", 31 0, L_0x144729e40;  alias, 1 drivers
-L_0x144729d60 .part L_0x144729fc0, 0, 31;
-L_0x144729e40 .concat [ 1 31 0 0], L_0x148078058, L_0x144729d60;
-    .scope S_0x1447152e0;
+L_0x130050010 .functor BUFT 1, C4<00000000000000010000000000000000>, C4<0>, C4<0>, C4<0>;
+v0x1297050e0_0 .net/2u *"_ivl_0", 31 0, L_0x130050010;  1 drivers
+v0x129715190_0 .net "data_in", 31 0, L_0x129717610;  1 drivers
+v0x129715230_0 .net "hashed_value", 31 0, L_0x1297174f0;  alias, 1 drivers
+L_0x1297174f0 .arith/mod 32, L_0x129717610, L_0x130050010;
+S_0x129715310 .scope module, "murmur_high_DUT" "murmur_hash" 2 14, 4 13 0, S_0x129704d80;
+ .timescale 0 0;
+    .port_info 0 /INPUT 32 "data_in";
+    .port_info 1 /OUTPUT 16 "hashed_value";
+L_0x1300501c0 .functor BUFT 1, C4<00000000000000001111111111111111>, C4<0>, C4<0>, C4<0>;
+L_0x129718280 .functor AND 32, L_0x129718a30, L_0x1300501c0, C4<11111111111111111111111111111111>, C4<11111111111111111111111111111111>;
+L_0x130050208 .functor BUFT 1, C4<11111111111111110000000000000000>, C4<0>, C4<0>, C4<0>;
+L_0x129718350 .functor AND 32, L_0x129718a30, L_0x130050208, C4<11111111111111111111111111111111>, C4<11111111111111111111111111111111>;
+L_0x1297186c0 .functor XOR 32, L_0x129718280, L_0x1297185e0, C4<00000000000000000000000000000000>, C4<00000000000000000000000000000000>;
+v0x129715500_0 .net/2u *"_ivl_0", 31 0, L_0x1300501c0;  1 drivers
+v0x1297155c0_0 .net *"_ivl_10", 15 0, L_0x129718480;  1 drivers
+L_0x130050250 .functor BUFT 1, C4<0000000000000000>, C4<0>, C4<0>, C4<0>;
+v0x129715670_0 .net *"_ivl_12", 15 0, L_0x130050250;  1 drivers
+v0x129715730_0 .net *"_ivl_14", 31 0, L_0x1297186c0;  1 drivers
+L_0x130050298 .functor BUFT 1, C4<00000000000000000000000000000001>, C4<0>, C4<0>, C4<0>;
+v0x1297157e0_0 .net/2u *"_ivl_16", 31 0, L_0x130050298;  1 drivers
+v0x1297158d0_0 .net *"_ivl_18", 31 0, L_0x1297187b0;  1 drivers
+v0x129715980_0 .net *"_ivl_2", 31 0, L_0x129718280;  1 drivers
+v0x129715a30_0 .net/2u *"_ivl_4", 31 0, L_0x130050208;  1 drivers
+v0x129715ae0_0 .net *"_ivl_6", 31 0, L_0x129718350;  1 drivers
+v0x129715bf0_0 .net *"_ivl_8", 31 0, L_0x1297185e0;  1 drivers
+v0x129715ca0_0 .net "data_in", 31 0, L_0x129718a30;  1 drivers
+v0x129715d50_0 .net "hashed_value", 15 0, L_0x129718910;  alias, 1 drivers
+L_0x129718480 .part L_0x129718350, 16, 16;
+L_0x1297185e0 .concat [ 16 16 0 0], L_0x129718480, L_0x130050250;
+L_0x1297187b0 .arith/sum 32, L_0x1297186c0, L_0x130050298;
+L_0x129718910 .part L_0x1297187b0, 0, 16;
+S_0x129715e30 .scope module, "murmur_low_DUT" "murmur_hash" 2 13, 4 13 0, S_0x129704d80;
+ .timescale 0 0;
+    .port_info 0 /INPUT 32 "data_in";
+    .port_info 1 /OUTPUT 16 "hashed_value";
+L_0x1300500a0 .functor BUFT 1, C4<00000000000000001111111111111111>, C4<0>, C4<0>, C4<0>;
+L_0x129717a30 .functor AND 32, L_0x1297181e0, L_0x1300500a0, C4<11111111111111111111111111111111>, C4<11111111111111111111111111111111>;
+L_0x1300500e8 .functor BUFT 1, C4<11111111111111110000000000000000>, C4<0>, C4<0>, C4<0>;
+L_0x129717b20 .functor AND 32, L_0x1297181e0, L_0x1300500e8, C4<11111111111111111111111111111111>, C4<11111111111111111111111111111111>;
+L_0x129717e90 .functor XOR 32, L_0x129717a30, L_0x129717d70, C4<00000000000000000000000000000000>, C4<00000000000000000000000000000000>;
+v0x129716020_0 .net/2u *"_ivl_0", 31 0, L_0x1300500a0;  1 drivers
+v0x1297160b0_0 .net *"_ivl_10", 15 0, L_0x129717c50;  1 drivers
+L_0x130050130 .functor BUFT 1, C4<0000000000000000>, C4<0>, C4<0>, C4<0>;
+v0x129716160_0 .net *"_ivl_12", 15 0, L_0x130050130;  1 drivers
+v0x129716220_0 .net *"_ivl_14", 31 0, L_0x129717e90;  1 drivers
+L_0x130050178 .functor BUFT 1, C4<00000000000000000000000000000001>, C4<0>, C4<0>, C4<0>;
+v0x1297162d0_0 .net/2u *"_ivl_16", 31 0, L_0x130050178;  1 drivers
+v0x1297163c0_0 .net *"_ivl_18", 31 0, L_0x129717f80;  1 drivers
+v0x129716470_0 .net *"_ivl_2", 31 0, L_0x129717a30;  1 drivers
+v0x129716520_0 .net/2u *"_ivl_4", 31 0, L_0x1300500e8;  1 drivers
+v0x1297165d0_0 .net *"_ivl_6", 31 0, L_0x129717b20;  1 drivers
+v0x1297166e0_0 .net *"_ivl_8", 31 0, L_0x129717d70;  1 drivers
+v0x129716790_0 .net "data_in", 31 0, L_0x1297181e0;  1 drivers
+v0x129716840_0 .net "hashed_value", 15 0, L_0x1297180c0;  alias, 1 drivers
+L_0x129717c50 .part L_0x129717b20, 16, 16;
+L_0x129717d70 .concat [ 16 16 0 0], L_0x129717c50, L_0x130050130;
+L_0x129717f80 .arith/sum 32, L_0x129717e90, L_0x130050178;
+L_0x1297180c0 .part L_0x129717f80, 0, 16;
+S_0x129716920 .scope module, "shift_hash_DUT" "shift_hash" 2 11, 5 1 0, S_0x129704d80;
+ .timescale 0 0;
+    .port_info 0 /INPUT 32 "data_in";
+    .port_info 1 /OUTPUT 32 "hashed_value";
+v0x129716ae0_0 .net *"_ivl_2", 30 0, L_0x1297176f0;  1 drivers
+L_0x130050058 .functor BUFT 1, C4<0>, C4<0>, C4<0>, C4<0>;
+v0x129716b90_0 .net *"_ivl_4", 0 0, L_0x130050058;  1 drivers
+v0x129716c40_0 .net "data_in", 31 0, L_0x129717950;  1 drivers
+v0x129716d00_0 .net "hashed_value", 31 0, L_0x1297177d0;  alias, 1 drivers
+L_0x1297176f0 .part L_0x129717950, 0, 31;
+L_0x1297177d0 .concat [ 1 31 0 0], L_0x130050058, L_0x1297176f0;
+    .scope S_0x129704d80;
 T_0 ;
     %vpi_call 2 23 "$dumpfile", "test.vcd" {0 0 0};
-    %vpi_call 2 24 "$dumpvars", 32'sb00000000000000000000000000000000, S_0x1447152e0 {0 0 0};
+    %vpi_call 2 24 "$dumpvars", 32'sb00000000000000000000000000000000, S_0x129704d80 {0 0 0};
     %end;
     .thread T_0;
-    .scope S_0x1447152e0;
+    .scope S_0x129704d80;
 T_1 ;
     %pushi/vec4 0, 0, 64;
-    %store/vec4 v0x144729720_0, 0, 64;
+    %store/vec4 v0x1297170b0_0, 0, 64;
     %delay 20, 0;
     %pushi/vec4 2929632410, 0, 33;
     %concati/vec4 1213156421, 0, 31;
-    %store/vec4 v0x144729720_0, 0, 64;
+    %store/vec4 v0x1297170b0_0, 0, 64;
     %delay 20, 0;
     %pushi/vec4 2290778760, 0, 33;
     %concati/vec4 1111835974, 0, 31;
-    %store/vec4 v0x144729720_0, 0, 64;
+    %store/vec4 v0x1297170b0_0, 0, 64;
     %delay 20, 0;
     %pushi/vec4 2358805152, 0, 33;
     %concati/vec4 1245791051, 0, 31;
-    %store/vec4 v0x144729720_0, 0, 64;
+    %store/vec4 v0x1297170b0_0, 0, 64;
     %delay 20, 0;
     %pushi/vec4 2695228544, 0, 34;
     %concati/vec4 976977211, 0, 30;
-    %store/vec4 v0x144729720_0, 0, 64;
+    %store/vec4 v0x1297170b0_0, 0, 64;
     %delay 20, 0;
     %pushi/vec4 3099113657, 0, 34;
     %concati/vec4 323830386, 0, 30;
-    %store/vec4 v0x144729720_0, 0, 64;
+    %store/vec4 v0x1297170b0_0, 0, 64;
     %delay 50, 0;
     %pushi/vec4 3099104652, 0, 34;
     %concati/vec4 807756134, 0, 30;
-    %store/vec4 v0x144729720_0, 0, 64;
+    %store/vec4 v0x1297170b0_0, 0, 64;
     %delay 20, 0;
     %vpi_call 2 53 "$finish" {0 0 0};
     %end;

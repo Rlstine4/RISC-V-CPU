@@ -2,14 +2,14 @@
 from numpy import uint16
 from numpy import uint32
 
-#DEPTH = 65536
+DEPTH = 65536
 INITIAL_VECTOR = []
 HASHED_INDICES = []
 DMEM_VALUES = []
 WORD_LIST_FILE = 'words.txt'
 
 def coe_generator(hashed_indices = []):
-    DEPTH = int(input("Please enter Block RAM depth: "))
+    #DEPTH = int(input("Please enter Block RAM depth: "))
     WIDTH =    int(input("Please enter Block RAM width: "))
     FILENAME = input("Please enter name of .coe file: ")
     RADIX    = int(input("Please input radix (2 for binary, 8 for octal, 10 for decimal, 16 for hex): "))
@@ -122,7 +122,7 @@ def shift_hash(data_in):
 
 def murmur_hash(data_in):
 
-    return uint32( (data_in & 0x0000FFFF) ^ (  (data_in & 0xFFFF0000 )  >> 16 ) )
+    return uint32( ( (data_in & 0x0000FFFF) ^ (  (data_in & 0xFFFF0000 )  >> 16 )    )  + 1)
 
 
 # VERIFIED FUNCTIONALITY USING DEADBEEF, FLAPJACK, WORMHOLE
@@ -160,14 +160,16 @@ def main():
             ascii_list = [ord(c) for c in word.strip()] # Convert each character to its ASCII index
             hex_list   = [hex(c) for c in ascii_list]   # Convert each character from integer to hex
             sample = (''.join(hex_list)).replace('0x', '')
-            #sample = '0x' + sample
-            DMEM_VALUES.append(sample)
-            #bloom_buffering(int(sample, 16))
+            sample = '0x' + sample
+            #DMEM_VALUES.append(sample)
+            bloom_buffering(int(sample, 16))
     
     #print(len(DMEM_VALUES[0:256]))
     #print(len(DMEM_VALUES[256:512]))
-    coe_generator_misc(DMEM_VALUES[0:256])
-    coe_generator_misc(DMEM_VALUES[256:512])
+    #coe_generator_misc(DMEM_VALUES[0:256])
+    #coe_generator_misc(DMEM_VALUES[256:512])
+    #print(HASHED_INDICES)
+    coe_generator(HASHED_INDICES)
 
             
 
