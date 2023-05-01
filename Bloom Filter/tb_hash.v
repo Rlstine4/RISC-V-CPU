@@ -40,6 +40,16 @@ begin
     data_in = 64'h464C41504A41434B; // FLAPJACK
 
     #20
+    data_in = 64'h28297B203A3B7D3B; // (){ :;};
+
+    #20
+    data_in = 64'h2e2e2e2e534d4272; //….SMBr
+
+
+    #50
+    data_in = 64'h2E2E256330256166; //..%c0%af 
+
+    #20
     $finish;
 
 

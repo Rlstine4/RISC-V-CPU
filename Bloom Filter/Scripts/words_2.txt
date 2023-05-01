@@ -1,0 +1,6 @@
+....SMBr
+(){ :;};
+..%c0%af
+WORMHOLE
+DEADBEEF
+FLAPJACK
