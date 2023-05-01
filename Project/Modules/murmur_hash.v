@@ -14,9 +14,10 @@ module murmur_hash
                 (input [31:0] data_in ,
                 output [15:0] hashed_value);
 
-    assign hashed_value = (data_in & 32'h0000ffff) ^  ((data_in & 32'hffff0000) >> 16);
+    assign hashed_value = ( (data_in & 32'h0000ffff) ^  ((data_in & 32'hffff0000) >> 16)    ) + 1;
 
+
+    
 
 endmodule
-
 
